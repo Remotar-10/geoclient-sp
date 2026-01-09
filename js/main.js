@@ -34,8 +34,8 @@ class GeoClientApp {
             maxZoom: 19
         }).addTo(this.map);
 
-        // Carregar GeoJSON dos municípios
-        this.loadMunicipalitiesBoundaries();
+        // Carregar GeoJSON dos municípios do IBGE
+        this.loadMunicipalitiesBoundariesFromIBGE();
 
         // Inicializar controles do mapa
         const mapControls = document.querySelector('custom-map-controls');
@@ -44,15 +44,72 @@ class GeoClientApp {
         }
     }
 
-    loadMunicipalitiesBoundaries() {
-        fetch('data/sp-municipalities.json')
+    loadMunicipalitiesBoundariesFromIBGE() {
+        // URL do IBGE com os limites de TODOS os municípios do Brasil
+        const ibgeUrl = 'https://servicodados.ibge.gov.br/api/v3/malhas?resolucao=2&formato=application/vnd.geo+json&qualidade=maxima';
+        
+        fetch(ibgeUrl)
             .then(response => response.json())
             .then(data => {
                 const occupiedMunicipalities = getOccupiedMunicipalities();
                 
                 this.geoJsonLayer = L.geoJSON(data, {
                     style: (feature) => {
-                        const isOccupied = occupiedMunicipalities.includes(feature.properties.name);
+                        const municipalityName = feature.properties?.name || '';
+                        const isOccupied = occupiedMunicipalities.includes(municipalityName);
+                        
+                        return {
+                            fillColor: isOccupied ? '#10b981' : '#e5e7eb',
+                            weight: 1,
+                            opacity: 0.7,
+                            color: '#9ca3af',
+                            fillOpacity: isOccupied ? 0.4 : 0.08
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const municipalityName = feature.properties?.name || 'Município';
+                        const isOccupied = occupiedMunicipalities.includes(municipalityName);
+                        const status = isOccupied ? '✅ Ocupado' : '⭕ Disponível';
+                        
+                        layer.bindPopup(`
+                            <div class="p-2">
+                                <h4 class="font-bold text-sm">${municipalityName}</h4>
+                                <p class="text-xs text-gray-600">${status}</p>
+                            </div>
+                        `);
+
+                        layer.on('mouseover', () => {
+                            layer.setStyle({
+                                weight: 2,
+                                opacity: 1
+                            });
+                        });
+
+                        layer.on('mouseout', () => {
+                            layer.setStyle({
+                                weight: 1,
+                                opacity: 0.7
+                            });
+                        });
+                    }
+                }).addTo(this.map);
+            })
+            .catch(error => {
+                console.error('Erro ao carregar GeoJSON do IBGE:', error);
+                // Fallback: carregar do arquivo local
+                this.loadMunicipalitiesBoundariesLocal();
+            });
+    }
+
+    loadMunicipalitiesBoundariesLocal() {
+        fetch('data/sp-municipalities-complete.json')
+            .then(response => response.json())
+            .then(data => {
+                const occupiedMunicipalities = getOccupiedMunicipalities();
+                
+                this.geoJsonLayer = L.geoJSON(data, {
+                    style: (feature) => {
+                        const isOccupied = feature.properties.occupied || occupiedMunicipalities.includes(feature.properties.name);
                         return {
                             fillColor: isOccupied ? '#10b981' : '#e5e7eb',
                             weight: 1.5,
@@ -63,7 +120,7 @@ class GeoClientApp {
                         };
                     },
                     onEachFeature: (feature, layer) => {
-                        const isOccupied = occupiedMunicipalities.includes(feature.properties.name);
+                        const isOccupied = feature.properties.occupied || occupiedMunicipalities.includes(feature.properties.name);
                         const status = isOccupied ? '✅ Ocupado' : '⭕ Disponível';
                         
                         layer.bindPopup(`
@@ -72,14 +129,10 @@ class GeoClientApp {
                                 <p class="text-xs text-gray-600">${status}</p>
                             </div>
                         `);
-
-                        layer.on('click', () => {
-                            console.log(`Clicou em: ${feature.properties.name}`);
-                        });
                     }
                 }).addTo(this.map);
             })
-            .catch(error => console.error('Erro ao carregar GeoJSON:', error));
+            .catch(error => console.error('Erro ao carregar GeoJSON local:', error));
     }
 
     setupEventListeners() {
@@ -146,7 +199,8 @@ class GeoClientApp {
                 weight: 2,
                 opacity: 1,
                 fillOpacity: 0.8,
-                className: 'company-marker'
+                className: 'company-marker',
+                zIndex: 1000
             }).addTo(this.map);
 
             // Popup ao clicar no marcador
