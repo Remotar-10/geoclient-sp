@@ -10,6 +10,7 @@ class GeoClientApp {
         this.currentClients = [...CLIENTS_DATA];
         this.selectedMunicipality = null;
         this.markers = {};
+        this.geoJsonLayer = null;
     }
 
     init() {
@@ -33,11 +34,52 @@ class GeoClientApp {
             maxZoom: 19
         }).addTo(this.map);
 
+        // Carregar GeoJSON dos municípios
+        this.loadMunicipalitiesBoundaries();
+
         // Inicializar controles do mapa
         const mapControls = document.querySelector('custom-map-controls');
         if (mapControls) {
             mapControls.init(this.map);
         }
+    }
+
+    loadMunicipalitiesBoundaries() {
+        fetch('data/sp-municipalities.json')
+            .then(response => response.json())
+            .then(data => {
+                const occupiedMunicipalities = getOccupiedMunicipalities();
+                
+                this.geoJsonLayer = L.geoJSON(data, {
+                    style: (feature) => {
+                        const isOccupied = occupiedMunicipalities.includes(feature.properties.name);
+                        return {
+                            fillColor: isOccupied ? '#10b981' : '#e5e7eb',
+                            weight: 1.5,
+                            opacity: 0.8,
+                            color: '#9ca3af',
+                            dashArray: '3',
+                            fillOpacity: isOccupied ? 0.3 : 0.1
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const isOccupied = occupiedMunicipalities.includes(feature.properties.name);
+                        const status = isOccupied ? '✅ Ocupado' : '⭕ Disponível';
+                        
+                        layer.bindPopup(`
+                            <div class="p-2">
+                                <h4 class="font-bold text-sm">${feature.properties.name}</h4>
+                                <p class="text-xs text-gray-600">${status}</p>
+                            </div>
+                        `);
+
+                        layer.on('click', () => {
+                            console.log(`Clicou em: ${feature.properties.name}`);
+                        });
+                    }
+                }).addTo(this.map);
+            })
+            .catch(error => console.error('Erro ao carregar GeoJSON:', error));
     }
 
     setupEventListeners() {

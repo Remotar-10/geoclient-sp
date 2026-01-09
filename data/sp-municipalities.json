@@ -1,0 +1,120 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Jacareí", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.9665, -23.2964], [-45.9500, -23.2964], [-45.9500, -23.3100], [-45.9665, -23.3100], [-45.9665, -23.2964]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "São José dos Campos", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.8866, -23.1815], [-45.8600, -23.1815], [-45.8600, -23.2000], [-45.8866, -23.2000], [-45.8866, -23.1815]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Caçapava", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.7084, -23.0861], [-45.6800, -23.0861], [-45.6800, -23.1050], [-45.7084, -23.1050], [-45.7084, -23.0861]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Taubaté", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.5549, -23.0259], [-45.5200, -23.0259], [-45.5200, -23.0500], [-45.5549, -23.0500], [-45.5549, -23.0259]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Pindamonhangaba", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.4634, -22.3132], [-45.4300, -22.3132], [-45.4300, -22.3400], [-45.4634, -22.3400], [-45.4634, -22.3132]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Guaratinguetá", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.1931, -22.8028], [-45.1600, -22.8028], [-45.1600, -22.8300], [-45.1931, -22.8300], [-45.1931, -22.8028]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Cruzeiro", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-44.9889, -22.5741], [-44.9500, -22.5741], [-44.9500, -22.6050], [-44.9889, -22.6050], [-44.9889, -22.5741]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Aparecida", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-45.2387, -22.8553], [-45.2050, -22.8553], [-45.2050, -22.8850], [-45.2387, -22.8850], [-45.2387, -22.8553]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Itatiaia", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-44.5644, -22.4875], [-44.5300, -22.4875], [-44.5300, -22.5200], [-44.5644, -22.5200], [-44.5644, -22.4875]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Volta Redonda", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-44.0866, -22.5054], [-44.0500, -22.5054], [-44.0500, -22.5350], [-44.0866, -22.5350], [-44.0866, -22.5054]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Santo André", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-46.5332, -23.6628], [-46.5000, -23.6628], [-46.5000, -23.6900], [-46.5332, -23.6900], [-46.5332, -23.6628]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "São Bernardo do Campo", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-46.5633, -23.6957], [-46.5300, -23.6957], [-46.5300, -23.7200], [-46.5633, -23.7200], [-46.5633, -23.6957]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "São Caetano do Sul", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-46.5497, -23.6145], [-46.5200, -23.6145], [-46.5200, -23.6350], [-46.5497, -23.6350], [-46.5497, -23.6145]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Diadema", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-46.6149, -23.7038], [-46.5850, -23.7038], [-46.5850, -23.7250], [-46.6149, -23.7250], [-46.6149, -23.7038]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Guarulhos", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-46.4837, -23.4569], [-46.4500, -23.4569], [-46.4500, -23.4850], [-46.4837, -23.4850], [-46.4837, -23.4569]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Arujá", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-46.3187, -23.3274], [-46.2850, -23.3274], [-46.2850, -23.3550], [-46.3187, -23.3550], [-46.3187, -23.3274]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Piracicaba", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-47.6492, -22.7239], [-47.6100, -22.7239], [-47.6100, -22.7550], [-47.6492, -22.7550], [-47.6492, -22.7239]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Rio das Pedras", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-47.8228, -22.7450], [-47.7900, -22.7450], [-47.7900, -22.7750], [-47.8228, -22.7750], [-47.8228, -22.7450]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Capivari", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-47.5487, -23.0704], [-47.5150, -23.0704], [-47.5150, -23.1000], [-47.5487, -23.1000], [-47.5487, -23.0704]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "São Jose do Rio Preto", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-49.3780, -20.8137], [-49.3400, -20.8137], [-49.3400, -20.8450], [-49.3780, -20.8450], [-49.3780, -20.8137]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Mirassol", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-49.0544, -20.8086], [-49.0200, -20.8086], [-49.0200, -20.8400], [-49.0544, -20.8400], [-49.0544, -20.8086]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Catanduva", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-48.9826, -21.1279], [-48.9450, -21.1279], [-48.9450, -21.1600], [-48.9826, -21.1600], [-48.9826, -21.1279]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Votuporanga", "occupied": true},
+      "geometry": {"type": "Polygon", "coordinates": [[[-49.9769, -20.4256], [-49.9400, -20.4256], [-49.9400, -20.4550], [-49.9769, -20.4550], [-49.9769, -20.4256]]]}
+    }
+  ]
+}
