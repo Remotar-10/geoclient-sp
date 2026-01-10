@@ -8,24 +8,23 @@ class GeoClientApp {
         this.currentClients = [];
         this.markers = {};
         this.geoJsonLayer = null;
-        this.markedCities = {}; // Armazena cidades marcadas e suas empresas
+        this.markedCities = {};
+        this.cityLayers = {}; // Armazena referência aos layers por cidade
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
         this.clickCount = 0;
         this.clickTimer = null;
         
-        // Configuração inicial do mapa - CENTRALIZADO EM SP
         this.initialView = {
-            center: [-22.5, -49.2],  // Ajustado para melhor centralização de SP
-            zoom: 7.2                // Zoom otimizado para ver SP completo
+            center: [-22.5, -49.2],
+            zoom: 7.2
         };
     }
 
     init() {
         console.log('🗺️ Inicializando GeoClient SP...');
         
-        // Verifica se o elemento do mapa existe
         const mapElement = document.getElementById('map');
         if (!mapElement) {
             console.error('❌ Elemento #map não encontrado!');
@@ -34,7 +33,6 @@ class GeoClientApp {
         
         console.log('✅ Elemento #map encontrado');
         
-        // Aguarda um frame para garantir que o DOM está pronto
         setTimeout(() => {
             this.initMap();
             this.setupEventListeners();
@@ -42,7 +40,7 @@ class GeoClientApp {
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
             console.log('🔵 1 CLIQUE = Marca cidade');
-            console.log('🔵 2 CLIQUES = Desmarca cidade (sem zoom)');
+            console.log('🔵 2 CLIQUES = Desmarca cidade');
         }, 100);
     }
 
@@ -50,7 +48,6 @@ class GeoClientApp {
         console.log('🗺️ Criando mapa Leaflet...');
         
         try {
-            // Cria o mapa com visão inicial centralizada
             this.map = L.map('map', {
                 center: this.initialView.center,
                 zoom: this.initialView.zoom,
@@ -58,13 +55,21 @@ class GeoClientApp {
                 attributionControl: true,
                 minZoom: 6,
                 maxZoom: 12,
-                doubleClickZoom: false  // DESABILITA zoom com double click
+                doubleClickZoom: false,
+                tap: false  // Desabilita tap para evitar conflitos mobile
             });
             
-            console.log('✅ Mapa Leaflet criado');
-            console.log('🚫 Double click zoom DESABILITADO');
+            console.log('✅ Mapa criado');
             
-            // Adiciona tiles CartoDB Voyager
+            // BLOQUEIA dblclick NO MAPA INTEIRO
+            this.map.off('dblclick');
+            this.map.on('dblclick', (e) => {
+                L.DomEvent.stopPropagation(e);
+                L.DomEvent.preventDefault(e);
+                console.log('🚫 Double-click bloqueado no mapa');
+                return false;
+            });
+            
             const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
@@ -73,49 +78,29 @@ class GeoClientApp {
             });
             
             tileLayer.addTo(this.map);
-            console.log('✅ Tiles CartoDB Voyager adicionados');
-            
-            // Listener para verificar se tiles carregaram
-            tileLayer.on('loading', () => {
-                console.log('⏳ Carregando tiles...');
-            });
+            console.log('✅ Tiles CartoDB adicionados');
             
             tileLayer.on('load', () => {
-                console.log('✅ Tiles carregados com sucesso!');
+                console.log('✅ Tiles carregados');
             });
             
-            tileLayer.on('tileerror', (error) => {
-                console.error('❌ Erro ao carregar tile:', error);
-                console.log('🔄 Tentando provedor alternativo...');
-                
-                // Remove o tile layer problemático
+            tileLayer.on('tileerror', () => {
+                console.log('🔄 Tentando fallback...');
                 this.map.removeLayer(tileLayer);
-                
-                // Provedor 2: OpenStreetMap (fallback)
-                const fallbackTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                const fallback = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors',
                     maxZoom: 19
                 });
-                
-                fallbackTileLayer.addTo(this.map);
-                console.log('✅ Fallback: OpenStreetMap tiles adicionados');
-                
-                fallbackTileLayer.on('tileerror', () => {
-                    console.error('❌ Fallback também falhou!');
-                    console.log('💡 Sugestão: Verifique sua conexão de internet');
-                });
+                fallback.addTo(this.map);
             });
             
-            // Força recalculo do tamanho do mapa
             setTimeout(() => {
                 this.map.invalidateSize();
-                console.log('✅ Tamanho do mapa ajustado');
+                console.log('✅ Tamanho ajustado');
             }, 250);
             
-            // Carrega os municípios
             this.loadMunicipalitiesBoundaries();
             
-            // Inicializa controles customizados
             const mapControls = document.querySelector('custom-map-controls');
             if (mapControls) {
                 mapControls.init(this.map);
@@ -142,40 +127,36 @@ class GeoClientApp {
                         const name = this.getMunicipalityName(feature);
                         const cityData = this.markedCities[name];
                         
-                        // Cidade marcada COM empresa
                         if (cityData && cityData.companies.length > 0) {
                             const color = this.getCompanyColor(cityData.companies[0]);
                             return {
                                 fillColor: color,
                                 weight: 2,
                                 opacity: 1,
-                                color: '#374151',        // Contorno cinza escuro
+                                color: '#374151',
                                 fillOpacity: 0.7
                             };
-                        } 
-                        // Cidade marcada SEM empresa (azul)
-                        else if (cityData) {
+                        } else if (cityData) {
                             return {
                                 fillColor: '#3b82f6',
                                 weight: 2,
                                 opacity: 1,
-                                color: '#1e40af',        // Contorno azul escuro
+                                color: '#1e40af',
                                 fillOpacity: 0.7
                             };
-                        } 
-                        // Cidade disponível (cinza claro)
-                        else {
+                        } else {
                             return {
                                 fillColor: '#d1d5db',
                                 weight: 1.5,
                                 opacity: 1,
-                                color: '#6b7280',        // Contorno cinza médio
+                                color: '#6b7280',
                                 fillOpacity: 0.2
                             };
                         }
                     },
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
+                        this.cityLayers[name] = layer; // Armazena referência
                         this.updatePopup(layer, name);
                         
                         layer.on('mouseover', () => {
@@ -191,22 +172,22 @@ class GeoClientApp {
                             this.geoJsonLayer.resetStyle(layer);
                         });
 
-                        // Bloqueia double click nativo do Leaflet
+                        // BLOQUEIA COMPLETAMENTE dblclick no layer
+                        layer.off('dblclick');
                         layer.on('dblclick', (e) => {
-                            L.DomEvent.stopPropagation(e);
-                            L.DomEvent.preventDefault(e);
+                            L.DomEvent.stop(e);
+                            console.log('🚫 Double-click bloqueado no layer');
+                            return false;
                         });
 
                         layer.on('click', (e) => {
-                            L.DomEvent.stopPropagation(e);
-                            L.DomEvent.preventDefault(e);
+                            L.DomEvent.stop(e);
                             this.handleCityClick(name, layer);
                         });
                     }
                 }).addTo(this.map);
 
                 console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
-                console.log(`🎨 ${Object.keys(this.markedCities).length} cidades marcadas`);
             })
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
@@ -242,7 +223,6 @@ class GeoClientApp {
             
             this.updatePopup(layer, name);
             console.log(`🔵 Marcado: ${name}`);
-            console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
             layer.openPopup();
         }
@@ -262,9 +242,7 @@ class GeoClientApp {
             
             this.updatePopup(layer, name);
             console.log(`🔓 Desmarcado: ${name}`);
-            console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
-            // Fecha popup sem zoom
             layer.closePopup();
         }
     }
@@ -335,11 +313,11 @@ class GeoClientApp {
 
     getCompanyColor(company) {
         const colors = {
-            'CDO': '#ef4444',           // Vermelho
-            'SUPORTE': '#3b82f6',       // Azul
-            'WAUX': '#10b981',          // Verde
-            'MONTEBELLO': '#f59e0b',    // Laranja
-            'HIRATA': '#8b5cf6'         // Roxo
+            'CDO': '#ef4444',
+            'SUPORTE': '#3b82f6',
+            'WAUX': '#10b981',
+            'MONTEBELLO': '#f59e0b',
+            'HIRATA': '#8b5cf6'
         };
         return colors[company] || '#6b7280';
     }
@@ -349,9 +327,8 @@ class GeoClientApp {
         if (!city) return;
         
         city.companies.push(company);
-        console.log(`✅ Empresa ${company} adicionada em ${cityName} - Total: ${city.companies.length}`);
+        console.log(`✅ ${company} adicionada em ${cityName}`);
         
-        // Recarrega o mapa com as novas cores
         const oldLayer = this.geoJsonLayer;
         if (oldLayer) {
             this.map.removeLayer(oldLayer);
@@ -359,21 +336,19 @@ class GeoClientApp {
         
         this.loadMunicipalitiesBoundaries();
         
-        // Reabre o popup após recarregar e fecha automaticamente após 3 segundos
+        // Fecha popup após 3.5 segundos usando referência direta
         setTimeout(() => {
-            this.geoJsonLayer.eachLayer(layer => {
-                const name = this.getMunicipalityName(layer.feature);
-                if (name === cityName) {
-                    this.updatePopup(layer, name);
-                    layer.openPopup();
-                    
-                    // Fecha popup automaticamente após 3 segundos
-                    setTimeout(() => {
-                        layer.closePopup();
-                        console.log(`⏱️ Popup de ${cityName} fechado automaticamente`);
-                    }, 3000);
-                }
-            });
+            const layer = this.cityLayers[cityName];
+            if (layer) {
+                this.updatePopup(layer, cityName);
+                layer.openPopup();
+                
+                console.log(`⏱️ Popup fechará em 3.5s`);
+                setTimeout(() => {
+                    layer.closePopup();
+                    console.log(`✅ Popup fechado: ${cityName}`);
+                }, 3500);
+            }
         }, 300);
     }
 
@@ -469,14 +444,13 @@ class GeoClientApp {
     }
 
     resetMap() {
-        // Volta para visão inicial centralizada
         this.map.setView(this.initialView.center, this.initialView.zoom);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
         this.currentClients = [];
         this.loadMunicipalitiesBoundaries();
         this.renderClientTable();
         this.renderMarkers();
-        console.log('♻️ Mapa resetado - marcações mantidas!');
+        console.log('♻️ Mapa resetado');
     }
 
     openModal(clientId = null) {
@@ -571,7 +545,7 @@ class GeoClientApp {
         a.href = url;
         a.download = 'cidades_marcadas.json';
         a.click();
-        console.log('📥 Dados exportados!');
+        console.log('📥 Dados exportados');
     }
 
     getMunicipalityName(feature) {
