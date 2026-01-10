@@ -10,6 +10,7 @@ class GeoClientApp {
 
 
 
+
     init() {
         console.log('🗺️ Inicializando GeoClient SP...');
         this.initMap();
@@ -21,10 +22,12 @@ class GeoClientApp {
 
 
 
+
     initMap() {
         // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
         const spCenter = [-23.2, -48.5];  // Centro do estado
         this.map = L.map('map').setView(spCenter, 7);  // Zoom 7 para ver o estado completo
+
 
 
 
@@ -35,7 +38,9 @@ class GeoClientApp {
 
 
 
+
         this.loadMunicipalitiesBoundaries();
+
 
 
 
@@ -45,8 +50,10 @@ class GeoClientApp {
 
 
 
+
     loadMunicipalitiesBoundaries() {
         const occupiedMunicipalities = getOccupiedMunicipalities();
+
 
 
         // ✅ NOVO: Carregar do arquivo GeoJSON real (645 municípios do IBGE)
@@ -58,7 +65,8 @@ class GeoClientApp {
             .then(municipalitiesData => {
                 this.geoJsonLayer = L.geoJSON(municipalitiesData, {
                     style: (feature) => {
-                        const name = feature.properties?.name || '';
+                        // ✅ CORRIGIDO: Usar a mesma função para detectar nome em ambos os lugares
+                        const name = this.getMunicipalityName(feature);
                         const isOccupied = occupiedMunicipalities.includes(name);
                         
                         return {
@@ -70,11 +78,17 @@ class GeoClientApp {
                         };
                     },
                     onEachFeature: (feature, layer) => {
-                        const name = feature.properties?.name || 'Município';
+                        // ✅ CORRIGIDO: Usar a mesma função de nome em ambos os lugares
+                        const name = this.getMunicipalityName(feature);
+                        
                         const isOccupied = occupiedMunicipalities.includes(name);
                         const status = isOccupied ? '✅ OCUPADO' : '⭕ DISPONÍVEL';
                         
-                        layer.bindPopup(`<div style="padding:8px"><b>${name}</b><br><small>${status}</small></div>`);
+                        if (name && name !== 'Município Desconhecido') {
+                            layer.bindPopup(`<div style="padding:12px"><b>${name}</b><br><small style="font-weight:normal;color:#666">${status}</small></div>`);
+                        } else {
+                            layer.bindPopup(`<div style="padding:12px"><b>⭕ DISPONÍVEL</b><br><small style="font-weight:normal;color:#999">Município não identificado</small></div>`);
+                        }
                         
                         layer.on('mouseover', () => {
                             layer.setStyle({ weight: 3, opacity: 1 });
@@ -84,6 +98,7 @@ class GeoClientApp {
                         });
                     }
                 }).addTo(this.map);
+
 
 
                 console.log('✅ ' + municipalitiesData.features.length + ' municípios carregados com sucesso!');
@@ -96,6 +111,7 @@ class GeoClientApp {
 
 
 
+
     setupEventListeners() {
         window.addEventListener('filtersChanged', (e) => {
             this.currentFilters = e.detail;
@@ -104,8 +120,10 @@ class GeoClientApp {
 
 
 
+
         const resetBtn = document.getElementById('reset-map');
         if (resetBtn) resetBtn.addEventListener('click', () => this.resetMap());
+
 
 
 
@@ -114,8 +132,10 @@ class GeoClientApp {
 
 
 
+
         const addClientBtn = document.getElementById('add-client');
         if (addClientBtn) addClientBtn.addEventListener('click', () => this.openModal());
+
 
 
 
@@ -124,8 +144,10 @@ class GeoClientApp {
 
 
 
+
         const clientForm = document.getElementById('client-form');
         if (clientForm) clientForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+
 
 
 
@@ -139,9 +161,11 @@ class GeoClientApp {
 
 
 
+
     renderMarkers() {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
+
 
 
 
@@ -160,12 +184,14 @@ class GeoClientApp {
 
 
 
+
             marker.bindPopup(`
                 <div style="padding:8px">
                     <b>${client.name}</b><br>
                     <small>${client.segment} | ${client.company}<br>${client.municipality}</small>
                 </div>
             `);
+
 
 
 
@@ -176,9 +202,11 @@ class GeoClientApp {
 
 
 
+
     renderClientTable() {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
+
 
 
 
@@ -202,6 +230,7 @@ class GeoClientApp {
 
 
 
+
     applyFilters() {
         let filtered = [...CLIENTS_DATA];
         if (this.currentFilters.company) filtered = filtered.filter(c => c.company === this.currentFilters.company);
@@ -210,10 +239,12 @@ class GeoClientApp {
 
 
 
+
         this.currentClients = filtered;
         this.renderClientTable();
         this.renderMarkers();
     }
+
 
 
 
@@ -228,10 +259,12 @@ class GeoClientApp {
 
 
 
+
     openModal(clientId = null) {
         const modal = document.getElementById('client-modal');
         const form = document.getElementById('client-form');
         if (!modal || !form) return;
+
 
 
 
@@ -253,10 +286,12 @@ class GeoClientApp {
 
 
 
+
     closeModal() {
         const modal = document.getElementById('client-modal');
         if (modal) modal.style.display = 'none';
     }
+
 
 
 
@@ -267,10 +302,12 @@ class GeoClientApp {
 
 
 
+
         if (!name || !municipality) {
             alert('Preencha todos os campos!');
             return;
         }
+
 
 
 
@@ -279,6 +316,7 @@ class GeoClientApp {
             alert('Município não encontrado!');
             return;
         }
+
 
 
 
@@ -296,6 +334,7 @@ class GeoClientApp {
 
 
 
+
         this.closeModal();
         this.applyFilters();
         this.map.setView([coords.lat, coords.lng], 12);
@@ -303,7 +342,9 @@ class GeoClientApp {
 
 
 
+
     editClient(clientId) { this.openModal(clientId); }
+
 
 
 
@@ -318,12 +359,36 @@ class GeoClientApp {
 
 
 
+
     exportData() {
         const format = prompt('1 = CSV\n2 = JSON', '1');
         if (format === '1') exportClientsCSV();
         else if (format === '2') exportClientsJSON();
     }
+
+    // ✅ NOVO: Função para detectar corretamente o nome do município
+    getMunicipalityName(feature) {
+        const properties = feature.properties || {};
+        
+        // Tentar as chaves mais comuns em ordem de probabilidade
+        const name = properties.name 
+            || properties.NAME 
+            || properties.NOME 
+            || properties.NM_MUNI 
+            || properties.NM_MUNICIPIO
+            || properties.nm_municipio
+            || properties.NM_MUN
+            || 'Município Desconhecido';
+        
+        // Log para debug (remover depois de confirmar)
+        if (name === 'Município Desconhecido') {
+            console.log('❌ Nome não encontrado. Propriedades disponíveis:', Object.keys(properties));
+        }
+        
+        return name;
+    }
 }
+
 
 
 
