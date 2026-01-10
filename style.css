@@ -1,4 +1,4 @@
-/* GeoClient SP - Design Super Compacto e Responsivo */
+/* GeoClient SP - Design Super Compacto e Responsivo CORRIGIDO */
 
 :root {
     --primary: #3b82f6;
@@ -45,10 +45,18 @@ custom-navbar {
     margin-bottom: var(--spacing-xs);
 }
 
-/* Grid responsivo otimizado */
+/* Grid responsivo otimizado - CORRIGIDO */
 .grid {
     display: grid;
     gap: var(--spacing-sm);
+    position: relative;
+}
+
+/* Sidebar e Main no mesmo nível */
+.lg\:col-span-1,
+.lg\:col-span-3 {
+    position: relative;
+    z-index: 1;
 }
 
 /* Sidebar - OCULTA em telas < 1024px */
@@ -60,12 +68,26 @@ custom-navbar {
     grid-column: span 1;
 }
 
-/* Map Container - altura otimizada */
+/* Map Container - altura otimizada - SEM Z-INDEX ALTO */
 #map {
     border-radius: 0.375rem;
-    z-index: 1;
     height: 420px !important;
     width: 100%;
+    position: relative;
+    z-index: 0;
+}
+
+/* Leaflet containers - z-index controlado */
+.leaflet-pane {
+    z-index: auto;
+}
+
+.leaflet-map-pane {
+    z-index: 1;
+}
+
+.leaflet-popup-pane {
+    z-index: 700;
 }
 
 /* Cards ultra compactos */
@@ -74,6 +96,7 @@ custom-navbar {
     background: white;
     border-radius: 0.375rem;
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    position: relative;
 }
 
 .bg-white.rounded-lg.shadow {
@@ -327,7 +350,7 @@ table tbody tr:hover {
 #client-modal {
     display: none;
     position: fixed;
-    z-index: 50;
+    z-index: 10000;
     left: 0;
     top: 0;
     width: 100%;
@@ -346,6 +369,7 @@ table tbody tr:hover {
     background: white;
     border-radius: 0.375rem;
     box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    z-index: 10001;
 }
 
 #client-modal h3 {
@@ -459,7 +483,7 @@ table tbody tr:hover {
 }
 
 /* ========================================= */
-/* DESKTOP - 1024px+ */
+/* DESKTOP - 1024px+ - LAYOUT LADO A LADO */
 /* ========================================= */
 @media (min-width: 1024px) {
     body {
@@ -471,16 +495,26 @@ table tbody tr:hover {
         max-width: 1440px;
     }
     
-    /* Mostra sidebar em desktop */
+    /* Grid com sidebar e conteúdo lado a lado */
     .grid.grid-cols-1.lg\:grid-cols-4 {
+        display: grid;
         grid-template-columns: 270px 1fr;
         gap: var(--spacing-md);
+        align-items: start;
     }
     
+    /* Mostra sidebar em desktop */
     .lg\:col-span-1 {
         display: flex;
         flex-direction: column;
         gap: var(--spacing-sm);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .lg\:col-span-3 {
+        position: relative;
+        z-index: 1;
     }
     
     .lg\:col-span-1 > div {
