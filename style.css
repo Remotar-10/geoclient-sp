@@ -1,4 +1,4 @@
-/* GeoClient SP - Estilos customizados */
+/* GeoClient SP - Estilos customizados VERSÃO ESTÁVEL */
 
 :root {
     --primary: #3b82f6;
@@ -38,55 +38,16 @@ custom-navbar {
 
 .leaflet-popup-content {
     font-family: inherit;
-    min-width: 250px !important;
-    margin: 0 !important;
+    min-width: 250px;
+    margin: 0;
 }
 
 .leaflet-popup-content-wrapper {
-    border-radius: 12px !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
-/* ✅ CORRIGIDO: Suporte para SVG mantendo contornos */
-.leaflet-overlay-pane svg {
-    width: 100%;
-    height: 100%;
-    pointer-events: auto !important;
-}
-
-.leaflet-overlay-pane path {
-    pointer-events: auto !important;
-}
-
-/* ✅ MANTÉM CONTORNOS SEMPRE VISÍVEIS */
-.leaflet-interactive {
-    stroke: #6b7280 !important;
-    stroke-width: 1.5px !important;
-    stroke-opacity: 0.8 !important;
-    fill-opacity: 0.7 !important;
-}
-
-/* ✅ Hover aumenta borda */
-.leaflet-interactive:hover {
-    stroke-width: 3px !important;
-    stroke-opacity: 1 !important;
-}
-
-/* ✅ SVG patterns MANTÊM os contornos */
-path[fill^="url"],
-path[fill*="data:image/svg"] {
-    fill-opacity: 0.75 !important;
-    stroke: #374151 !important;
-    stroke-width: 2px !important;
-    stroke-opacity: 1 !important;
-}
-
-/* ✅ Previne conflitos de estilo do Leaflet */
-.leaflet-zoom-animated {
-    will-change: transform;
-}
-
-/* ✅ NOVO: Dropdown melhorado para popup do mapa */
+/* Dropdown melhorado para popup do mapa */
 .dropdown {
     position: relative;
 }
@@ -102,7 +63,7 @@ path[fill*="data:image/svg"] {
 }
 
 .dropdown-menu.show {
-    display: block !important;
+    display: block;
 }
 
 .dropdown-item {
@@ -135,17 +96,6 @@ path[fill*="data:image/svg"] {
     content: '▼';
     font-size: 10px;
     margin-left: 4px;
-}
-
-/* Municipality Highlight */
-.municipality-occupied {
-    fill: #10b981;
-    opacity: 0.7;
-}
-
-.municipality-available {
-    fill: #e5e7eb;
-    opacity: 0.5;
 }
 
 /* Table Styling */
@@ -292,7 +242,7 @@ table td {
     color: #991b1b;
 }
 
-/* ✅ NOVO: Badges coloridos para empresas */
+/* Badges coloridos para empresas */
 .company-badge {
     display: inline-block;
     padding: 4px 10px;
@@ -323,7 +273,7 @@ table td {
     background: #8b5cf6;
 }
 
-/* ✅ NOVO: Animações suaves */
+/* Animações suaves */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -339,7 +289,7 @@ table td {
     animation: fadeIn 0.2s ease-out;
 }
 
-/* ✅ NOVO: Estilo para o indicador de cor da empresa */
+/* Indicador de cor da empresa */
 .company-color-indicator {
     display: inline-block;
     width: 14px;
@@ -349,24 +299,6 @@ table td {
     vertical-align: middle;
 }
 
-/* ✅ Fix específico para patterns SVG no mapa */
-.leaflet-container path {
-    vector-effect: non-scaling-stroke;
-}
-
-.leaflet-container svg {
-    overflow: visible !important;
-}
-
-/* ✅ Garante que SVG defs sejam renderizados */
-.leaflet-overlay-pane defs {
-    display: block !important;
-}
-
-.leaflet-overlay-pane pattern {
-    display: block !important;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .container {
@@ -374,7 +306,7 @@ table td {
     }
 
     #map {
-        height: 400px !important;
+        height: 400px;
     }
 
     .btn {
@@ -383,7 +315,7 @@ table td {
     }
 
     .leaflet-popup-content {
-        min-width: 200px !important;
+        min-width: 200px;
     }
 
     .dropdown-menu {
@@ -392,7 +324,7 @@ table td {
     }
 }
 
-/* ✅ NOVO: Scrollbar customizada para dropdown */
+/* Scrollbar customizada para dropdown */
 .dropdown-menu::-webkit-scrollbar {
     width: 6px;
 }
@@ -411,25 +343,7 @@ table td {
     background: #555;
 }
 
-/* ✅ Transições suaves */
+/* Transições suaves */
 button, .btn, .dropdown-item {
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* ✅ Fix para Safari */
-@supports (-webkit-appearance: none) {
-    .leaflet-overlay-pane path[fill*="data:image"] {
-        stroke: #374151 !important;
-        stroke-width: 2px !important;
-        stroke-opacity: 1 !important;
-    }
-}
-
-/* ✅ Fix para Firefox */
-@-moz-document url-prefix() {
-    .leaflet-overlay-pane path {
-        stroke: #6b7280 !important;
-        stroke-width: 1.5px !important;
-        stroke-opacity: 0.8 !important;
-    }
 }
