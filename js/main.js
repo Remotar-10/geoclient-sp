@@ -14,11 +14,9 @@ class GeoClientApp {
             'Santa Branca', 'Caraguatatuba', 'Ilhabela', 'São Sebastião', 'Ubatuba',
             'Aparecida', 'Cachoeira Paulista', 'Piquete', 'Lagoinha', 'Cruzeiro',
             'Queluz', 'Lorena', 'Potim', 'Roseira', 'Guararema', 'Santa Isabel',
-            'Guarulhos', 'Taubaté', 'Pindamonhangaba', 'Campos do Jordão'
+            'Taubaté', 'Pindamonhangaba', 'Campos do Jordão'
         ];
     }
-
-
 
     init() {
         console.log('🗺️ Inicializando GeoClient SP...');
@@ -29,36 +27,24 @@ class GeoClientApp {
         console.log('✅ GeoClient SP iniciado!');
     }
 
-
-
     initMap() {
         const spCenter = [-23.2, -48.5];
         this.map = L.map('map').setView(spCenter, 7);
-
-
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
             maxZoom: 19
         }).addTo(this.map);
 
-
-
         this.loadMunicipalitiesBoundaries();
-
-
 
         const mapControls = document.querySelector('custom-map-controls');
         if (mapControls) mapControls.init(this.map);
     }
 
-
-
     loadMunicipalitiesBoundaries() {
         const occupiedMunicipalities = getOccupiedMunicipalities();
         const cdoValeCities = this.getCDOValeParaibaCities(); // ✅ NOVO: Cidades CDO Vale
-
-
 
         fetch('data/municipios-sp.geojson')
             .then(response => {
@@ -170,8 +156,6 @@ class GeoClientApp {
         ).filter(Boolean);
     }
 
-
-
     selectMunicipality(name, layer, feature, occupiedMunicipalities) {
         if (this.selectedMunicipality === name) {
             console.log(`🔓 Município deselecionado: ${name}`);
@@ -197,8 +181,6 @@ class GeoClientApp {
             console.log(`🔴 Seleção manual: ${name}`);
         }
     }
-
-
 
     setupEventListeners() {
         window.addEventListener('filtersChanged', (e) => {
@@ -229,8 +211,6 @@ class GeoClientApp {
         }
     }
 
-
-
     renderMarkers() {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
@@ -260,8 +240,6 @@ class GeoClientApp {
         });
     }
 
-
-
     renderClientTable() {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
@@ -284,8 +262,6 @@ class GeoClientApp {
         `).join('');
     }
 
-
-
     applyFilters() {
         let filtered = [...CLIENTS_DATA];
         if (this.currentFilters.company) filtered = filtered.filter(c => c.company === this.currentFilters.company);
@@ -296,8 +272,6 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
     }
-
-
 
     resetMap() {
         this.map.setView([-23.2, -48.5], 7);
@@ -310,8 +284,6 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
     }
-
-
 
     openModal(clientId = null) {
         const modal = document.getElementById('client-modal');
@@ -334,14 +306,10 @@ class GeoClientApp {
         modal.style.display = 'flex';
     }
 
-
-
     closeModal() {
         const modal = document.getElementById('client-modal');
         if (modal) modal.style.display = 'none';
     }
-
-
 
     handleFormSubmit(e) {
         e.preventDefault();
@@ -378,11 +346,7 @@ class GeoClientApp {
         this.map.setView([coords.lat, coords.lng], 12);
     }
 
-
-
     editClient(clientId) { this.openModal(clientId); }
-
-
 
     deleteClient(clientId) {
         if (confirm('Deletar este cliente?')) {
@@ -395,15 +359,11 @@ class GeoClientApp {
         }
     }
 
-
-
     exportData() {
         const format = prompt('1 = CSV\n2 = JSON', '1');
         if (format === '1') exportClientsCSV();
         else if (format === '2') exportClientsJSON();
     }
-
-
 
     getMunicipalityName(feature) {
         const properties = feature.properties || {};
@@ -423,8 +383,6 @@ class GeoClientApp {
         return name;
     }
 }
-
-
 
 let app;
 document.addEventListener('DOMContentLoaded', () => {
