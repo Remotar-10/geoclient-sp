@@ -6,8 +6,16 @@ class GeoClientApp {
         this.currentClients = [...CLIENTS_DATA];
         this.markers = {};
         this.geoJsonLayer = null;
-        this.selectedMunicipality = null;  // ✅ NOVO: Armazenar município selecionado
-        this.selectedLayer = null;         // ✅ NOVO: Armazenar layer selecionado
+        this.selectedMunicipality = null;
+        this.selectedLayer = null;
+        // ✅ NOVO: Lista de cidades do Vale do Paraíba para CDO
+        this.valedoParaibaCities = [
+            'São José dos Campos', 'Jacareí', 'Guaratinguetá', 'Caçapava', 'Tremembé',
+            'Santa Branca', 'Caraguatatuba', 'Ilhabela', 'São Sebastião', 'Ubatuba',
+            'Aparecida', 'Cachoeira Paulista', 'Piquete', 'Lagoinha', 'Cruzeiro',
+            'Queluz', 'Lorena', 'Potim', 'Roseira', 'Guararema', 'Santa Isabel',
+            'Guarulhos', 'Taubaté', 'Pindamonhangaba', 'Campos do Jordão'
+        ];
     }
 
 
@@ -24,9 +32,8 @@ class GeoClientApp {
 
 
     initMap() {
-        // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
-        const spCenter = [-23.2, -48.5];  // Centro do estado
-        this.map = L.map('map').setView(spCenter, 7);  // Zoom 7 para ver o estado completo
+        const spCenter = [-23.2, -48.5];
+        this.map = L.map('map').setView(spCenter, 7);
 
 
 
@@ -49,9 +56,10 @@ class GeoClientApp {
 
     loadMunicipalitiesBoundaries() {
         const occupiedMunicipalities = getOccupiedMunicipalities();
+        const cdoValeCities = this.getCDOValeParaibaCities(); // ✅ NOVO: Cidades CDO Vale
 
 
-        // ✅ NOVO: Carregar do arquivo GeoJSON real (645 municípios do IBGE)
+
         fetch('data/municipios-sp.geojson')
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,45 +68,82 @@ class GeoClientApp {
             .then(municipalitiesData => {
                 this.geoJsonLayer = L.geoJSON(municipalitiesData, {
                     style: (feature) => {
-                        // ✅ CORRIGIDO: Usar a mesma função para detectar nome em ambos os lugares
                         const name = this.getMunicipalityName(feature);
                         const isOccupied = occupiedMunicipalities.includes(name);
+                        const isCDOVale = cdoValeCities.includes(name); // ✅ NOVO: Verifica CDO Vale
                         
-                        return {
-                            fillColor: isOccupied ? '#22c55e' : '#d1d5db',
-                            weight: 1.5,
-                            opacity: 0.8,
-                            color: '#6b7280',
-                            fillOpacity: isOccupied ? 0.5 : 0.15
-                        };
+                        if (isCDOVale) {
+                            // 🔵 CDO VALE DO PARAÍBA - AZUL VIBRANTE
+                            return {
+                                fillColor: '#3b82f6',
+                                weight: 3, // Borda mais grossa
+                                opacity: 1,
+                                color: '#1e40af',
+                                fillOpacity: 0.7
+                            };
+                        } else if (isOccupied) {
+                            // 🟢 OCUPADO - Verde normal
+                            return {
+                                fillColor: '#22c55e',
+                                weight: 1.5,
+                                opacity: 0.8,
+                                color: '#6b7280',
+                                fillOpacity: 0.5
+                            };
+                        } else {
+                            // ⚪ DISPONÍVEL - Cinza
+                            return {
+                                fillColor: '#d1d5db',
+                                weight: 1.5,
+                                opacity: 0.8,
+                                color: '#6b7280',
+                                fillOpacity: 0.15
+                            };
+                        }
                     },
                     onEachFeature: (feature, layer) => {
-                        // ✅ CORRIGIDO: Usar a mesma função de nome em ambos os lugares
                         const name = this.getMunicipalityName(feature);
-                        
                         const isOccupied = occupiedMunicipalities.includes(name);
-                        const status = isOccupied ? '✅ OCUPADO' : '⭕ DISPONÍVEL';
+                        const isCDOVale = cdoValeCities.includes(name);
                         
-                        if (name && name !== 'Município Desconhecido') {
-                            layer.bindPopup(`<div style="padding:12px"><b>${name}</b><br><small style="font-weight:normal;color:#666">${status}</small></div>`);
+                        let status = '';
+                        if (isCDOVale) {
+                            status = '🔵 CDO VALE DO PARAÍBA';
+                        } else if (isOccupied) {
+                            status = '✅ OCUPADO';
                         } else {
-                            layer.bindPopup(`<div style="padding:12px"><b>⭕ DISPONÍVEL</b><br><small style="font-weight:normal;color:#999">Município não identificado</small></div>`);
+                            status = '⭕ DISPONÍVEL';
                         }
                         
+                        if (name && name !== 'Município Desconhecido') {
+                            layer.bindPopup(`
+                                <div style="padding:12px">
+                                    <b>${name}</b><br>
+                                    <small style="font-weight:normal;color:#666">${status}</small>
+                                </div>
+                            `);
+                        } else {
+                            layer.bindPopup(`
+                                <div style="padding:12px">
+                                    <b>⭕ DISPONÍVEL</b><br>
+                                    <small style="font-weight:normal;color:#999">Município não identificado</small>
+                                </div>
+                            `);
+                        }
+                        
+                        // Hover inteligente - não interfere com CDO
                         layer.on('mouseover', () => {
-                            // Não muda hover se estiver selecionado
-                            if (this.selectedMunicipality !== name) {
+                            if (!isCDOVale && this.selectedMunicipality !== name) {
                                 layer.setStyle({ weight: 3, opacity: 1 });
                             }
                         });
                         layer.on('mouseout', () => {
-                            // Volta ao estilo normal se não estiver selecionado
-                            if (this.selectedMunicipality !== name) {
-                                layer.setStyle({ weight: 1.5, opacity: 0.8 });
+                            if (!isCDOVale && this.selectedMunicipality !== name) {
+                                this.geoJsonLayer.resetStyle(layer);
                             }
                         });
 
-                        // ✅ NOVO: Clique para selecionar/desselecionar município
+                        // Clique para seleção manual (mantém funcionalidade anterior)
                         layer.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
                             this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
@@ -106,8 +151,8 @@ class GeoClientApp {
                     }
                 }).addTo(this.map);
 
-
-                console.log('✅ ' + municipalitiesData.features.length + ' municípios carregados com sucesso!');
+                console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
+                console.log(`🔵 ${cdoValeCities.length} cidades CDO Vale do Paraíba marcadas em AZUL`);
             })
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
@@ -115,54 +160,41 @@ class GeoClientApp {
             });
     }
 
-    // ✅ NOVO: Função para selecionar/desselecionar município
+    // ✅ NOVO: Função que retorna cidades CDO do Vale do Paraíba
+    getCDOValeParaibaCities() {
+        return this.valedoParaibaCities.filter(city => 
+            CLIENTS_DATA.some(client => 
+                client.company === 'CDO' && 
+                this.valedoParaibaCities.includes(client.municipality)
+            ) ? city : null
+        ).filter(Boolean);
+    }
+
+
+
     selectMunicipality(name, layer, feature, occupiedMunicipalities) {
         if (this.selectedMunicipality === name) {
-            // Se já está selecionado, desseleciona
             console.log(`🔓 Município deselecionado: ${name}`);
             this.selectedMunicipality = null;
             this.selectedLayer = null;
-            
-            // Volta ao estilo normal
-            const isOccupied = occupiedMunicipalities.includes(name);
-            layer.setStyle({
-                fillColor: isOccupied ? '#22c55e' : '#d1d5db',
-                weight: 1.5,
-                opacity: 0.8,
-                color: '#6b7280',
-                fillOpacity: isOccupied ? 0.5 : 0.15
-            });
+            this.geoJsonLayer.resetStyle(layer);
         } else {
-            // Desseleciona o anterior se houver
             if (this.selectedLayer && this.selectedMunicipality) {
-                const wasOccupied = occupiedMunicipalities.includes(this.selectedMunicipality);
-                this.selectedLayer.setStyle({
-                    fillColor: wasOccupied ? '#22c55e' : '#d1d5db',
-                    weight: 1.5,
-                    opacity: 0.8,
-                    color: '#6b7280',
-                    fillOpacity: wasOccupied ? 0.5 : 0.15
-                });
-                console.log(`🔄 Alternando de: ${this.selectedMunicipality} para: ${name}`);
-            } else {
-                console.log(`🔵 Município selecionado: ${name}`);
+                this.geoJsonLayer.resetStyle(this.selectedLayer);
             }
             
-            // Atualiza seleção
             this.selectedMunicipality = name;
             this.selectedLayer = layer;
             
-            // Destaca com cor azul
             layer.setStyle({
-                fillColor: '#3b82f6',  // Azul vibrante
-                weight: 4,              // Borda mais grossa
+                fillColor: '#ef4444',  // Vermelho para seleção manual
+                weight: 5,
                 opacity: 1,
-                color: '#1e40af',       // Azul escuro na borda
-                fillOpacity: 0.7
+                color: '#dc2626',
+                fillOpacity: 0.8
             });
             
-            // Loga no console para confirmar
-            console.log(`✅ Selecionado: ${name}`);
+            console.log(`🔴 Seleção manual: ${name}`);
         }
     }
 
@@ -174,32 +206,20 @@ class GeoClientApp {
             this.applyFilters();
         });
 
-
-
         const resetBtn = document.getElementById('reset-map');
         if (resetBtn) resetBtn.addEventListener('click', () => this.resetMap());
-
-
 
         const exportBtn = document.getElementById('export-map');
         if (exportBtn) exportBtn.addEventListener('click', () => this.exportData());
 
-
-
         const addClientBtn = document.getElementById('add-client');
         if (addClientBtn) addClientBtn.addEventListener('click', () => this.openModal());
-
-
 
         const closeModalBtn = document.getElementById('close-modal');
         if (closeModalBtn) closeModalBtn.addEventListener('click', () => this.closeModal());
 
-
-
         const clientForm = document.getElementById('client-form');
         if (clientForm) clientForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
-
-
 
         const modal = document.getElementById('client-modal');
         if (modal) {
@@ -215,8 +235,6 @@ class GeoClientApp {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
 
-
-
         this.currentClients.forEach(client => {
             const color = client.status === 'ativo' ? '#22c55e' : '#eab308';
             
@@ -230,16 +248,12 @@ class GeoClientApp {
                 zIndex: 1000
             }).addTo(this.map);
 
-
-
             marker.bindPopup(`
                 <div style="padding:8px">
                     <b>${client.name}</b><br>
                     <small>${client.segment} | ${client.company}<br>${client.municipality}</small>
                 </div>
             `);
-
-
 
             marker.on('click', () => this.map.setView([client.lat, client.lng], 12));
             this.markers[client.id] = marker;
@@ -251,8 +265,6 @@ class GeoClientApp {
     renderClientTable() {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
-
-
 
         tbody.innerHTML = this.currentClients.map(client => `
             <tr>
@@ -280,8 +292,6 @@ class GeoClientApp {
         if (this.currentFilters.segment) filtered = filtered.filter(c => c.segment === this.currentFilters.segment);
         if (this.currentFilters.status !== 'todos') filtered = filtered.filter(c => c.status === this.currentFilters.status);
 
-
-
         this.currentClients = filtered;
         this.renderClientTable();
         this.renderMarkers();
@@ -290,12 +300,13 @@ class GeoClientApp {
 
 
     resetMap() {
-        // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
         this.map.setView([-23.2, -48.5], 7);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
         this.currentClients = [...CLIENTS_DATA];
-        this.selectedMunicipality = null;  // ✅ NOVO: Reseta seleção também
+        this.selectedMunicipality = null;
         this.selectedLayer = null;
+        // ✅ Recarrega municípios para recalcular CDO Vale
+        this.loadMunicipalitiesBoundaries();
         this.renderClientTable();
         this.renderMarkers();
     }
@@ -306,8 +317,6 @@ class GeoClientApp {
         const modal = document.getElementById('client-modal');
         const form = document.getElementById('client-form');
         if (!modal || !form) return;
-
-
 
         if (clientId) {
             const client = CLIENTS_DATA.find(c => c.id === clientId);
@@ -339,22 +348,16 @@ class GeoClientApp {
         const name = document.getElementById('client-name').value;
         const municipality = document.getElementById('client-municipality').value;
 
-
-
         if (!name || !municipality) {
             alert('Preencha todos os campos!');
             return;
         }
-
-
 
         const coords = MUNICIPALITIES[municipality];
         if (!coords) {
             alert('Município não encontrado!');
             return;
         }
-
-
 
         const clientId = document.getElementById('client-id').value;
         if (clientId) {
@@ -368,10 +371,10 @@ class GeoClientApp {
             });
         }
 
-
-
         this.closeModal();
         this.applyFilters();
+        // ✅ Recarrega municípios para atualizar marcação CDO
+        this.loadMunicipalitiesBoundaries();
         this.map.setView([coords.lat, coords.lng], 12);
     }
 
@@ -387,6 +390,8 @@ class GeoClientApp {
             this.currentClients = this.currentClients.filter(c => c.id !== clientId);
             this.renderClientTable();
             this.renderMarkers();
+            // ✅ Recarrega municípios para atualizar marcação CDO
+            this.loadMunicipalitiesBoundaries();
         }
     }
 
@@ -398,11 +403,10 @@ class GeoClientApp {
         else if (format === '2') exportClientsJSON();
     }
 
-    // ✅ NOVO: Função para detectar corretamente o nome do município
+
+
     getMunicipalityName(feature) {
         const properties = feature.properties || {};
-        
-        // Tentar as chaves mais comuns em ordem de probabilidade
         const name = properties.name 
             || properties.NAME 
             || properties.NOME 
@@ -412,7 +416,6 @@ class GeoClientApp {
             || properties.NM_MUN
             || 'Município Desconhecido';
         
-        // Log para debug (remover depois de confirmar)
         if (name === 'Município Desconhecido') {
             console.log('❌ Nome não encontrado. Propriedades disponíveis:', Object.keys(properties));
         }
