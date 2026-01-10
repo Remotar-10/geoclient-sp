@@ -1,4 +1,4 @@
-// GeoClient SP - Main Application Logic - VERSÃO COM LISTRAS COLORIDAS CORRIGIDA
+// GeoClient SP - Main Application Logic - VERSÃO FINAL COM CONTORNOS FORÇADOS
 class GeoClientApp {
     constructor() {
         this.map = null;
@@ -46,7 +46,7 @@ class GeoClientApp {
         if (mapControls) mapControls.init(this.map);
     }
 
-    // ✅ CORRIGIDO: Cidades com listras coloridas para múltiplas empresas
+    // ✅ CORRIGIDO: Cidades com contornos SEMPRE visíveis
     loadMunicipalitiesBoundaries() {
         fetch('data/municipios-sp.geojson')
             .then(response => {
@@ -60,30 +60,27 @@ class GeoClientApp {
                         const cityData = this.markedCities[name];
                         
                         if (cityData && cityData.companies.length > 0) {
-                            // Usa cor da primeira empresa (será sobrescrito depois se houver múltiplas)
                             const color = this.getCompanyColor(cityData.companies[0]);
                             return {
                                 fillColor: color,
-                                weight: 2.5,
+                                weight: 2,
                                 opacity: 1,
-                                color: this.darkenColor(color, 20),
-                                fillOpacity: 0.8
+                                color: '#374151',
+                                fillOpacity: 0.7
                             };
                         } else if (cityData) {
-                            // 🔵 MARCADO SEM EMPRESAS - AZUL
                             return {
                                 fillColor: '#3b82f6',
-                                weight: 3,
+                                weight: 2,
                                 opacity: 1,
                                 color: '#1e40af',
                                 fillOpacity: 0.7
                             };
                         } else {
-                            // ⚪ DISPONÍVEL - Cinza
                             return {
                                 fillColor: '#d1d5db',
                                 weight: 1.5,
-                                opacity: 0.8,
+                                opacity: 1,
                                 color: '#6b7280',
                                 fillOpacity: 0.15
                             };
@@ -95,14 +92,12 @@ class GeoClientApp {
                         
                         this.updatePopup(layer, name);
                         
-                        // ✅ APLICA GRADIENTE SE MÚLTIPLAS EMPRESAS
                         layer.on('add', () => {
                             if (cityData && cityData.companies.length > 1) {
                                 setTimeout(() => this.applyStripedFill(layer, cityData.companies), 100);
                             }
                         });
                         
-                        // Hover
                         layer.on('mouseover', () => {
                             if (!cityData) {
                                 layer.setStyle({ weight: 3, opacity: 1 });
@@ -112,13 +107,11 @@ class GeoClientApp {
                         });
                         layer.on('mouseout', () => {
                             this.geoJsonLayer.resetStyle(layer);
-                            // Reaplica gradiente
                             if (cityData && cityData.companies.length > 1) {
                                 setTimeout(() => this.applyStripedFill(layer, cityData.companies), 10);
                             }
                         });
 
-                        // Sistema de detecção de clique duplo
                         layer.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
                             this.handleCityClick(name, layer);
@@ -129,7 +122,9 @@ class GeoClientApp {
                 console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
                 console.log(`🎨 ${Object.keys(this.markedCities).length} cidades marcadas`);
                 
-                // ✅ FORÇA aplicação de gradientes após carregar
+                // ✅ FORÇA CONTORNOS VISÍVEIS
+                this.forceVisibleBorders();
+                
                 setTimeout(() => {
                     this.geoJsonLayer.eachLayer(layer => {
                         const name = this.getMunicipalityName(layer.feature);
@@ -146,18 +141,28 @@ class GeoClientApp {
             });
     }
 
+    // ✅ NOVO: Força contornos visíveis em TODOS os paths
+    forceVisibleBorders() {
+        setTimeout(() => {
+            const paths = document.querySelectorAll('.leaflet-interactive');
+            paths.forEach(path => {
+                path.style.stroke = '#6b7280';
+                path.style.strokeWidth = '1.5px';
+                path.style.strokeOpacity = '0.8';
+            });
+            console.log(`✅ Contornos aplicados em ${paths.length} municípios`);
+        }, 500);
+    }
+
     handleCityClick(name, layer) {
         this.clickCount++;
         
         if (this.clickCount === 1) {
-            // Primeiro clique - aguarda segundo clique
             this.clickTimer = setTimeout(() => {
-                // Apenas 1 clique - MARCAR cidade
                 this.markCity(name, layer);
                 this.clickCount = 0;
-            }, 300); // 300ms para detectar duplo clique
+            }, 300);
         } else if (this.clickCount === 2) {
-            // Segundo clique - DESMARCAR cidade
             clearTimeout(this.clickTimer);
             this.unmarkCity(name, layer);
             this.clickCount = 0;
@@ -170,7 +175,7 @@ class GeoClientApp {
             
             layer.setStyle({
                 fillColor: '#3b82f6',
-                weight: 3,
+                weight: 2,
                 opacity: 1,
                 color: '#1e40af',
                 fillOpacity: 0.7
@@ -180,7 +185,6 @@ class GeoClientApp {
             console.log(`🔵 Marcado: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
-            // Abre popup automaticamente
             layer.openPopup();
         }
     }
@@ -192,7 +196,7 @@ class GeoClientApp {
             layer.setStyle({
                 fillColor: '#d1d5db',
                 weight: 1.5,
-                opacity: 0.8,
+                opacity: 1,
                 color: '#6b7280',
                 fillOpacity: 0.15
             });
@@ -203,7 +207,6 @@ class GeoClientApp {
         }
     }
 
-    // ✅ Popup com dropdown colorido
     updatePopup(layer, name) {
         const isMarked = this.markedCities[name];
         let popupContent = `<div style="padding:12px; min-width:250px">`;
@@ -212,7 +215,6 @@ class GeoClientApp {
             popupContent += `<b style="color:#3b82f6; font-size:16px">${name}</b><br>`;
             popupContent += `<small style="color:#666">🎨 MARCADO</small><br><br>`;
             
-            // Mostra empresas adicionadas com badges coloridos
             if (isMarked.companies.length > 0) {
                 popupContent += `<div style="margin-bottom:12px">`;
                 popupContent += `<b style="font-size:13px">Empresas (${isMarked.companies.length}):</b><br>`;
@@ -227,7 +229,6 @@ class GeoClientApp {
                 }
             }
             
-            // Dropdown de empresas disponíveis
             const availableCompanies = this.availableCompanies.filter(c => !isMarked.companies.includes(c));
             
             if (availableCompanies.length > 0) {
@@ -274,19 +275,17 @@ class GeoClientApp {
         layer.bindPopup(popupContent, { maxWidth: 280 });
     }
 
-    // ✅ Retorna cor específica para cada empresa
     getCompanyColor(company) {
         const colors = {
-            'CDO': '#ef4444',        // Vermelho vibrante
-            'SUPORTE': '#3b82f6',    // Azul
-            'WAUX': '#10b981',       // Verde
-            'MONTEBELLO': '#f59e0b', // Laranja
-            'HIRATA': '#8b5cf6'      // Roxo
+            'CDO': '#ef4444',
+            'SUPORTE': '#3b82f6',
+            'WAUX': '#10b981',
+            'MONTEBELLO': '#f59e0b',
+            'HIRATA': '#8b5cf6'
         };
         return colors[company] || '#6b7280';
     }
 
-    // ✅ Escurece uma cor em X%
     darkenColor(color, percent) {
         const num = parseInt(color.replace("#",""), 16);
         const amt = Math.round(2.55 * percent);
@@ -299,7 +298,6 @@ class GeoClientApp {
             .toString(16).slice(1);
     }
 
-    // ✅ CORRIGIDO: Aplica gradiente com listras coloridas usando SVG
     applyStripedFill(layer, companies) {
         if (!layer._path) {
             console.warn('⚠️ Layer sem _path:', layer);
@@ -311,19 +309,25 @@ class GeoClientApp {
         
         if (colors.length === 1) {
             layer._path.style.fill = colors[0];
-            layer._path.style.fillOpacity = '0.8';
+            layer._path.style.fillOpacity = '0.7';
+            // ✅ MANTÉM CONTORNO
+            layer._path.style.stroke = '#374151';
+            layer._path.style.strokeWidth = '2px';
+            layer._path.style.strokeOpacity = '1';
             return;
         }
         
-        // Cria SVG em linha com listras
         const svgGradient = this.createSVGGradient(colors);
         layer._path.style.fill = svgGradient;
-        layer._path.style.fillOpacity = '0.85';
+        layer._path.style.fillOpacity = '0.75';
+        // ✅ MANTÉM CONTORNO FORTE
+        layer._path.style.stroke = '#374151';
+        layer._path.style.strokeWidth = '2px';
+        layer._path.style.strokeOpacity = '1';
         
-        console.log('✅ Gradiente aplicado com sucesso!');
+        console.log('✅ Gradiente aplicado com contornos!');
     }
 
-    // ✅ NOVO: Cria SVG em linha com gradiente de listras
     createSVGGradient(colors) {
         const stripeWidth = 15;
         const totalWidth = colors.length * stripeWidth;
@@ -343,7 +347,6 @@ class GeoClientApp {
         return `url('data:image/svg+xml;base64,${encoded}')`;
     }
 
-    // ✅ CORRIGIDO: Adiciona empresa à cidade e ATUALIZA COM LISTRAS
     addCompanyToCity(cityName, company) {
         const city = this.markedCities[cityName];
         if (!city) return;
@@ -356,13 +359,11 @@ class GeoClientApp {
             console.log(`🎨 Preparando ${city.companies.length} cores:`, city.companies.map(c => this.getCompanyColor(c)));
         }
         
-        // Fecha o dropdown
         document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
             menu.style.display = 'none';
             menu.classList.remove('show');
         });
         
-        // ✅ FORÇA RECRIAÇÃO COMPLETA DO LAYER
         const oldLayer = this.geoJsonLayer;
         if (oldLayer) {
             this.map.removeLayer(oldLayer);
@@ -370,7 +371,9 @@ class GeoClientApp {
         
         this.loadMunicipalitiesBoundaries();
         
-        // Atualiza o popup e FORÇA aplicação do gradiente
+        // ✅ FORÇA CONTORNOS APÓS ADICIONAR EMPRESA
+        setTimeout(() => this.forceVisibleBorders(), 600);
+        
         setTimeout(() => {
             this.geoJsonLayer.eachLayer(layer => {
                 const name = this.getMunicipalityName(layer.feature);
@@ -378,7 +381,6 @@ class GeoClientApp {
                     this.updatePopup(layer, name);
                     layer.openPopup();
                     
-                    // FORÇA aplicação múltipla do gradiente
                     if (city.companies.length > 1) {
                         console.log(`🔄 Forçando aplicação de gradiente em ${cityName}...`);
                         setTimeout(() => this.applyStripedFill(layer, city.companies), 100);
@@ -418,7 +420,6 @@ class GeoClientApp {
             });
         }
 
-        // ✅ Fecha dropdown ao clicar fora
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.dropdown')) {
                 document.querySelectorAll('.dropdown-menu').forEach(menu => {
