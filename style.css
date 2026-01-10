@@ -1,4 +1,4 @@
-/* GeoClient SP - Estilos customizados VERSÃO ESTÁVEL */
+/* GeoClient SP - Layout Responsivo e Compacto */
 
 :root {
     --primary: #3b82f6;
@@ -8,6 +8,9 @@
     --gray-100: #f3f4f6;
     --gray-500: #6b7280;
     --gray-900: #111827;
+    --spacing-compact: 0.75rem;
+    --spacing-normal: 1rem;
+    --spacing-large: 1.5rem;
 }
 
 * {
@@ -20,144 +23,89 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--gray-900);
     background: var(--gray-100);
+    font-size: 14px;
 }
 
-/* Navbar */
+/* Navbar Compacta */
 custom-navbar {
     display: block;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-compact);
 }
 
-/* Map Styling */
+/* Container Compacto */
+.container {
+    padding: var(--spacing-compact) !important;
+    max-width: 100%;
+}
+
+/* Grid Responsivo */
+.grid {
+    display: grid;
+    gap: var(--spacing-compact);
+}
+
+/* Sidebar - Escondida em mobile por padrão */
+.lg\:col-span-1 {
+    display: none;
+}
+
+/* Main Content - Full width em mobile */
+.lg\:col-span-3 {
+    grid-column: span 1;
+}
+
+/* Map Styling - Compacto */
 #map {
     border-radius: 0.5rem;
     z-index: 1;
-}
-
-.leaflet-popup-content {
-    font-family: inherit;
-    min-width: 250px;
-    margin: 0;
-}
-
-.leaflet-popup-content-wrapper {
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-
-/* Dropdown melhorado para popup do mapa */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-menu {
-    position: absolute;
-    z-index: 9999;
-    margin-top: 4px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: none;
-}
-
-.dropdown-menu.show {
-    display: block;
-}
-
-.dropdown-item {
-    display: block;
+    height: 400px !important; /* Mobile */
     width: 100%;
-    padding: 10px 14px;
-    border: none;
+}
+
+/* Cards Compactos */
+.card,
+.bg-white {
     background: white;
-    color: #333;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 6px;
-    margin: 2px 0;
-    transition: all 0.2s ease;
-    font-size: 14px;
-}
-
-.dropdown-item:hover {
-    transform: translateX(2px);
-}
-
-.dropdown-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.dropdown-toggle::after {
-    content: '▼';
-    font-size: 10px;
-    margin-left: 4px;
-}
-
-/* Table Styling */
-table tbody tr:hover {
-    background-color: var(--gray-100);
-}
-
-table td {
-    padding: 1rem 1.5rem;
-}
-
-/* Modal */
-#client-modal {
-    display: none;
-    position: fixed;
-    z-index: 50;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-
-#client-modal.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#client-modal .modal-content {
-    background-color: white;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    width: 90%;
-    max-width: 500px;
-    padding: 2rem;
-    animation: slideDown 0.3s ease-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: var(--spacing-compact);
+    margin-bottom: var(--spacing-compact);
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.card h2,
+.text-2xl {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-compact);
 }
 
-/* Buttons */
-.btn {
-    padding: 0.5rem 1rem;
+/* Header do Mapa - Compacto */
+.p-4 {
+    padding: var(--spacing-compact) !important;
+}
+
+/* Botões Compactos */
+.btn,
+button {
+    padding: 0.5rem 0.75rem;
     border: none;
     border-radius: 0.375rem;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.813rem;
     font-weight: 500;
     transition: all 0.2s;
     display: inline-flex;
     align-items: center;
+    gap: 0.375rem;
+}
+
+/* Grupo de botões - lado a lado em mobile */
+.flex.gap-2 {
+    display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .btn-primary {
@@ -168,7 +116,6 @@ table td {
 .btn-primary:hover {
     background: #2563eb;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-success {
@@ -176,21 +123,9 @@ table td {
     color: white;
 }
 
-.btn-success:hover {
-    background: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
 .btn-danger {
     background: var(--danger);
     color: white;
-}
-
-.btn-danger:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-secondary {
@@ -198,31 +133,46 @@ table td {
     color: #374151;
 }
 
-.btn-secondary:hover {
-    background: #9ca3af;
+/* Ícones menores */
+[data-feather] {
+    width: 16px;
+    height: 16px;
 }
 
-/* Cards */
-.card {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+/* Tabela Responsiva */
+.overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-.card h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
+table {
+    width: 100%;
+    min-width: 600px; /* Garante scroll horizontal */
+    font-size: 0.813rem;
 }
 
-/* Status Badge */
+table thead th {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+table tbody td {
+    padding: 0.5rem;
+    white-space: nowrap;
+}
+
+table tbody tr:hover {
+    background-color: var(--gray-100);
+}
+
+/* Status Badge - Compacto */
 .badge {
     display: inline-flex;
-    padding: 0.25rem 0.75rem;
+    padding: 0.125rem 0.5rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.688rem;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -237,113 +187,317 @@ table td {
     color: #92400e;
 }
 
-.badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
+/* Popup do Mapa - Compacto */
+.leaflet-popup-content {
+    font-family: inherit;
+    min-width: 220px;
+    max-width: 280px;
+    margin: 0;
+    font-size: 0.875rem;
 }
 
-/* Badges coloridos para empresas */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 0.5rem;
+}
+
+/* Dropdown Compacto */
+.dropdown-menu {
+    position: absolute;
+    z-index: 9999;
+    margin-top: 4px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    max-width: 250px;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: white;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 2px 0;
+    font-size: 0.813rem;
+}
+
+/* Company Badges - Compactos */
 .company-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    margin: 3px;
-    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin: 2px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: white;
 }
 
-.company-badge.cdo {
-    background: #ef4444;
+.company-badge.cdo { background: #ef4444; }
+.company-badge.suporte { background: #3b82f6; }
+.company-badge.waux { background: #10b981; }
+.company-badge.montebello { background: #f59e0b; }
+.company-badge.hirata { background: #8b5cf6; }
+
+/* Modal Compacto */
+#client-modal {
+    display: none;
+    position: fixed;
+    z-index: 50;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    padding: var(--spacing-compact);
 }
 
-.company-badge.suporte {
-    background: #3b82f6;
+#client-modal .modal-content,
+#client-modal > div {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    padding: var(--spacing-normal);
+    margin: auto;
 }
 
-.company-badge.waux {
-    background: #10b981;
+/* Legenda do Mapa - Compacta */
+.flex.flex-wrap.gap-4 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.75rem;
 }
 
-.company-badge.montebello {
-    background: #f59e0b;
+.flex.items-center {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
 }
 
-.company-badge.hirata {
-    background: #8b5cf6;
-}
-
-/* Animações suaves */
+/* Animações */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .dropdown-menu.show {
+    display: block;
     animation: fadeIn 0.2s ease-out;
 }
 
-/* Indicador de cor da empresa */
-.company-color-indicator {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    #map {
-        height: 400px;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .leaflet-popup-content {
-        min-width: 200px;
-    }
-
-    .dropdown-menu {
-        max-height: 250px;
-        overflow-y: auto;
-    }
-}
-
-/* Scrollbar customizada para dropdown */
-.dropdown-menu::-webkit-scrollbar {
+/* Scrollbar Customizada */
+.dropdown-menu::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
 }
 
-.dropdown-menu::-webkit-scrollbar-track {
+.dropdown-menu::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb {
+.dropdown-menu::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 10px;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb:hover {
-    background: #555;
+/* ============================================ */
+/* TABLET - 640px e acima */
+/* ============================================ */
+@media (min-width: 640px) {
+    body {
+        font-size: 15px;
+    }
+    
+    .container {
+        padding: var(--spacing-normal) !important;
+    }
+    
+    #map {
+        height: 500px !important;
+    }
+    
+    .card,
+    .bg-white {
+        padding: var(--spacing-normal);
+    }
+    
+    .leaflet-popup-content {
+        min-width: 250px;
+    }
+    
+    table {
+        font-size: 0.875rem;
+    }
+    
+    /* Botões podem ser maiores */
+    .btn,
+    button {
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+    }
 }
 
+/* ============================================ */
+/* DESKTOP - 1024px e acima */
+/* ============================================ */
+@media (min-width: 1024px) {
+    .container {
+        padding: var(--spacing-large) !important;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Mostra sidebar em desktop */
+    .grid.grid-cols-1.lg\:grid-cols-4 {
+        grid-template-columns: 300px 1fr;
+    }
+    
+    .lg\:col-span-1 {
+        display: block;
+    }
+    
+    .lg\:col-span-3 {
+        grid-column: span 1;
+    }
+    
+    #map {
+        height: 600px !important;
+    }
+    
+    .card,
+    .bg-white {
+        padding: var(--spacing-large);
+    }
+    
+    /* Botões na horizontal em desktop */
+    .flex.flex-col.sm\:flex-row {
+        flex-direction: row !important;
+    }
+    
+    table {
+        font-size: 0.875rem;
+    }
+    
+    table thead th {
+        padding: 0.75rem 1.5rem;
+    }
+    
+    table tbody td {
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+/* ============================================ */
+/* MOBILE ESPECÍFICO - Menor que 640px */
+/* ============================================ */
+@media (max-width: 639px) {
+    /* Esconde stats cards em mobile */
+    .bg-white.rounded-lg.shadow.p-6:has(h2:contains("Stats")),
+    .space-y-6 > .bg-white:last-child {
+        display: none;
+    }
+    
+    /* Botões full-width em mobile */
+    .btn,
+    button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .flex.gap-2 {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    /* Título menor */
+    .text-2xl {
+        font-size: 1.125rem;
+    }
+    
+    /* Popup ainda mais compacto */
+    .leaflet-popup-content {
+        min-width: 200px;
+        font-size: 0.813rem;
+    }
+    
+    /* Modal full-screen em mobile */
+    #client-modal > div {
+        width: calc(100% - 2rem);
+        max-width: none;
+    }
+}
+
+/* ============================================ */
+/* ULTRA COMPACTO - Menor que 380px */
+/* ============================================ */
+@media (max-width: 380px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .container {
+        padding: 0.5rem !important;
+    }
+    
+    #map {
+        height: 350px !important;
+    }
+    
+    .card h2 {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    table {
+        font-size: 0.75rem;
+    }
+    
+    .leaflet-popup-content {
+        min-width: 180px;
+        font-size: 0.75rem;
+    }
+}
+
+/* ============================================ */
+/* UTILIDADES TAILWIND OVERRIDE */
+/* ============================================ */
+.px-4 { padding-left: var(--spacing-compact); padding-right: var(--spacing-compact); }
+.py-4 { padding-top: var(--spacing-compact); padding-bottom: var(--spacing-compact); }
+.px-6 { padding-left: var(--spacing-normal); padding-right: var(--spacing-normal); }
+.py-6 { padding-top: var(--spacing-normal); padding-bottom: var(--spacing-normal); }
+.p-4 { padding: var(--spacing-compact); }
+.p-6 { padding: var(--spacing-normal); }
+.mb-4 { margin-bottom: var(--spacing-compact); }
+.mb-6 { margin-bottom: var(--spacing-normal); }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 0.75rem; }
+.gap-6 { gap: var(--spacing-normal); }
+
 /* Transições suaves */
-button, .btn, .dropdown-item {
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+button, .btn, .dropdown-item, table tbody tr {
+    transition: all 0.2s ease;
+}
+
+/* Print friendly */
+@media print {
+    .bg-white { box-shadow: none; }
+    button, .btn { display: none; }
+    #map { height: 500px !important; }
 }
