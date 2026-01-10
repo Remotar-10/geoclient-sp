@@ -14,9 +14,35 @@ class CustomFilterPanel extends HTMLElement {
         this.setupEventListeners();
     }
 
+    // ✅ NOVO: Função auxiliar para contar clientes por empresa
+    getClientsByCompany(company) {
+        return CLIENTS_DATA.filter(c => c.company === company);
+    }
+
+    // ✅ NOVO: Função auxiliar para clientes ativos
+    getActiveClients() {
+        return CLIENTS_DATA.filter(c => c.status === 'ativo');
+    }
+
+    // ✅ NOVO: Função auxiliar para municípios ocupados
+    getOccupiedMunicipalities() {
+        return [...new Set(CLIENTS_DATA.map(c => c.municipality))];
+    }
+
     render() {
         const companies = [...new Set(CLIENTS_DATA.map(c => c.company))];
         const segments = [...new Set(CLIENTS_DATA.map(c => c.segment))];
+
+        // ✅ CORRIGIDO: Usa this.getClientsByCompany()
+        const cdoCount = this.getClientsByCompany("CDO").length;
+        const suporteCount = this.getClientsByCompany("SUPORTE").length;
+        const wauxCount = this.getClientsByCompany("WAUX").length;
+        const montebelloCount = this.getClientsByCompany("MONTEBELLO").length;
+        const hirataCount = this.getClientsByCompany("HIRATA").length;
+
+        const activeCount = this.getActiveClients().length;
+        const occupiedCount = this.getOccupiedMunicipalities().length;
+        const totalMunicipalities = 645; // Total de municípios de SP
 
         this.innerHTML = `
             <div class="bg-white rounded-lg shadow p-6">
@@ -58,38 +84,38 @@ class CustomFilterPanel extends HTMLElement {
                 <h2 class="text-xl font-bold mb-4">Empresas</h2>
                 <div class="space-y-3">
                     <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="CDO">
-                        <div class="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
+                        <div class="w-4 h-4 rounded-full mr-3" style="background: #ef4444;"></div>
                         <div>
                             <span class="font-medium text-sm">CDO</span>
-                            <div class="text-xs text-gray-500">${getClientsByCompany("CDO").length} clientes</div>
+                            <div class="text-xs text-gray-500">${cdoCount} clientes</div>
                         </div>
                     </div>
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="SUPPORT ABCD">
-                        <div class="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
+                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="SUPORTE">
+                        <div class="w-4 h-4 rounded-full mr-3" style="background: #3b82f6;"></div>
                         <div>
-                            <span class="font-medium text-sm">SUPPORT ABCD</span>
-                            <div class="text-xs text-gray-500">${getClientsByCompany("SUPPORT ABCD").length} clientes</div>
+                            <span class="font-medium text-sm">SUPORTE</span>
+                            <div class="text-xs text-gray-500">${suporteCount} clientes</div>
                         </div>
                     </div>
                     <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="WAUX">
-                        <div class="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
+                        <div class="w-4 h-4 rounded-full mr-3" style="background: #10b981;"></div>
                         <div>
                             <span class="font-medium text-sm">WAUX</span>
-                            <div class="text-xs text-gray-500">${getClientsByCompany("WAUX").length} clientes</div>
+                            <div class="text-xs text-gray-500">${wauxCount} clientes</div>
                         </div>
                     </div>
                     <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="MONTEBELLO">
-                        <div class="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+                        <div class="w-4 h-4 rounded-full mr-3" style="background: #f59e0b;"></div>
                         <div>
                             <span class="font-medium text-sm">MONTEBELLO</span>
-                            <div class="text-xs text-gray-500">${getClientsByCompany("MONTEBELLO").length} clientes</div>
+                            <div class="text-xs text-gray-500">${montebelloCount} clientes</div>
                         </div>
                     </div>
                     <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="HIRATA">
-                        <div class="w-4 h-4 bg-red-500 rounded-full mr-3"></div>
+                        <div class="w-4 h-4 rounded-full mr-3" style="background: #8b5cf6;"></div>
                         <div>
                             <span class="font-medium text-sm">HIRATA</span>
-                            <div class="text-xs text-gray-500">${getClientsByCompany("HIRATA").length} clientes</div>
+                            <div class="text-xs text-gray-500">${hirataCount} clientes</div>
                         </div>
                     </div>
                 </div>
@@ -101,19 +127,19 @@ class CustomFilterPanel extends HTMLElement {
                     <div>
                         <div class="flex justify-between mb-1">
                             <span class="text-sm font-medium">Clientes Ativos</span>
-                            <span class="text-sm font-bold text-green-600">${getActiveClients().length}</span>
+                            <span class="text-sm font-bold text-green-600">${activeCount}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-green-600 h-2 rounded-full" style="width: ${(getActiveClients().length / CLIENTS_DATA.length * 100)}%"></div>
+                            <div class="bg-green-600 h-2 rounded-full" style="width: ${CLIENTS_DATA.length > 0 ? (activeCount / CLIENTS_DATA.length * 100) : 0}%"></div>
                         </div>
                     </div>
                     <div>
                         <div class="flex justify-between mb-1">
                             <span class="text-sm font-medium">Municípios Ocupados</span>
-                            <span class="text-sm font-bold text-blue-600">${getOccupiedMunicipalities().length}</span>
+                            <span class="text-sm font-bold text-blue-600">${occupiedCount}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: ${(getOccupiedMunicipalities().length / 20 * 100)}%"></div>
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: ${(occupiedCount / totalMunicipalities * 100).toFixed(1)}%"></div>
                         </div>
                     </div>
                 </div>
