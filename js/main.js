@@ -1,4 +1,4 @@
-// GeoClient SP - Main Application Logic - VERSÃO FINAL COM DROPDOWN COLORIDO
+// GeoClient SP - Main Application Logic - VERSÃO FINAL COM CORES DAS EMPRESAS
 class GeoClientApp {
     constructor() {
         this.map = null;
@@ -25,9 +25,10 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
         console.log('✅ GeoClient SP iniciado!');
-        console.log('🔵 1 CLIQUE = Marca cidade AZUL');
+        console.log('🔵 1 CLIQUE = Marca cidade');
         console.log('🔵 2 CLIQUES = Desmarca cidade');
-        console.log('🏢 Empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA');
+        console.log('🎨 Cidades assumem a COR da empresa adicionada');
+        console.log('🏢 Empresas: CDO (vermelho), SUPORTE (azul), WAUX (verde), MONTEBELLO (laranja), HIRATA (roxo)');
     }
 
     initMap() {
@@ -45,6 +46,7 @@ class GeoClientApp {
         if (mapControls) mapControls.init(this.map);
     }
 
+    // ✅ ATUALIZADO: Cidades com cores das empresas
     loadMunicipalitiesBoundaries() {
         fetch('data/municipios-sp.geojson')
             .then(response => {
@@ -55,10 +57,22 @@ class GeoClientApp {
                 this.geoJsonLayer = L.geoJSON(municipalitiesData, {
                     style: (feature) => {
                         const name = this.getMunicipalityName(feature);
-                        const isMarked = this.markedCities[name];
+                        const cityData = this.markedCities[name];
                         
-                        if (isMarked) {
-                            // 🔵 MARCADO - AZUL VIBRANTE
+                        if (cityData && cityData.companies.length > 0) {
+                            // 🎨 CIDADE COM EMPRESAS - Usa cor da primeira empresa
+                            const mainCompany = cityData.companies[0];
+                            const color = this.getCompanyColor(mainCompany);
+                            
+                            return {
+                                fillColor: color,
+                                weight: 2.5,
+                                opacity: 1,
+                                color: this.darkenColor(color, 20), // Borda mais escura
+                                fillOpacity: 0.7
+                            };
+                        } else if (cityData) {
+                            // 🔵 MARCADO SEM EMPRESAS - AZUL
                             return {
                                 fillColor: '#3b82f6',
                                 weight: 3,
@@ -84,14 +98,15 @@ class GeoClientApp {
                         
                         // Hover
                         layer.on('mouseover', () => {
-                            if (!this.markedCities[name]) {
+                            const cityData = this.markedCities[name];
+                            if (!cityData) {
                                 layer.setStyle({ weight: 3, opacity: 1 });
+                            } else {
+                                layer.setStyle({ weight: 4, opacity: 1 });
                             }
                         });
                         layer.on('mouseout', () => {
-                            if (!this.markedCities[name]) {
-                                this.geoJsonLayer.resetStyle(layer);
-                            }
+                            this.geoJsonLayer.resetStyle(layer);
                         });
 
                         // Sistema de detecção de clique duplo
@@ -103,7 +118,7 @@ class GeoClientApp {
                 }).addTo(this.map);
 
                 console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
-                console.log(`🔵 ${Object.keys(this.markedCities).length} cidades marcadas`);
+                console.log(`🎨 ${Object.keys(this.markedCities).length} cidades marcadas`);
             })
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
@@ -175,7 +190,7 @@ class GeoClientApp {
         
         if (isMarked) {
             popupContent += `<b style="color:#3b82f6; font-size:16px">${name}</b><br>`;
-            popupContent += `<small style="color:#666">🔵 MARCADO</small><br><br>`;
+            popupContent += `<small style="color:#666">🎨 MARCADO</small><br><br>`;
             
             // Mostra empresas adicionadas com badges coloridos
             if (isMarked.companies.length > 0) {
@@ -196,7 +211,7 @@ class GeoClientApp {
                     <div class="dropdown" style="margin-bottom:10px">
                         <button class="btn btn-primary dropdown-toggle" type="button" id="dropdown-${name.replace(/\s/g, '-')}" 
                                 style="background:#3b82f6;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;width:100%;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center"
-                                onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('show')">
+                                onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('show'); this.nextElementSibling.style.display = this.nextElementSibling.classList.contains('show') ? 'block' : 'none'">
                             ➕ Adicionar Empresa
                         </button>
                         <div class="dropdown-menu" style="width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-radius:8px;padding:8px;display:none">
@@ -235,7 +250,7 @@ class GeoClientApp {
         layer.bindPopup(popupContent, { maxWidth: 280 });
     }
 
-    // ✅ NOVO: Retorna cor específica para cada empresa
+    // ✅ Retorna cor específica para cada empresa
     getCompanyColor(company) {
         const colors = {
             'CDO': '#ef4444',        // Vermelho vibrante
@@ -247,13 +262,27 @@ class GeoClientApp {
         return colors[company] || '#6b7280';
     }
 
-    // ✅ NOVO: Adiciona empresa à cidade
+    // ✅ NOVO: Escurece uma cor em X%
+    darkenColor(color, percent) {
+        const num = parseInt(color.replace("#",""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) - amt;
+        const G = (num >> 8 & 0x00FF) - amt;
+        const B = (num & 0x0000FF) - amt;
+        return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+            (G<255?G<1?0:G:255)*0x100 +
+            (B<255?B<1?0:B:255))
+            .toString(16).slice(1);
+    }
+
+    // ✅ Adiciona empresa à cidade e ATUALIZA A COR DO MAPA
     addCompanyToCity(cityName, company) {
         const city = this.markedCities[cityName];
         if (!city) return;
         
         city.companies.push(company);
-        console.log(`✅ Empresa ${company} adicionada em ${cityName}`);
+        const color = this.getCompanyColor(company);
+        console.log(`✅ Empresa ${company} adicionada em ${cityName} - Cor: ${color}`);
         
         // Fecha o dropdown
         document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
@@ -261,14 +290,19 @@ class GeoClientApp {
             menu.classList.remove('show');
         });
         
+        // ✅ ATUALIZA A COR DA CIDADE NO MAPA
+        this.loadMunicipalitiesBoundaries();
+        
         // Atualiza o popup
-        this.geoJsonLayer.eachLayer(layer => {
-            const name = this.getMunicipalityName(layer.feature);
-            if (name === cityName) {
-                this.updatePopup(layer, name);
-                layer.openPopup();
-            }
-        });
+        setTimeout(() => {
+            this.geoJsonLayer.eachLayer(layer => {
+                const name = this.getMunicipalityName(layer.feature);
+                if (name === cityName) {
+                    this.updatePopup(layer, name);
+                    layer.openPopup();
+                }
+            });
+        }, 100);
     }
 
     setupEventListeners() {
@@ -299,7 +333,7 @@ class GeoClientApp {
             });
         }
 
-        // ✅ NOVO: Fecha dropdown ao clicar fora
+        // ✅ Fecha dropdown ao clicar fora
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.dropdown')) {
                 document.querySelectorAll('.dropdown-menu').forEach(menu => {
@@ -464,7 +498,8 @@ class GeoClientApp {
         
         const data = Object.entries(this.markedCities).map(([city, info]) => ({
             cidade: city,
-            empresas: info.companies.join(', ')
+            empresas: info.companies.join(', '),
+            cor: info.companies.length > 0 ? this.getCompanyColor(info.companies[0]) : '#3b82f6'
         }));
         
         const json = JSON.stringify(data, null, 2);
@@ -474,7 +509,7 @@ class GeoClientApp {
         a.href = url;
         a.download = 'cidades_marcadas.json';
         a.click();
-        console.log('📥 Dados exportados!');
+        console.log('📥 Dados exportados com cores!');
     }
 
     getMunicipalityName(feature) {
