@@ -57,10 +57,12 @@ class GeoClientApp {
                 zoomControl: true,
                 attributionControl: true,
                 minZoom: 6,
-                maxZoom: 12
+                maxZoom: 12,
+                doubleClickZoom: false  // DESABILITA zoom com double click
             });
             
             console.log('✅ Mapa Leaflet criado');
+            console.log('🚫 Double click zoom DESABILITADO');
             
             // Adiciona tiles CartoDB Voyager
             const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -189,8 +191,15 @@ class GeoClientApp {
                             this.geoJsonLayer.resetStyle(layer);
                         });
 
+                        // Bloqueia double click nativo do Leaflet
+                        layer.on('dblclick', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            L.DomEvent.preventDefault(e);
+                        });
+
                         layer.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
+                            L.DomEvent.preventDefault(e);
                             this.handleCityClick(name, layer);
                         });
                     }
@@ -255,7 +264,7 @@ class GeoClientApp {
             console.log(`🔓 Desmarcado: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
-            // NÃO faz zoom ao desmarcar - apenas fecha popup
+            // Fecha popup sem zoom
             layer.closePopup();
         }
     }
@@ -350,13 +359,19 @@ class GeoClientApp {
         
         this.loadMunicipalitiesBoundaries();
         
-        // Reabre o popup após recarregar
+        // Reabre o popup após recarregar e fecha automaticamente após 3 segundos
         setTimeout(() => {
             this.geoJsonLayer.eachLayer(layer => {
                 const name = this.getMunicipalityName(layer.feature);
                 if (name === cityName) {
                     this.updatePopup(layer, name);
                     layer.openPopup();
+                    
+                    // Fecha popup automaticamente após 3 segundos
+                    setTimeout(() => {
+                        layer.closePopup();
+                        console.log(`⏱️ Popup de ${cityName} fechado automaticamente`);
+                    }, 3000);
                 }
             });
         }, 300);
