@@ -8,7 +8,8 @@ class GeoClientApp {
         this.geoJsonLayer = null;
         this.selectedMunicipality = null;
         this.selectedLayer = null;
-        // ✅ NOVO: Lista de cidades do Vale do Paraíba para CDO
+        // ✅ NOVO: Armazena cidades CDO marcadas MANUALMENTE via clique duplo
+        this.manualCDOVale = [];
         this.valedoParaibaCities = [
             'São José dos Campos', 'Jacareí', 'Guaratinguetá', 'Caçapava', 'Tremembé',
             'Santa Branca', 'Caraguatatuba', 'Ilhabela', 'São Sebastião', 'Ubatuba',
@@ -44,7 +45,7 @@ class GeoClientApp {
 
     loadMunicipalitiesBoundaries() {
         const occupiedMunicipalities = getOccupiedMunicipalities();
-        const cdoValeCities = this.getCDOValeParaibaCities(); // ✅ NOVO: Cidades CDO Vale
+        // ✅ REMOVER marcação automática - usar apenas clique duplo
 
         fetch('data/municipios-sp.geojson')
             .then(response => {
@@ -56,13 +57,13 @@ class GeoClientApp {
                     style: (feature) => {
                         const name = this.getMunicipalityName(feature);
                         const isOccupied = occupiedMunicipalities.includes(name);
-                        const isCDOVale = cdoValeCities.includes(name); // ✅ NOVO: Verifica CDO Vale
+                        const isCDOValeManual = this.manualCDOVale && this.manualCDOVale.includes(name); // ✅ Apenas manual
                         
-                        if (isCDOVale) {
-                            // 🔵 CDO VALE DO PARAÍBA - AZUL VIBRANTE
+                        if (isCDOValeManual) {
+                            // 🔵 CDO VALE DO PARAÍBA - AZUL (CLIQUE DUPLO MANUAL)
                             return {
                                 fillColor: '#3b82f6',
-                                weight: 3, // Borda mais grossa
+                                weight: 3,
                                 opacity: 1,
                                 color: '#1e40af',
                                 fillOpacity: 0.7
@@ -90,11 +91,11 @@ class GeoClientApp {
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
                         const isOccupied = occupiedMunicipalities.includes(name);
-                        const isCDOVale = cdoValeCities.includes(name);
+                        const isCDOValeManual = this.manualCDOVale && this.manualCDOVale.includes(name);
                         
                         let status = '';
-                        if (isCDOVale) {
-                            status = '🔵 CDO VALE DO PARAÍBA';
+                        if (isCDOValeManual) {
+                            status = '🔵 CDO VALE DO PARAÍBA (Marcado)';
                         } else if (isOccupied) {
                             status = '✅ OCUPADO';
                         } else {
@@ -129,10 +130,37 @@ class GeoClientApp {
                             }
                         });
 
-                        // Clique para seleção manual (mantém funcionalidade anterior)
+                        // ✅ CLIQUE DUPLO = Marca/desmarcar CDO Vale manualmente
+                        let clickCount = 0;
+                        let clickTimer;
+                        
                         layer.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
-                            this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
+                            clickCount++;
+                            
+                            if (clickCount === 1) {
+                                clickTimer = setTimeout(() => {
+                                    // Clique simples = seleção temporária
+                                    this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
+                                    clickCount = 0;
+                                }, 300);
+                            } else if (clickCount === 2) {
+                                clearTimeout(clickTimer);
+                                clickCount = 0;
+                                // ✅ CLIQUE DUPLO = Marca/desmarcar CDO Vale
+                                if (this.valedoParaibaCities.includes(name)) {
+                                    if (this.manualCDOVale.includes(name)) {
+                                        // Remove CDO
+                                        this.manualCDOVale = this.manualCDOVale.filter(c => c !== name);
+                                        console.log(`🔓 Removido CDO: ${name}`);
+                                    } else {
+                                        // Adiciona CDO
+                                        this.manualCDOVale.push(name);
+                                        console.log(`🔵 Marcado CDO: ${name}`);
+                                    }
+                                    this.loadMunicipalitiesBoundaries();
+                                }
+                            }
                         });
                     }
                 }).addTo(this.map);
@@ -146,15 +174,7 @@ class GeoClientApp {
             });
     }
 
-    // ✅ NOVO: Função que retorna cidades CDO do Vale do Paraíba
-    getCDOValeParaibaCities() {
-        return this.valedoParaibaCities.filter(city => 
-            CLIENTS_DATA.some(client => 
-                client.company === 'CDO' && 
-                this.valedoParaibaCities.includes(client.municipality)
-            ) ? city : null
-        ).filter(Boolean);
-    }
+    // ✅ Função removida - agora usa apenas manualCDOVale
 
     selectMunicipality(name, layer, feature, occupiedMunicipalities) {
         if (this.selectedMunicipality === name) {
