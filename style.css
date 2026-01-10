@@ -47,6 +47,40 @@ custom-navbar {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
 }
 
+/* ✅ NOVO: Suporte para SVG patterns e listras coloridas */
+.leaflet-overlay-pane svg {
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.leaflet-overlay-pane path {
+    pointer-events: auto !important;
+    stroke-width: 2.5px;
+    stroke-opacity: 1;
+}
+
+.leaflet-interactive {
+    fill-opacity: 0.85 !important;
+}
+
+/* ✅ FORÇA renderização de SVG patterns */
+path[fill^="url"] {
+    fill-opacity: 0.85 !important;
+}
+
+path[fill*="data:image/svg"] {
+    fill-opacity: 0.85 !important;
+}
+
+/* ✅ Previne conflitos de estilo do Leaflet */
+.leaflet-zoom-animated {
+    will-change: transform;
+}
+
 /* ✅ NOVO: Dropdown melhorado para popup do mapa */
 .dropdown {
     position: relative;
@@ -310,6 +344,24 @@ table td {
     vertical-align: middle;
 }
 
+/* ✅ NOVO: Fix específico para patterns SVG no mapa */
+.leaflet-container path {
+    vector-effect: non-scaling-stroke;
+}
+
+.leaflet-container svg {
+    overflow: visible !important;
+}
+
+/* ✅ NOVO: Garante que SVG defs sejam renderizados */
+.leaflet-overlay-pane defs {
+    display: block !important;
+}
+
+.leaflet-overlay-pane pattern {
+    display: block !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {
@@ -355,6 +407,27 @@ table td {
 }
 
 /* ✅ NOVO: Transições suaves para hover */
-* {
+button, .btn, .dropdown-item {
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ✅ CORREÇÃO CRÍTICA: Force rendering de fills com URL */
+path[fill*="url("] {
+    fill-rule: evenodd !important;
+}
+
+/* ✅ Fix para Safari */
+@supports (-webkit-appearance: none) {
+    .leaflet-overlay-pane path[fill*="data:image"] {
+        fill-opacity: 0.9 !important;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+}
+
+/* ✅ Fix para Firefox */
+@-moz-document url-prefix() {
+    .leaflet-overlay-pane path[fill*="url"] {
+        fill-opacity: 0.85 !important;
+    }
 }
