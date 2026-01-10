@@ -1,15 +1,16 @@
 // GeoClient SP - Main Application Logic CORRIGIDO - VERSÃO FINAL
+// ✅ NOVO: MAPA LIMPO SEM CLIENTES INICIAIS
 class GeoClientApp {
     constructor() {
         this.map = null;
         this.currentFilters = { company: '', segment: '', status: 'todos' };
-        this.currentClients = [...CLIENTS_DATA];
+        this.currentClients = []; // ✅ COMEÇA VAZIO
         this.markers = {};
         this.geoJsonLayer = null;
         this.selectedMunicipality = null;
         this.selectedLayer = null;
-        // ✅ NOVO: Armazena cidades CDO marcadas MANUALMENTE via clique duplo
-        this.manualCDOVale = [];
+        this.manualCDOVale = []; // ✅ NOVO: Armazena marcações CDO manuais
+        // ✅ NOVO: Lista de cidades do Vale do Paraíba para CDO
         this.valedoParaibaCities = [
             'São José dos Campos', 'Jacareí', 'Guaratinguetá', 'Caçapava', 'Tremembé',
             'Santa Branca', 'Caraguatatuba', 'Ilhabela', 'São Sebastião', 'Ubatuba',
@@ -25,7 +26,8 @@ class GeoClientApp {
         this.setupEventListeners();
         this.renderClientTable();
         this.renderMarkers();
-        console.log('✅ GeoClient SP iniciado!');
+        console.log('✅ GeoClient SP iniciado com mapa LIMPO!');
+        console.log('🔵 Clique DUPLO em cidades do Vale para marcar CDO AZUL');
     }
 
     initMap() {
@@ -44,8 +46,8 @@ class GeoClientApp {
     }
 
     loadMunicipalitiesBoundaries() {
-        const occupiedMunicipalities = getOccupiedMunicipalities();
-        // ✅ REMOVER marcação automática - usar apenas clique duplo
+        const occupiedMunicipalities = []; // ✅ VAZIO - nenhum cliente
+        const cdoValeCities = this.manualCDOVale; // ✅ APENAS marcações manuais
 
         fetch('data/municipios-sp.geojson')
             .then(response => {
@@ -57,13 +59,13 @@ class GeoClientApp {
                     style: (feature) => {
                         const name = this.getMunicipalityName(feature);
                         const isOccupied = occupiedMunicipalities.includes(name);
-                        const isCDOValeManual = this.manualCDOVale && this.manualCDOVale.includes(name); // ✅ Apenas manual
+                        const isCDOVale = cdoValeCities.includes(name); // ✅ Verifica marcação manual
                         
-                        if (isCDOValeManual) {
-                            // 🔵 CDO VALE DO PARAÍBA - AZUL (CLIQUE DUPLO MANUAL)
+                        if (isCDOVale) {
+                            // 🔵 CDO VALE DO PARAÍBA - AZUL VIBRANTE (MARCAÇÃO MANUAL)
                             return {
                                 fillColor: '#3b82f6',
-                                weight: 3,
+                                weight: 3, // Borda mais grossa
                                 opacity: 1,
                                 color: '#1e40af',
                                 fillOpacity: 0.7
@@ -91,10 +93,10 @@ class GeoClientApp {
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
                         const isOccupied = occupiedMunicipalities.includes(name);
-                        const isCDOValeManual = this.manualCDOVale && this.manualCDOVale.includes(name);
+                        const isCDOVale = cdoValeCities.includes(name);
                         
                         let status = '';
-                        if (isCDOValeManual) {
+                        if (isCDOVale) {
                             status = '🔵 CDO VALE DO PARAÍBA (Marcado)';
                         } else if (isOccupied) {
                             status = '✅ OCUPADO';
@@ -106,7 +108,8 @@ class GeoClientApp {
                             layer.bindPopup(`
                                 <div style="padding:12px">
                                     <b>${name}</b><br>
-                                    <small style="font-weight:normal;color:#666">${status}</small>
+                                    <small style="font-weight:normal;color:#666">${status}</small><br>
+                                    <small style="font-weight:bold;color:#0066cc">Clique DUPLO para marcar CDO</small>
                                 </div>
                             `);
                         } else {
@@ -118,7 +121,7 @@ class GeoClientApp {
                             `);
                         }
                         
-                        // Hover inteligente - não interfere com CDO
+                        // Hover inteligente
                         layer.on('mouseover', () => {
                             if (!isCDOVale && this.selectedMunicipality !== name) {
                                 layer.setStyle({ weight: 3, opacity: 1 });
@@ -130,43 +133,26 @@ class GeoClientApp {
                             }
                         });
 
-                        // ✅ CLIQUE DUPLO = Marca/desmarcar CDO Vale manualmente
-                        let clickCount = 0;
-                        let clickTimer;
-                        
+                        // Clique SIMPLES para seleção manual
                         layer.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
-                            clickCount++;
-                            
-                            if (clickCount === 1) {
-                                clickTimer = setTimeout(() => {
-                                    // Clique simples = seleção temporária
-                                    this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
-                                    clickCount = 0;
-                                }, 300);
-                            } else if (clickCount === 2) {
-                                clearTimeout(clickTimer);
-                                clickCount = 0;
-                                // ✅ CLIQUE DUPLO = Marca/desmarcar CDO Vale
-                                if (this.valedoParaibaCities.includes(name)) {
-                                    if (this.manualCDOVale.includes(name)) {
-                                        // Remove CDO
-                                        this.manualCDOVale = this.manualCDOVale.filter(c => c !== name);
-                                        console.log(`🔓 Removido CDO: ${name}`);
-                                    } else {
-                                        // Adiciona CDO
-                                        this.manualCDOVale.push(name);
-                                        console.log(`🔵 Marcado CDO: ${name}`);
-                                    }
-                                    this.loadMunicipalitiesBoundaries();
-                                }
+                            if (this.valedoParaibaCities.includes(name)) {
+                                this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
+                            }
+                        });
+
+                        // Clique DUPLO para marcar CDO
+                        layer.on('dblclick', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            if (this.valedoParaibaCities.includes(name)) {
+                                this.toggleCDOValeMark(name, layer);
                             }
                         });
                     }
                 }).addTo(this.map);
 
                 console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
-                console.log(`🔵 ${cdoValeCities.length} cidades CDO Vale do Paraíba marcadas em AZUL`);
+                console.log(`🔵 ${this.manualCDOVale.length} cidades CDO Vale do Paraíba marcadas manualmente`);
             })
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
@@ -174,7 +160,27 @@ class GeoClientApp {
             });
     }
 
-    // ✅ Função removida - agora usa apenas manualCDOVale
+    // ✅ NOVO: Toggle de marcação manual CDO
+    toggleCDOValeMark(name, layer) {
+        if (this.manualCDOVale.includes(name)) {
+            // Remove marcação
+            this.manualCDOVale = this.manualCDOVale.filter(city => city !== name);
+            console.log(`🔓 Removido CDO: ${name}`);
+            layer.setStyle({
+                fillColor: '#d1d5db',
+                fillOpacity: 0.15
+            });
+        } else {
+            // Adiciona marcação
+            this.manualCDOVale.push(name);
+            console.log(`🔵 Marcado CDO: ${name}`);
+            layer.setStyle({
+                fillColor: '#3b82f6',
+                fillOpacity: 0.7
+            });
+        }
+        console.log(`📊 Total CDO marcadas: ${this.manualCDOVale.length}/24`);
+    }
 
     selectMunicipality(name, layer, feature, occupiedMunicipalities) {
         if (this.selectedMunicipality === name) {
@@ -235,6 +241,7 @@ class GeoClientApp {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
 
+        // ✅ MAPA COMEÇA VAZIO - sem marcadores
         this.currentClients.forEach(client => {
             const color = client.status === 'ativo' ? '#22c55e' : '#eab308';
             
@@ -264,6 +271,7 @@ class GeoClientApp {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
 
+        // ✅ Tabela vazia inicialmente
         tbody.innerHTML = this.currentClients.map(client => `
             <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${client.name}</td>
@@ -283,7 +291,8 @@ class GeoClientApp {
     }
 
     applyFilters() {
-        let filtered = [...CLIENTS_DATA];
+        // ✅ COMEÇA VAZIO
+        let filtered = [];
         if (this.currentFilters.company) filtered = filtered.filter(c => c.company === this.currentFilters.company);
         if (this.currentFilters.segment) filtered = filtered.filter(c => c.segment === this.currentFilters.segment);
         if (this.currentFilters.status !== 'todos') filtered = filtered.filter(c => c.status === this.currentFilters.status);
@@ -296,13 +305,13 @@ class GeoClientApp {
     resetMap() {
         this.map.setView([-23.2, -48.5], 7);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
-        this.currentClients = [...CLIENTS_DATA];
+        this.currentClients = []; // ✅ Volta vazio
         this.selectedMunicipality = null;
         this.selectedLayer = null;
-        // ✅ Recarrega municípios para recalcular CDO Vale
         this.loadMunicipalitiesBoundaries();
         this.renderClientTable();
         this.renderMarkers();
+        console.log('♻️ Mapa resetado - todas as marcações CDO mantidas!');
     }
 
     openModal(clientId = null) {
@@ -361,7 +370,6 @@ class GeoClientApp {
 
         this.closeModal();
         this.applyFilters();
-        // ✅ Recarrega municípios para atualizar marcação CDO
         this.loadMunicipalitiesBoundaries();
         this.map.setView([coords.lat, coords.lng], 12);
     }
@@ -374,7 +382,6 @@ class GeoClientApp {
             this.currentClients = this.currentClients.filter(c => c.id !== clientId);
             this.renderClientTable();
             this.renderMarkers();
-            // ✅ Recarrega municípios para atualizar marcação CDO
             this.loadMunicipalitiesBoundaries();
         }
     }
