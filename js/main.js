@@ -18,37 +18,95 @@ class GeoClientApp {
 
     init() {
         console.log('🗺️ Inicializando GeoClient SP...');
-        this.initMap();
-        this.setupEventListeners();
-        this.renderClientTable();
-        this.renderMarkers();
-        console.log('✅ GeoClient SP iniciado!');
-        console.log('🔵 1 CLIQUE = Marca cidade');
-        console.log('🔵 2 CLIQUES = Desmarca cidade');
+        
+        // Verifica se o elemento do mapa existe
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            console.error('❌ Elemento #map não encontrado!');
+            return;
+        }
+        
+        console.log('✅ Elemento #map encontrado');
+        
+        // Aguarda um frame para garantir que o DOM está pronto
+        setTimeout(() => {
+            this.initMap();
+            this.setupEventListeners();
+            this.renderClientTable();
+            this.renderMarkers();
+            console.log('✅ GeoClient SP iniciado!');
+            console.log('🔵 1 CLIQUE = Marca cidade');
+            console.log('🔵 2 CLIQUES = Desmarca cidade');
+        }, 100);
     }
 
     initMap() {
+        console.log('🗺️ Criando mapa Leaflet...');
+        
         const spCenter = [-23.2, -48.5];
-        this.map = L.map('map').setView(spCenter, 7);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-            maxZoom: 19
-        }).addTo(this.map);
-
-        this.loadMunicipalitiesBoundaries();
-
-        const mapControls = document.querySelector('custom-map-controls');
-        if (mapControls) mapControls.init(this.map);
+        
+        try {
+            // Cria o mapa
+            this.map = L.map('map', {
+                center: spCenter,
+                zoom: 7,
+                zoomControl: true,
+                attributionControl: true
+            });
+            
+            console.log('✅ Mapa Leaflet criado');
+            
+            // Adiciona os tiles do OpenStreetMap
+            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19,
+                minZoom: 6
+            });
+            
+            tileLayer.addTo(this.map);
+            
+            console.log('✅ Tiles OpenStreetMap adicionados');
+            
+            // Força recalculo do tamanho do mapa
+            setTimeout(() => {
+                this.map.invalidateSize();
+                console.log('✅ Tamanho do mapa ajustado');
+            }, 200);
+            
+            // Listener para verificar se tiles carregaram
+            tileLayer.on('load', () => {
+                console.log('✅ Tiles carregados com sucesso!');
+            });
+            
+            tileLayer.on('tileerror', (error) => {
+                console.error('❌ Erro ao carregar tile:', error);
+            });
+            
+            // Carrega os municípios
+            this.loadMunicipalitiesBoundaries();
+            
+            // Inicializa controles customizados
+            const mapControls = document.querySelector('custom-map-controls');
+            if (mapControls) {
+                mapControls.init(this.map);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao criar mapa:', error);
+        }
     }
 
     loadMunicipalitiesBoundaries() {
+        console.log('📍 Carregando municípios...');
+        
         fetch('data/municipios-sp.geojson')
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return response.json();
             })
             .then(municipalitiesData => {
+                console.log(`✅ GeoJSON carregado: ${municipalitiesData.features.length} municípios`);
+                
                 this.geoJsonLayer = L.geoJSON(municipalitiesData, {
                     style: (feature) => {
                         const name = this.getMunicipalityName(feature);
@@ -484,6 +542,7 @@ class GeoClientApp {
 
 let app;
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM Carregado!');
     feather.replace();
     app = new GeoClientApp();
     app.init();
