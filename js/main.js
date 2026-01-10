@@ -1,4 +1,4 @@
-// GeoClient SP - Main Application Logic - VERSÃO COM LISTRAS COLORIDAS
+// GeoClient SP - Main Application Logic - VERSÃO COM LISTRAS COLORIDAS CORRIGIDA
 class GeoClientApp {
     constructor() {
         this.map = null;
@@ -16,9 +16,6 @@ class GeoClientApp {
         // Contador de cliques para detectar duplo clique
         this.clickCount = 0;
         this.clickTimer = null;
-        
-        // ✅ NOVO: Cache de padrões SVG
-        this.svgPatterns = {};
     }
 
     init() {
@@ -49,7 +46,7 @@ class GeoClientApp {
         if (mapControls) mapControls.init(this.map);
     }
 
-    // ✅ ATUALIZADO: Cidades com listras coloridas para múltiplas empresas
+    // ✅ CORRIGIDO: Cidades com listras coloridas para múltiplas empresas
     loadMunicipalitiesBoundaries() {
         fetch('data/municipios-sp.geojson')
             .then(response => {
@@ -63,27 +60,15 @@ class GeoClientApp {
                         const cityData = this.markedCities[name];
                         
                         if (cityData && cityData.companies.length > 0) {
-                            if (cityData.companies.length === 1) {
-                                // 🎨 UMA EMPRESA - Cor sólida
-                                const color = this.getCompanyColor(cityData.companies[0]);
-                                return {
-                                    fillColor: color,
-                                    weight: 2.5,
-                                    opacity: 1,
-                                    color: this.darkenColor(color, 20),
-                                    fillOpacity: 0.7
-                                };
-                            } else {
-                                // 🎨 MÚLTIPLAS EMPRESAS - Listras coloridas
-                                const patternId = this.createStripedPattern(name, cityData.companies);
-                                return {
-                                    fillColor: 'url(#' + patternId + ')',
-                                    weight: 3,
-                                    opacity: 1,
-                                    color: this.getCompanyColor(cityData.companies[0]),
-                                    fillOpacity: 0.9
-                                };
-                            }
+                            // Usa cor da primeira empresa (será sobrescrito depois se houver múltiplas)
+                            const color = this.getCompanyColor(cityData.companies[0]);
+                            return {
+                                fillColor: color,
+                                weight: 2.5,
+                                opacity: 1,
+                                color: this.darkenColor(color, 20),
+                                fillOpacity: 0.8
+                            };
                         } else if (cityData) {
                             // 🔵 MARCADO SEM EMPRESAS - AZUL
                             return {
@@ -110,10 +95,12 @@ class GeoClientApp {
                         
                         this.updatePopup(layer, name);
                         
-                        // ✅ Aplica padrão SVG se necessário
-                        if (cityData && cityData.companies.length > 1) {
-                            this.applyStripedFill(layer, name, cityData.companies);
-                        }
+                        // ✅ APLICA GRADIENTE SE MÚLTIPLAS EMPRESAS
+                        layer.on('add', () => {
+                            if (cityData && cityData.companies.length > 1) {
+                                setTimeout(() => this.applyStripedFill(layer, cityData.companies), 100);
+                            }
+                        });
                         
                         // Hover
                         layer.on('mouseover', () => {
@@ -125,9 +112,9 @@ class GeoClientApp {
                         });
                         layer.on('mouseout', () => {
                             this.geoJsonLayer.resetStyle(layer);
-                            // Reaplica listras após hover
+                            // Reaplica gradiente
                             if (cityData && cityData.companies.length > 1) {
-                                setTimeout(() => this.applyStripedFill(layer, name, cityData.companies), 10);
+                                setTimeout(() => this.applyStripedFill(layer, cityData.companies), 10);
                             }
                         });
 
@@ -141,79 +128,22 @@ class GeoClientApp {
 
                 console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
                 console.log(`🎨 ${Object.keys(this.markedCities).length} cidades marcadas`);
+                
+                // ✅ FORÇA aplicação de gradientes após carregar
+                setTimeout(() => {
+                    this.geoJsonLayer.eachLayer(layer => {
+                        const name = this.getMunicipalityName(layer.feature);
+                        const cityData = this.markedCities[name];
+                        if (cityData && cityData.companies.length > 1) {
+                            this.applyStripedFill(layer, cityData.companies);
+                        }
+                    });
+                }, 200);
             })
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
                 console.warn('⚠️ Arquivo municipios-sp.geojson não encontrado em data/');
             });
-    }
-
-    // ✅ NOVO: Cria padrão de listras SVG para múltiplas empresas
-    createStripedPattern(cityName, companies) {
-        const patternId = `pattern-${cityName.replace(/\s+/g, '-')}`;
-        
-        // Se já existe, remove o antigo
-        const oldPattern = document.getElementById(patternId);
-        if (oldPattern) {
-            oldPattern.remove();
-        }
-        
-        // Cria novo padrão SVG
-        const colors = companies.map(c => this.getCompanyColor(c));
-        const stripeWidth = 10;
-        const totalWidth = colors.length * stripeWidth;
-        
-        // Adiciona SVG ao DOM
-        let svg = document.querySelector('.leaflet-overlay-pane svg');
-        if (!svg) {
-            const container = document.querySelector('.leaflet-overlay-pane');
-            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.style.position = 'absolute';
-            svg.style.top = '0';
-            svg.style.left = '0';
-            svg.style.width = '100%';
-            svg.style.height = '100%';
-            svg.style.pointerEvents = 'none';
-            container.appendChild(svg);
-        }
-        
-        let defs = svg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            svg.appendChild(defs);
-        }
-        
-        // Cria o padrão
-        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-        pattern.setAttribute('id', patternId);
-        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-        pattern.setAttribute('width', totalWidth);
-        pattern.setAttribute('height', totalWidth);
-        pattern.setAttribute('patternTransform', 'rotate(45)');
-        
-        colors.forEach((color, index) => {
-            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            rect.setAttribute('x', index * stripeWidth);
-            rect.setAttribute('y', 0);
-            rect.setAttribute('width', stripeWidth);
-            rect.setAttribute('height', totalWidth);
-            rect.setAttribute('fill', color);
-            pattern.appendChild(rect);
-        });
-        
-        defs.appendChild(pattern);
-        
-        return patternId;
-    }
-
-    // ✅ NOVO: Aplica preenchimento listrado ao layer
-    applyStripedFill(layer, cityName, companies) {
-        const patternId = `pattern-${cityName.replace(/\s+/g, '-')}`;
-        
-        if (layer._path) {
-            layer._path.style.fill = `url(#${patternId})`;
-            layer._path.style.fillOpacity = '0.9';
-        }
     }
 
     handleCityClick(name, layer) {
@@ -369,17 +299,61 @@ class GeoClientApp {
             .toString(16).slice(1);
     }
 
-    // ✅ Adiciona empresa à cidade e ATUALIZA COM LISTRAS
+    // ✅ CORRIGIDO: Aplica gradiente com listras coloridas usando SVG
+    applyStripedFill(layer, companies) {
+        if (!layer._path) {
+            console.warn('⚠️ Layer sem _path:', layer);
+            return;
+        }
+        
+        const colors = companies.map(c => this.getCompanyColor(c));
+        console.log(`🎨 Aplicando ${colors.length} cores:`, colors);
+        
+        if (colors.length === 1) {
+            layer._path.style.fill = colors[0];
+            layer._path.style.fillOpacity = '0.8';
+            return;
+        }
+        
+        // Cria SVG em linha com listras
+        const svgGradient = this.createSVGGradient(colors);
+        layer._path.style.fill = svgGradient;
+        layer._path.style.fillOpacity = '0.85';
+        
+        console.log('✅ Gradiente aplicado com sucesso!');
+    }
+
+    // ✅ NOVO: Cria SVG em linha com gradiente de listras
+    createSVGGradient(colors) {
+        const stripeWidth = 15;
+        const totalWidth = colors.length * stripeWidth;
+        
+        let rects = colors.map((color, index) => {
+            return `<rect x="${index * stripeWidth}" y="0" width="${stripeWidth}" height="${totalWidth}" fill="${color}"/>`;
+        }).join('');
+        
+        const svg = `<svg width="${totalWidth}" height="${totalWidth}" xmlns="http://www.w3.org/2000/svg">
+            <pattern id="stripes-${Date.now()}" patternUnits="userSpaceOnUse" width="${totalWidth}" height="${totalWidth}" patternTransform="rotate(45)">
+                ${rects}
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#stripes-${Date.now()})"/>
+        </svg>`;
+        
+        const encoded = btoa(unescape(encodeURIComponent(svg)));
+        return `url('data:image/svg+xml;base64,${encoded}')`;
+    }
+
+    // ✅ CORRIGIDO: Adiciona empresa à cidade e ATUALIZA COM LISTRAS
     addCompanyToCity(cityName, company) {
         const city = this.markedCities[cityName];
         if (!city) return;
         
         city.companies.push(company);
         const color = this.getCompanyColor(company);
-        console.log(`✅ Empresa ${company} adicionada em ${cityName} - Cor: ${color}`);
+        console.log(`✅ Empresa ${company} adicionada em ${cityName} - Total: ${city.companies.length}`);
         
         if (city.companies.length > 1) {
-            console.log(`🎨 ${cityName} agora tem LISTRAS COLORIDAS com ${city.companies.length} empresas!`);
+            console.log(`🎨 Preparando ${city.companies.length} cores:`, city.companies.map(c => this.getCompanyColor(c)));
         }
         
         // Fecha o dropdown
@@ -388,19 +362,32 @@ class GeoClientApp {
             menu.classList.remove('show');
         });
         
-        // ✅ ATUALIZA O MAPA COM LISTRAS
+        // ✅ FORÇA RECRIAÇÃO COMPLETA DO LAYER
+        const oldLayer = this.geoJsonLayer;
+        if (oldLayer) {
+            this.map.removeLayer(oldLayer);
+        }
+        
         this.loadMunicipalitiesBoundaries();
         
-        // Atualiza o popup
+        // Atualiza o popup e FORÇA aplicação do gradiente
         setTimeout(() => {
             this.geoJsonLayer.eachLayer(layer => {
                 const name = this.getMunicipalityName(layer.feature);
                 if (name === cityName) {
                     this.updatePopup(layer, name);
                     layer.openPopup();
+                    
+                    // FORÇA aplicação múltipla do gradiente
+                    if (city.companies.length > 1) {
+                        console.log(`🔄 Forçando aplicação de gradiente em ${cityName}...`);
+                        setTimeout(() => this.applyStripedFill(layer, city.companies), 100);
+                        setTimeout(() => this.applyStripedFill(layer, city.companies), 300);
+                        setTimeout(() => this.applyStripedFill(layer, city.companies), 500);
+                    }
                 }
             });
-        }, 100);
+        }, 300);
     }
 
     setupEventListeners() {
