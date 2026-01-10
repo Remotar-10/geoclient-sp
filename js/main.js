@@ -1,4 +1,4 @@
-// GeoClient SP - Main Application Logic CORRIGIDO
+// GeoClient SP - Main Application Logic CORRIGIDO - VERSÃO FINAL
 class GeoClientApp {
     constructor() {
         this.map = null;
@@ -7,6 +7,7 @@ class GeoClientApp {
         this.markers = {};
         this.geoJsonLayer = null;
     }
+
 
 
     init() {
@@ -19,9 +20,12 @@ class GeoClientApp {
     }
 
 
+
     initMap() {
-        const spCenter = [-23.55, -46.63];
-        this.map = L.map('map').setView(spCenter, 8);
+        // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
+        const spCenter = [-23.2, -48.5];  // Centro do estado
+        this.map = L.map('map').setView(spCenter, 7);  // Zoom 7 para ver o estado completo
+
 
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -30,7 +34,9 @@ class GeoClientApp {
         }).addTo(this.map);
 
 
+
         this.loadMunicipalitiesBoundaries();
+
 
 
         const mapControls = document.querySelector('custom-map-controls');
@@ -38,8 +44,10 @@ class GeoClientApp {
     }
 
 
+
     loadMunicipalitiesBoundaries() {
         const occupiedMunicipalities = getOccupiedMunicipalities();
+
 
         // ✅ NOVO: Carregar do arquivo GeoJSON real (645 municípios do IBGE)
         fetch('data/municipios-sp.geojson')
@@ -77,6 +85,7 @@ class GeoClientApp {
                     }
                 }).addTo(this.map);
 
+
                 console.log('✅ ' + municipalitiesData.features.length + ' municípios carregados com sucesso!');
             })
             .catch(error => {
@@ -86,6 +95,7 @@ class GeoClientApp {
     }
 
 
+
     setupEventListeners() {
         window.addEventListener('filtersChanged', (e) => {
             this.currentFilters = e.detail;
@@ -93,24 +103,30 @@ class GeoClientApp {
         });
 
 
+
         const resetBtn = document.getElementById('reset-map');
         if (resetBtn) resetBtn.addEventListener('click', () => this.resetMap());
+
 
 
         const exportBtn = document.getElementById('export-map');
         if (exportBtn) exportBtn.addEventListener('click', () => this.exportData());
 
 
+
         const addClientBtn = document.getElementById('add-client');
         if (addClientBtn) addClientBtn.addEventListener('click', () => this.openModal());
+
 
 
         const closeModalBtn = document.getElementById('close-modal');
         if (closeModalBtn) closeModalBtn.addEventListener('click', () => this.closeModal());
 
 
+
         const clientForm = document.getElementById('client-form');
         if (clientForm) clientForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+
 
 
         const modal = document.getElementById('client-modal');
@@ -122,9 +138,11 @@ class GeoClientApp {
     }
 
 
+
     renderMarkers() {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
+
 
 
         this.currentClients.forEach(client => {
@@ -141,6 +159,7 @@ class GeoClientApp {
             }).addTo(this.map);
 
 
+
             marker.bindPopup(`
                 <div style="padding:8px">
                     <b>${client.name}</b><br>
@@ -149,15 +168,18 @@ class GeoClientApp {
             `);
 
 
+
             marker.on('click', () => this.map.setView([client.lat, client.lng], 12));
             this.markers[client.id] = marker;
         });
     }
 
 
+
     renderClientTable() {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
+
 
 
         tbody.innerHTML = this.currentClients.map(client => `
@@ -179,11 +201,13 @@ class GeoClientApp {
     }
 
 
+
     applyFilters() {
         let filtered = [...CLIENTS_DATA];
         if (this.currentFilters.company) filtered = filtered.filter(c => c.company === this.currentFilters.company);
         if (this.currentFilters.segment) filtered = filtered.filter(c => c.segment === this.currentFilters.segment);
         if (this.currentFilters.status !== 'todos') filtered = filtered.filter(c => c.status === this.currentFilters.status);
+
 
 
         this.currentClients = filtered;
@@ -192,8 +216,10 @@ class GeoClientApp {
     }
 
 
+
     resetMap() {
-        this.map.setView([-23.55, -46.63], 8);
+        // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
+        this.map.setView([-23.2, -48.5], 7);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
         this.currentClients = [...CLIENTS_DATA];
         this.renderClientTable();
@@ -201,10 +227,12 @@ class GeoClientApp {
     }
 
 
+
     openModal(clientId = null) {
         const modal = document.getElementById('client-modal');
         const form = document.getElementById('client-form');
         if (!modal || !form) return;
+
 
 
         if (clientId) {
@@ -224,10 +252,12 @@ class GeoClientApp {
     }
 
 
+
     closeModal() {
         const modal = document.getElementById('client-modal');
         if (modal) modal.style.display = 'none';
     }
+
 
 
     handleFormSubmit(e) {
@@ -236,10 +266,12 @@ class GeoClientApp {
         const municipality = document.getElementById('client-municipality').value;
 
 
+
         if (!name || !municipality) {
             alert('Preencha todos os campos!');
             return;
         }
+
 
 
         const coords = MUNICIPALITIES[municipality];
@@ -247,6 +279,7 @@ class GeoClientApp {
             alert('Município não encontrado!');
             return;
         }
+
 
 
         const clientId = document.getElementById('client-id').value;
@@ -262,13 +295,16 @@ class GeoClientApp {
         }
 
 
+
         this.closeModal();
         this.applyFilters();
         this.map.setView([coords.lat, coords.lng], 12);
     }
 
 
+
     editClient(clientId) { this.openModal(clientId); }
+
 
 
     deleteClient(clientId) {
@@ -281,12 +317,14 @@ class GeoClientApp {
     }
 
 
+
     exportData() {
         const format = prompt('1 = CSV\n2 = JSON', '1');
         if (format === '1') exportClientsCSV();
         else if (format === '2') exportClientsJSON();
     }
 }
+
 
 
 let app;
