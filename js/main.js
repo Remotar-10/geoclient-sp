@@ -6,8 +6,9 @@ class GeoClientApp {
         this.currentClients = [...CLIENTS_DATA];
         this.markers = {};
         this.geoJsonLayer = null;
+        this.selectedMunicipality = null;  // ✅ NOVO: Armazenar município selecionado
+        this.selectedLayer = null;         // ✅ NOVO: Armazenar layer selecionado
     }
-
 
 
 
@@ -22,12 +23,10 @@ class GeoClientApp {
 
 
 
-
     initMap() {
         // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
         const spCenter = [-23.2, -48.5];  // Centro do estado
         this.map = L.map('map').setView(spCenter, 7);  // Zoom 7 para ver o estado completo
-
 
 
 
@@ -38,9 +37,7 @@ class GeoClientApp {
 
 
 
-
         this.loadMunicipalitiesBoundaries();
-
 
 
 
@@ -50,10 +47,8 @@ class GeoClientApp {
 
 
 
-
     loadMunicipalitiesBoundaries() {
         const occupiedMunicipalities = getOccupiedMunicipalities();
-
 
 
         // ✅ NOVO: Carregar do arquivo GeoJSON real (645 municípios do IBGE)
@@ -91,14 +86,25 @@ class GeoClientApp {
                         }
                         
                         layer.on('mouseover', () => {
-                            layer.setStyle({ weight: 3, opacity: 1 });
+                            // Não muda hover se estiver selecionado
+                            if (this.selectedMunicipality !== name) {
+                                layer.setStyle({ weight: 3, opacity: 1 });
+                            }
                         });
                         layer.on('mouseout', () => {
-                            layer.setStyle({ weight: 1.5, opacity: 0.8 });
+                            // Volta ao estilo normal se não estiver selecionado
+                            if (this.selectedMunicipality !== name) {
+                                layer.setStyle({ weight: 1.5, opacity: 0.8 });
+                            }
+                        });
+
+                        // ✅ NOVO: Clique para selecionar/desselecionar município
+                        layer.on('click', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
                         });
                     }
                 }).addTo(this.map);
-
 
 
                 console.log('✅ ' + municipalitiesData.features.length + ' municípios carregados com sucesso!');
@@ -109,6 +115,56 @@ class GeoClientApp {
             });
     }
 
+    // ✅ NOVO: Função para selecionar/desselecionar município
+    selectMunicipality(name, layer, feature, occupiedMunicipalities) {
+        if (this.selectedMunicipality === name) {
+            // Se já está selecionado, desseleciona
+            console.log(`🔓 Município deselecionado: ${name}`);
+            this.selectedMunicipality = null;
+            this.selectedLayer = null;
+            
+            // Volta ao estilo normal
+            const isOccupied = occupiedMunicipalities.includes(name);
+            layer.setStyle({
+                fillColor: isOccupied ? '#22c55e' : '#d1d5db',
+                weight: 1.5,
+                opacity: 0.8,
+                color: '#6b7280',
+                fillOpacity: isOccupied ? 0.5 : 0.15
+            });
+        } else {
+            // Desseleciona o anterior se houver
+            if (this.selectedLayer && this.selectedMunicipality) {
+                const wasOccupied = occupiedMunicipalities.includes(this.selectedMunicipality);
+                this.selectedLayer.setStyle({
+                    fillColor: wasOccupied ? '#22c55e' : '#d1d5db',
+                    weight: 1.5,
+                    opacity: 0.8,
+                    color: '#6b7280',
+                    fillOpacity: wasOccupied ? 0.5 : 0.15
+                });
+                console.log(`🔄 Alternando de: ${this.selectedMunicipality} para: ${name}`);
+            } else {
+                console.log(`🔵 Município selecionado: ${name}`);
+            }
+            
+            // Atualiza seleção
+            this.selectedMunicipality = name;
+            this.selectedLayer = layer;
+            
+            // Destaca com cor azul
+            layer.setStyle({
+                fillColor: '#3b82f6',  // Azul vibrante
+                weight: 4,              // Borda mais grossa
+                opacity: 1,
+                color: '#1e40af',       // Azul escuro na borda
+                fillOpacity: 0.7
+            });
+            
+            // Loga no console para confirmar
+            console.log(`✅ Selecionado: ${name}`);
+        }
+    }
 
 
 
@@ -120,10 +176,8 @@ class GeoClientApp {
 
 
 
-
         const resetBtn = document.getElementById('reset-map');
         if (resetBtn) resetBtn.addEventListener('click', () => this.resetMap());
-
 
 
 
@@ -132,10 +186,8 @@ class GeoClientApp {
 
 
 
-
         const addClientBtn = document.getElementById('add-client');
         if (addClientBtn) addClientBtn.addEventListener('click', () => this.openModal());
-
 
 
 
@@ -144,10 +196,8 @@ class GeoClientApp {
 
 
 
-
         const clientForm = document.getElementById('client-form');
         if (clientForm) clientForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
-
 
 
 
@@ -161,11 +211,9 @@ class GeoClientApp {
 
 
 
-
     renderMarkers() {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
-
 
 
 
@@ -184,14 +232,12 @@ class GeoClientApp {
 
 
 
-
             marker.bindPopup(`
                 <div style="padding:8px">
                     <b>${client.name}</b><br>
                     <small>${client.segment} | ${client.company}<br>${client.municipality}</small>
                 </div>
             `);
-
 
 
 
@@ -202,11 +248,9 @@ class GeoClientApp {
 
 
 
-
     renderClientTable() {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
-
 
 
 
@@ -230,13 +274,11 @@ class GeoClientApp {
 
 
 
-
     applyFilters() {
         let filtered = [...CLIENTS_DATA];
         if (this.currentFilters.company) filtered = filtered.filter(c => c.company === this.currentFilters.company);
         if (this.currentFilters.segment) filtered = filtered.filter(c => c.segment === this.currentFilters.segment);
         if (this.currentFilters.status !== 'todos') filtered = filtered.filter(c => c.status === this.currentFilters.status);
-
 
 
 
@@ -247,16 +289,16 @@ class GeoClientApp {
 
 
 
-
     resetMap() {
         // ✅ CORRIGIDO: Centro e zoom ajustados para mostrar TODO o estado de SP
         this.map.setView([-23.2, -48.5], 7);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
         this.currentClients = [...CLIENTS_DATA];
+        this.selectedMunicipality = null;  // ✅ NOVO: Reseta seleção também
+        this.selectedLayer = null;
         this.renderClientTable();
         this.renderMarkers();
     }
-
 
 
 
@@ -264,7 +306,6 @@ class GeoClientApp {
         const modal = document.getElementById('client-modal');
         const form = document.getElementById('client-form');
         if (!modal || !form) return;
-
 
 
 
@@ -286,12 +327,10 @@ class GeoClientApp {
 
 
 
-
     closeModal() {
         const modal = document.getElementById('client-modal');
         if (modal) modal.style.display = 'none';
     }
-
 
 
 
@@ -302,12 +341,10 @@ class GeoClientApp {
 
 
 
-
         if (!name || !municipality) {
             alert('Preencha todos os campos!');
             return;
         }
-
 
 
 
@@ -316,7 +353,6 @@ class GeoClientApp {
             alert('Município não encontrado!');
             return;
         }
-
 
 
 
@@ -334,7 +370,6 @@ class GeoClientApp {
 
 
 
-
         this.closeModal();
         this.applyFilters();
         this.map.setView([coords.lat, coords.lng], 12);
@@ -342,9 +377,7 @@ class GeoClientApp {
 
 
 
-
     editClient(clientId) { this.openModal(clientId); }
-
 
 
 
@@ -356,7 +389,6 @@ class GeoClientApp {
             this.renderMarkers();
         }
     }
-
 
 
 
@@ -388,7 +420,6 @@ class GeoClientApp {
         return name;
     }
 }
-
 
 
 
