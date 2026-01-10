@@ -1,23 +1,21 @@
-// GeoClient SP - Main Application Logic CORRIGIDO - VERSÃO FINAL
-// ✅ NOVO: MAPA LIMPO SEM CLIENTES INICIAIS
+// GeoClient SP - Main Application Logic - VERSÃO FINAL COM MARCAÇÃO MANUAL
 class GeoClientApp {
     constructor() {
         this.map = null;
         this.currentFilters = { company: '', segment: '', status: 'todos' };
-        this.currentClients = []; // ✅ COMEÇA VAZIO
+        this.currentClients = [];
         this.markers = {};
         this.geoJsonLayer = null;
         this.selectedMunicipality = null;
         this.selectedLayer = null;
-        this.manualCDOVale = []; // ✅ NOVO: Armazena marcações CDO manuais
-        // ✅ NOVO: Lista de cidades do Vale do Paraíba para CDO
-        this.valedoParaibaCities = [
-            'São José dos Campos', 'Jacareí', 'Guaratinguetá', 'Caçapava', 'Tremembé',
-            'Santa Branca', 'Caraguatatuba', 'Ilhabela', 'São Sebastião', 'Ubatuba',
-            'Aparecida', 'Cachoeira Paulista', 'Piquete', 'Lagoinha', 'Cruzeiro',
-            'Queluz', 'Lorena', 'Potim', 'Roseira', 'Guararema', 'Santa Isabel',
-            'Taubaté', 'Pindamonhangaba', 'Campos do Jordão'
-        ];
+        this.markedCities = {}; // ✅ Armazena cidades marcadas e suas empresas
+        
+        // ✅ EMPRESAS CORRETAS
+        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
+        
+        // Contador de cliques para detectar duplo clique
+        this.clickCount = 0;
+        this.clickTimer = null;
     }
 
     init() {
@@ -26,8 +24,10 @@ class GeoClientApp {
         this.setupEventListeners();
         this.renderClientTable();
         this.renderMarkers();
-        console.log('✅ GeoClient SP iniciado com mapa LIMPO!');
-        console.log('🔵 Clique DUPLO em cidades do Vale para marcar CDO AZUL');
+        console.log('✅ GeoClient SP iniciado!');
+        console.log('🔵 1 CLIQUE = Marca cidade AZUL');
+        console.log('🔵 2 CLIQUES = Desmarca cidade');
+        console.log('🏢 Empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA');
     }
 
     initMap() {
@@ -46,9 +46,6 @@ class GeoClientApp {
     }
 
     loadMunicipalitiesBoundaries() {
-        const occupiedMunicipalities = []; // ✅ VAZIO - nenhum cliente
-        const cdoValeCities = this.manualCDOVale; // ✅ APENAS marcações manuais
-
         fetch('data/municipios-sp.geojson')
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,26 +55,16 @@ class GeoClientApp {
                 this.geoJsonLayer = L.geoJSON(municipalitiesData, {
                     style: (feature) => {
                         const name = this.getMunicipalityName(feature);
-                        const isOccupied = occupiedMunicipalities.includes(name);
-                        const isCDOVale = cdoValeCities.includes(name); // ✅ Verifica marcação manual
+                        const isMarked = this.markedCities[name];
                         
-                        if (isCDOVale) {
-                            // 🔵 CDO VALE DO PARAÍBA - AZUL VIBRANTE (MARCAÇÃO MANUAL)
+                        if (isMarked) {
+                            // 🔵 MARCADO - AZUL VIBRANTE
                             return {
                                 fillColor: '#3b82f6',
-                                weight: 3, // Borda mais grossa
+                                weight: 3,
                                 opacity: 1,
                                 color: '#1e40af',
                                 fillOpacity: 0.7
-                            };
-                        } else if (isOccupied) {
-                            // 🟢 OCUPADO - Verde normal
-                            return {
-                                fillColor: '#22c55e',
-                                weight: 1.5,
-                                opacity: 0.8,
-                                color: '#6b7280',
-                                fillOpacity: 0.5
                             };
                         } else {
                             // ⚪ DISPONÍVEL - Cinza
@@ -92,67 +79,31 @@ class GeoClientApp {
                     },
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
-                        const isOccupied = occupiedMunicipalities.includes(name);
-                        const isCDOVale = cdoValeCities.includes(name);
                         
-                        let status = '';
-                        if (isCDOVale) {
-                            status = '🔵 CDO VALE DO PARAÍBA (Marcado)';
-                        } else if (isOccupied) {
-                            status = '✅ OCUPADO';
-                        } else {
-                            status = '⭕ DISPONÍVEL';
-                        }
+                        this.updatePopup(layer, name);
                         
-                        if (name && name !== 'Município Desconhecido') {
-                            layer.bindPopup(`
-                                <div style="padding:12px">
-                                    <b>${name}</b><br>
-                                    <small style="font-weight:normal;color:#666">${status}</small><br>
-                                    <small style="font-weight:bold;color:#0066cc">Clique DUPLO para marcar CDO</small>
-                                </div>
-                            `);
-                        } else {
-                            layer.bindPopup(`
-                                <div style="padding:12px">
-                                    <b>⭕ DISPONÍVEL</b><br>
-                                    <small style="font-weight:normal;color:#999">Município não identificado</small>
-                                </div>
-                            `);
-                        }
-                        
-                        // Hover inteligente
+                        // Hover
                         layer.on('mouseover', () => {
-                            if (!isCDOVale && this.selectedMunicipality !== name) {
+                            if (!this.markedCities[name]) {
                                 layer.setStyle({ weight: 3, opacity: 1 });
                             }
                         });
                         layer.on('mouseout', () => {
-                            if (!isCDOVale && this.selectedMunicipality !== name) {
+                            if (!this.markedCities[name]) {
                                 this.geoJsonLayer.resetStyle(layer);
                             }
                         });
 
-                        // Clique SIMPLES para seleção manual
+                        // Sistema de detecção de clique duplo
                         layer.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
-                            if (this.valedoParaibaCities.includes(name)) {
-                                this.selectMunicipality(name, layer, feature, occupiedMunicipalities);
-                            }
-                        });
-
-                        // Clique DUPLO para marcar CDO
-                        layer.on('dblclick', (e) => {
-                            L.DomEvent.stopPropagation(e);
-                            if (this.valedoParaibaCities.includes(name)) {
-                                this.toggleCDOValeMark(name, layer);
-                            }
+                            this.handleCityClick(name, layer);
                         });
                     }
                 }).addTo(this.map);
 
                 console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
-                console.log(`🔵 ${this.manualCDOVale.length} cidades CDO Vale do Paraíba marcadas manualmente`);
+                console.log(`🔵 ${Object.keys(this.markedCities).length} cidades marcadas`);
             })
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
@@ -160,51 +111,133 @@ class GeoClientApp {
             });
     }
 
-    // ✅ NOVO: Toggle de marcação manual CDO
-    toggleCDOValeMark(name, layer) {
-        if (this.manualCDOVale.includes(name)) {
-            // Remove marcação
-            this.manualCDOVale = this.manualCDOVale.filter(city => city !== name);
-            console.log(`🔓 Removido CDO: ${name}`);
-            layer.setStyle({
-                fillColor: '#d1d5db',
-                fillOpacity: 0.15
-            });
-        } else {
-            // Adiciona marcação
-            this.manualCDOVale.push(name);
-            console.log(`🔵 Marcado CDO: ${name}`);
-            layer.setStyle({
-                fillColor: '#3b82f6',
-                fillOpacity: 0.7
-            });
+    handleCityClick(name, layer) {
+        this.clickCount++;
+        
+        if (this.clickCount === 1) {
+            // Primeiro clique - aguarda segundo clique
+            this.clickTimer = setTimeout(() => {
+                // Apenas 1 clique - MARCAR cidade
+                this.markCity(name, layer);
+                this.clickCount = 0;
+            }, 300); // 300ms para detectar duplo clique
+        } else if (this.clickCount === 2) {
+            // Segundo clique - DESMARCAR cidade
+            clearTimeout(this.clickTimer);
+            this.unmarkCity(name, layer);
+            this.clickCount = 0;
         }
-        console.log(`📊 Total CDO marcadas: ${this.manualCDOVale.length}/24`);
     }
 
-    selectMunicipality(name, layer, feature, occupiedMunicipalities) {
-        if (this.selectedMunicipality === name) {
-            console.log(`🔓 Município deselecionado: ${name}`);
-            this.selectedMunicipality = null;
-            this.selectedLayer = null;
-            this.geoJsonLayer.resetStyle(layer);
-        } else {
-            if (this.selectedLayer && this.selectedMunicipality) {
-                this.geoJsonLayer.resetStyle(this.selectedLayer);
-            }
-            
-            this.selectedMunicipality = name;
-            this.selectedLayer = layer;
+    markCity(name, layer) {
+        if (!this.markedCities[name]) {
+            this.markedCities[name] = { companies: [] };
             
             layer.setStyle({
-                fillColor: '#ef4444',  // Vermelho para seleção manual
-                weight: 5,
+                fillColor: '#3b82f6',
+                weight: 3,
                 opacity: 1,
-                color: '#dc2626',
-                fillOpacity: 0.8
+                color: '#1e40af',
+                fillOpacity: 0.7
             });
             
-            console.log(`🔴 Seleção manual: ${name}`);
+            this.updatePopup(layer, name);
+            console.log(`🔵 Marcado: ${name}`);
+            console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
+            
+            // Abre popup automaticamente
+            layer.openPopup();
+        }
+    }
+
+    unmarkCity(name, layer) {
+        if (this.markedCities[name]) {
+            delete this.markedCities[name];
+            
+            layer.setStyle({
+                fillColor: '#d1d5db',
+                weight: 1.5,
+                opacity: 0.8,
+                color: '#6b7280',
+                fillOpacity: 0.15
+            });
+            
+            this.updatePopup(layer, name);
+            console.log(`🔓 Desmarcado: ${name}`);
+            console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
+        }
+    }
+
+    updatePopup(layer, name) {
+        const isMarked = this.markedCities[name];
+        let popupContent = `<div style="padding:12px; min-width:200px">`;
+        
+        if (isMarked) {
+            popupContent += `<b style="color:#3b82f6">${name}</b><br>`;
+            popupContent += `<small style="color:#666">🔵 MARCADO</small><br><br>`;
+            
+            // Mostra empresas adicionadas
+            if (isMarked.companies.length > 0) {
+                popupContent += `<b>Empresas:</b><br>`;
+                isMarked.companies.forEach(company => {
+                    popupContent += `<span style="background:#22c55e;color:white;padding:2px 8px;border-radius:4px;display:inline-block;margin:2px">${company}</span><br>`;
+                });
+                popupContent += `<br>`;
+            }
+            
+            // Botão para adicionar empresa
+            popupContent += `<button onclick="app.openCompanyModal('${name}')" style="background:#3b82f6;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;width:100%">
+                ➕ Adicionar Empresa
+            </button><br><br>`;
+            
+            popupContent += `<small style="color:#999">2 cliques para desmarcar</small>`;
+        } else {
+            popupContent += `<b>${name}</b><br>`;
+            popupContent += `<small style="color:#666">⭕ DISPONÍVEL</small><br><br>`;
+            popupContent += `<small style="color:#0066cc">1 clique para marcar</small>`;
+        }
+        
+        popupContent += `</div>`;
+        layer.bindPopup(popupContent);
+    }
+
+    openCompanyModal(cityName) {
+        const city = this.markedCities[cityName];
+        if (!city) return;
+        
+        let companies = this.availableCompanies
+            .filter(c => !city.companies.includes(c))
+            .map((c, i) => `${i + 1}. ${c}`)
+            .join('\n');
+        
+        if (companies === '') {
+            alert('Todas as empresas já foram adicionadas a esta cidade!');
+            return;
+        }
+        
+        const choice = prompt(
+            `Adicionar empresa em ${cityName}:\n\n${companies}\n\nDigite o número:`,
+            '1'
+        );
+        
+        if (choice && !isNaN(choice)) {
+            const index = parseInt(choice) - 1;
+            const availableList = this.availableCompanies.filter(c => !city.companies.includes(c));
+            
+            if (index >= 0 && index < availableList.length) {
+                const selectedCompany = availableList[index];
+                city.companies.push(selectedCompany);
+                console.log(`✅ Empresa ${selectedCompany} adicionada em ${cityName}`);
+                
+                // Atualiza o popup
+                this.geoJsonLayer.eachLayer(layer => {
+                    const name = this.getMunicipalityName(layer.feature);
+                    if (name === cityName) {
+                        this.updatePopup(layer, name);
+                        layer.openPopup();
+                    }
+                });
+            }
         }
     }
 
@@ -241,7 +274,6 @@ class GeoClientApp {
         Object.values(this.markers).forEach(marker => this.map.removeLayer(marker));
         this.markers = {};
 
-        // ✅ MAPA COMEÇA VAZIO - sem marcadores
         this.currentClients.forEach(client => {
             const color = client.status === 'ativo' ? '#22c55e' : '#eab308';
             
@@ -271,7 +303,6 @@ class GeoClientApp {
         const tbody = document.getElementById('clients-table');
         if (!tbody) return;
 
-        // ✅ Tabela vazia inicialmente
         tbody.innerHTML = this.currentClients.map(client => `
             <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${client.name}</td>
@@ -291,7 +322,6 @@ class GeoClientApp {
     }
 
     applyFilters() {
-        // ✅ COMEÇA VAZIO
         let filtered = [];
         if (this.currentFilters.company) filtered = filtered.filter(c => c.company === this.currentFilters.company);
         if (this.currentFilters.segment) filtered = filtered.filter(c => c.segment === this.currentFilters.segment);
@@ -305,13 +335,13 @@ class GeoClientApp {
     resetMap() {
         this.map.setView([-23.2, -48.5], 7);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
-        this.currentClients = []; // ✅ Volta vazio
+        this.currentClients = [];
         this.selectedMunicipality = null;
         this.selectedLayer = null;
         this.loadMunicipalitiesBoundaries();
         this.renderClientTable();
         this.renderMarkers();
-        console.log('♻️ Mapa resetado - todas as marcações CDO mantidas!');
+        console.log('♻️ Mapa resetado - marcações mantidas!');
     }
 
     openModal(clientId = null) {
@@ -387,9 +417,24 @@ class GeoClientApp {
     }
 
     exportData() {
-        const format = prompt('1 = CSV\n2 = JSON', '1');
-        if (format === '1') exportClientsCSV();
-        else if (format === '2') exportClientsJSON();
+        if (Object.keys(this.markedCities).length === 0) {
+            alert('Nenhuma cidade marcada para exportar!');
+            return;
+        }
+        
+        const data = Object.entries(this.markedCities).map(([city, info]) => ({
+            cidade: city,
+            empresas: info.companies.join(', ')
+        }));
+        
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cidades_marcadas.json';
+        a.click();
+        console.log('📥 Dados exportados!');
     }
 
     getMunicipalityName(feature) {
