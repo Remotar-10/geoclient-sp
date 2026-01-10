@@ -56,31 +56,55 @@ class GeoClientApp {
             
             console.log('✅ Mapa Leaflet criado');
             
-            // Adiciona os tiles do OpenStreetMap
-            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19,
+            // TENTA MÚLTIPLOS PROVEDORES DE TILES
+            
+            // Provedor 1: CartoDB Voyager (Recomendado - sem API key)
+            const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20,
                 minZoom: 6
             });
             
             tileLayer.addTo(this.map);
-            
-            console.log('✅ Tiles OpenStreetMap adicionados');
-            
-            // Força recalculo do tamanho do mapa
-            setTimeout(() => {
-                this.map.invalidateSize();
-                console.log('✅ Tamanho do mapa ajustado');
-            }, 200);
+            console.log('✅ Tiles CartoDB Voyager adicionados');
             
             // Listener para verificar se tiles carregaram
+            tileLayer.on('loading', () => {
+                console.log('⏳ Carregando tiles...');
+            });
+            
             tileLayer.on('load', () => {
                 console.log('✅ Tiles carregados com sucesso!');
             });
             
             tileLayer.on('tileerror', (error) => {
                 console.error('❌ Erro ao carregar tile:', error);
+                console.log('🔄 Tentando provedor alternativo...');
+                
+                // Remove o tile layer problemático
+                this.map.removeLayer(tileLayer);
+                
+                // Provedor 2: OpenStreetMap (fallback)
+                const fallbackTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                });
+                
+                fallbackTileLayer.addTo(this.map);
+                console.log('✅ Fallback: OpenStreetMap tiles adicionados');
+                
+                fallbackTileLayer.on('tileerror', () => {
+                    console.error('❌ Fallback também falhou!');
+                    console.log('💡 Sugestão: Verifique sua conexão de internet');
+                });
             });
+            
+            // Força recalculo do tamanho do mapa
+            setTimeout(() => {
+                this.map.invalidateSize();
+                console.log('✅ Tamanho do mapa ajustado');
+            }, 250);
             
             // Carrega os municípios
             this.loadMunicipalitiesBoundaries();
