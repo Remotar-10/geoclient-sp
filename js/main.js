@@ -14,6 +14,12 @@ class GeoClientApp {
         
         this.clickCount = 0;
         this.clickTimer = null;
+        
+        // Configuração inicial do mapa - CENTRALIZADO EM SP
+        this.initialView = {
+            center: [-22.5, -49.2],  // Ajustado para melhor centralização de SP
+            zoom: 7.2                // Zoom otimizado para ver SP completo
+        };
     }
 
     init() {
@@ -36,29 +42,27 @@ class GeoClientApp {
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
             console.log('🔵 1 CLIQUE = Marca cidade');
-            console.log('🔵 2 CLIQUES = Desmarca cidade');
+            console.log('🔵 2 CLIQUES = Desmarca cidade (sem zoom)');
         }, 100);
     }
 
     initMap() {
         console.log('🗺️ Criando mapa Leaflet...');
         
-        const spCenter = [-23.2, -48.5];
-        
         try {
-            // Cria o mapa
+            // Cria o mapa com visão inicial centralizada
             this.map = L.map('map', {
-                center: spCenter,
-                zoom: 7,
+                center: this.initialView.center,
+                zoom: this.initialView.zoom,
                 zoomControl: true,
-                attributionControl: true
+                attributionControl: true,
+                minZoom: 6,
+                maxZoom: 12
             });
             
             console.log('✅ Mapa Leaflet criado');
             
-            // TENTA MÚLTIPLOS PROVEDORES DE TILES
-            
-            // Provedor 1: CartoDB Voyager (Recomendado - sem API key)
+            // Adiciona tiles CartoDB Voyager
             const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
@@ -250,6 +254,9 @@ class GeoClientApp {
             this.updatePopup(layer, name);
             console.log(`🔓 Desmarcado: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
+            
+            // NÃO faz zoom ao desmarcar - apenas fecha popup
+            layer.closePopup();
         }
     }
 
@@ -447,7 +454,8 @@ class GeoClientApp {
     }
 
     resetMap() {
-        this.map.setView([-23.2, -48.5], 7);
+        // Volta para visão inicial centralizada
+        this.map.setView(this.initialView.center, this.initialView.zoom);
         this.currentFilters = { company: '', segment: '', status: 'todos' };
         this.currentClients = [];
         this.loadMunicipalitiesBoundaries();
