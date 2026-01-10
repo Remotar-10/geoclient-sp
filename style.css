@@ -38,10 +38,64 @@ custom-navbar {
 
 .leaflet-popup-content {
     font-family: inherit;
+    min-width: 250px !important;
+    margin: 0 !important;
 }
 
 .leaflet-popup-content-wrapper {
-    border-radius: 0.5rem;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+}
+
+/* ✅ NOVO: Dropdown melhorado para popup do mapa */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    z-index: 9999;
+    margin-top: 4px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+}
+
+.dropdown-menu.show {
+    display: block !important;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: white;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    margin: 2px 0;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.dropdown-item:hover {
+    transform: translateX(2px);
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    font-size: 10px;
+    margin-left: 4px;
 }
 
 /* Municipality Highlight */
@@ -124,6 +178,8 @@ table td {
 
 .btn-primary:hover {
     background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-success {
@@ -133,6 +189,8 @@ table td {
 
 .btn-success:hover {
     background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-danger {
@@ -142,6 +200,8 @@ table td {
 
 .btn-danger:hover {
     background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-secondary {
@@ -193,6 +253,63 @@ table td {
     color: #991b1b;
 }
 
+/* ✅ NOVO: Badges coloridos para empresas */
+.company-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.company-badge.cdo {
+    background: #ef4444;
+}
+
+.company-badge.suporte {
+    background: #3b82f6;
+}
+
+.company-badge.waux {
+    background: #10b981;
+}
+
+.company-badge.montebello {
+    background: #f59e0b;
+}
+
+.company-badge.hirata {
+    background: #8b5cf6;
+}
+
+/* ✅ NOVO: Animações suaves */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.dropdown-menu.show {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* ✅ NOVO: Estilo para o indicador de cor da empresa */
+.company-color-indicator {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {
@@ -207,4 +324,37 @@ table td {
         width: 100%;
         justify-content: center;
     }
+
+    .leaflet-popup-content {
+        min-width: 200px !important;
+    }
+
+    .dropdown-menu {
+        max-height: 250px;
+        overflow-y: auto;
+    }
+}
+
+/* ✅ NOVO: Scrollbar customizada para dropdown */
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ✅ NOVO: Transições suaves para hover */
+* {
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
