@@ -1,5 +1,5 @@
 // GeoClient SP - VERSÃO ESTÁVEL
-// Sistema de cliques: 1=marca | 2=abre popup | Botão direito=menu contexto
+// Sistema de cliques: 1=marca | 2=abre popup | Botão direito=remover
 
 class GeoClientApp {
     constructor() {
@@ -46,7 +46,7 @@ class GeoClientApp {
             console.log('✅ GeoClient SP iniciado!');
             console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
             console.log('🎨 2 CLIQUES = Abre popup com lista de empresas');
-            console.log('🖱️ BOTÃO DIREITO = Menu contexto (remover)');
+            console.log('🖱️ BOTÃO DIREITO = Remover marcação');
             console.log('👆 HOVER = Mostra empresas da cidade');
         }, 100);
     }
@@ -192,37 +192,13 @@ class GeoClientApp {
         const cityData = this.markedCities[cityName];
         if (!cityData) return; // Só mostra menu em cidades marcadas
         
-        let menuContent = '';
-        
-        // Opção: Adicionar Empresa
-        const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
-        if (availableCompanies.length > 0) {
-            menuContent += `
-                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 12px;">
-                    ${cityName}
-                </div>
-            `;
-            
-            availableCompanies.forEach(company => {
-                const color = this.getCompanyColor(company);
-                menuContent += `
-                    <div onclick="app.addCompanyToCity('${cityName}', '${company}'); app.contextMenu.style.display='none';"
-                         style="padding: 10px; cursor: pointer; border-radius: 4px; margin: 4px 0; transition: all 0.2s;"
-                         onmouseover="this.style.background='${color}'; this.style.color='white';"
-                         onmouseout="this.style.background='transparent'; this.style.color='#333';">
-                        <span style="display:inline-block;width:12px;height:12px;background:${color};border-radius:3px;margin-right:8px;"></span>
-                        <strong>Adicionar ${company}</strong>
-                    </div>
-                `;
-            });
-            
-            menuContent += `<div style="border-top: 1px solid #e5e7eb; margin: 4px 0;"></div>`;
-        }
-        
-        // Opção: Remover Marcação
-        menuContent += `
+        // Menu simplificado - apenas remover
+        let menuContent = `
+            <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 13px; margin-bottom: 4px;">
+                ${cityName}
+            </div>
             <div onclick="if(confirm('Remover marcação de ${cityName}?')) { app.removeCity('${cityName}'); app.contextMenu.style.display='none'; }"
-                 style="padding: 10px; cursor: pointer; border-radius: 4px; color: #ef4444; font-weight: 600; transition: all 0.2s;"
+                 style="padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600; transition: all 0.2s; font-size: 14px;"
                  onmouseover="this.style.background='#fef2f2';"
                  onmouseout="this.style.background='transparent';">
                 🗑️ Remover Marcação
@@ -553,7 +529,7 @@ class GeoClientApp {
                 </button>
             `;
             
-            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">🖱️ Botão direito para menu rápido</small>`;
+            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">🖱️ Botão direito para remover rápido</small>`;
         } else {
             // Cidade disponível
             popupContent += `<b style="font-size:16px">${name}</b><br>`;
