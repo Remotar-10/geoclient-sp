@@ -15,6 +15,7 @@ class GeoClientApp {
         this.companyDropdown = null;
         this.isDropdownOpen = false;
         this.currentCityName = null;
+        this.homeButton = null;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
@@ -45,6 +46,7 @@ class GeoClientApp {
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
+            this.createHomeButton();
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
@@ -52,7 +54,73 @@ class GeoClientApp {
             console.log('🔍 2 CLIQUES = Mostra dropdown de empresas');
             console.log('🖱️ BOTÃO DIREITO = Remover marcação');
             console.log('👆 HOVER = Mostra empresas da cidade');
+            console.log('🏠 BOTÃO HOME = Volta à visualização inicial');
         }, 100);
+    }
+
+    createHomeButton() {
+        // Remove botão existente se houver
+        const existingButton = document.getElementById('home-button');
+        if (existingButton) existingButton.remove();
+        
+        // Cria o botão Home flutuante
+        this.homeButton = document.createElement('button');
+        this.homeButton.id = 'home-button';
+        this.homeButton.innerHTML = '🏠';
+        this.homeButton.title = 'Voltar à visualização inicial';
+        this.homeButton.style.cssText = `
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+        `;
+        
+        // Efeitos hover
+        this.homeButton.addEventListener('mouseover', () => {
+            this.homeButton.style.background = '#f4f4f4';
+            this.homeButton.style.transform = 'scale(1.1)';
+        });
+        
+        this.homeButton.addEventListener('mouseout', () => {
+            this.homeButton.style.background = 'white';
+            this.homeButton.style.transform = 'scale(1)';
+        });
+        
+        // Click para resetar mapa
+        this.homeButton.addEventListener('click', () => {
+            this.resetMapView();
+        });
+        
+        // Adiciona ao container do mapa
+        const mapElement = document.getElementById('map');
+        if (mapElement) {
+            mapElement.appendChild(this.homeButton);
+            console.log('✅ Botão Home flutuante criado');
+        }
+    }
+
+    resetMapView() {
+        // Anima volta ao estado inicial
+        this.map.flyTo(this.initialView.center, this.initialView.zoom, {
+            duration: 1,
+            easeLinearity: 0.25
+        });
+        
+        console.log('🏠 Mapa voltou à visualização inicial');
     }
 
     createCompanyDropdown() {
@@ -790,7 +858,7 @@ class GeoClientApp {
         this.loadMunicipalitiesBoundaries();
         this.renderClientTable();
         this.renderMarkers();
-        console.log('♻️ Mapa resetado');
+        console.log('♻️ Mapa resetado (via botão Reset Map)');
     }
 
     openModal(clientId = null) {
