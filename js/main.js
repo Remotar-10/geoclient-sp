@@ -1,5 +1,5 @@
-// GeoClient SP - VERSÃO ESTÁVEL RESTAURADA
-// Cores sólidas + Contornos visíveis + Sistema de marcação funcional
+// GeoClient SP - VERSÃO ESTÁVEL
+// Sistema de cliques: 1=marca | 2=adiciona empresa | 3=remove
 
 class GeoClientApp {
     constructor() {
@@ -9,12 +9,13 @@ class GeoClientApp {
         this.markers = {};
         this.geoJsonLayer = null;
         this.markedCities = {};
-        this.cityLayers = {}; // Armazena referência aos layers por cidade
+        this.cityLayers = {};
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
         this.clickCount = 0;
         this.clickTimer = null;
+        this.clickTimeout = 400; // 400ms para detectar múltiplos cliques
         
         this.initialView = {
             center: [-22.5, -49.2],
@@ -39,8 +40,9 @@ class GeoClientApp {
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
-            console.log('🔵 1 CLIQUE = Marca cidade');
-            console.log('🔵 2 CLIQUES = Desmarca cidade');
+            console.log('🔵 1 CLIQUE = Marca cidade (azul)');
+            console.log('🟢 2 CLIQUES = Adiciona empresa');
+            console.log('🔴 3 CLIQUES = Remove marcação');
         }, 100);
     }
 
@@ -56,17 +58,16 @@ class GeoClientApp {
                 minZoom: 6,
                 maxZoom: 12,
                 doubleClickZoom: false,
-                tap: false  // Desabilita tap para evitar conflitos mobile
+                tap: false
             });
             
             console.log('✅ Mapa criado');
             
-            // BLOQUEIA dblclick NO MAPA INTEIRO
+            // Bloqueia dblclick no mapa
             this.map.off('dblclick');
             this.map.on('dblclick', (e) => {
                 L.DomEvent.stopPropagation(e);
                 L.DomEvent.preventDefault(e);
-                console.log('🚫 Double-click bloqueado no mapa');
                 return false;
             });
             
@@ -80,10 +81,6 @@ class GeoClientApp {
             tileLayer.addTo(this.map);
             console.log('✅ Tiles CartoDB adicionados');
             
-            tileLayer.on('load', () => {
-                console.log('✅ Tiles carregados');
-            });
-            
             tileLayer.on('tileerror', () => {
                 console.log('🔄 Tentando fallback...');
                 this.map.removeLayer(tileLayer);
@@ -96,7 +93,6 @@ class GeoClientApp {
             
             setTimeout(() => {
                 this.map.invalidateSize();
-                console.log('✅ Tamanho ajustado');
             }, 250);
             
             this.loadMunicipalitiesBoundaries();
@@ -156,7 +152,7 @@ class GeoClientApp {
                     },
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
-                        this.cityLayers[name] = layer; // Armazena referência
+                        this.cityLayers[name] = layer;
                         this.updatePopup(layer, name);
                         
                         layer.on('mouseover', () => {
@@ -172,11 +168,9 @@ class GeoClientApp {
                             this.geoJsonLayer.resetStyle(layer);
                         });
 
-                        // BLOQUEIA COMPLETAMENTE dblclick no layer
                         layer.off('dblclick');
                         layer.on('dblclick', (e) => {
                             L.DomEvent.stop(e);
-                            console.log('🚫 Double-click bloqueado no layer');
                             return false;
                         });
 
@@ -197,20 +191,25 @@ class GeoClientApp {
     handleCityClick(name, layer) {
         this.clickCount++;
         
-        if (this.clickCount === 1) {
-            this.clickTimer = setTimeout(() => {
-                this.markCity(name, layer);
-                this.clickCount = 0;
-            }, 300);
-        } else if (this.clickCount === 2) {
-            clearTimeout(this.clickTimer);
-            this.unmarkCity(name, layer);
+        clearTimeout(this.clickTimer);
+        
+        this.clickTimer = setTimeout(() => {
+            const clicks = this.clickCount;
             this.clickCount = 0;
-        }
+            
+            if (clicks === 1) {
+                this.markCity(name, layer);
+            } else if (clicks === 2) {
+                this.openCompanySelection(name, layer);
+            } else if (clicks >= 3) {
+                this.unmarkCity(name, layer);
+            }
+        }, this.clickTimeout);
     }
 
     markCity(name, layer) {
         if (!this.markedCities[name]) {
+            // Marca cidade SEM empresa (azul)
             this.markedCities[name] = { companies: [] };
             
             layer.setStyle({
@@ -222,10 +221,32 @@ class GeoClientApp {
             });
             
             this.updatePopup(layer, name);
-            console.log(`🔵 Marcado: ${name}`);
+            console.log(`🔵 Marcado: ${name} (sem empresa)`);
             
             layer.openPopup();
+            
+            // Fecha popup após 2s
+            setTimeout(() => {
+                layer.closePopup();
+            }, 2000);
+        } else {
+            // Já está marcada, apenas abre popup
+            layer.openPopup();
         }
+    }
+
+    openCompanySelection(name, layer) {
+        const cityData = this.markedCities[name];
+        
+        if (!cityData) {
+            // Se não está marcada, marca primeiro
+            this.markCity(name, layer);
+            return;
+        }
+        
+        // Abre popup para seleção de empresa
+        console.log(`🟢 Abrindo seleção de empresa: ${name}`);
+        layer.openPopup();
     }
 
     unmarkCity(name, layer) {
@@ -241,7 +262,8 @@ class GeoClientApp {
             });
             
             this.updatePopup(layer, name);
-            console.log(`🔓 Desmarcado: ${name}`);
+            console.log(`🔴 Removido: ${name}`);
+            console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
             layer.closePopup();
         }
@@ -300,11 +322,11 @@ class GeoClientApp {
                 popupContent += `<div style="padding:10px;background:#f3f4f6;border-radius:8px;text-align:center;color:#666;font-size:13px">✅ Todas as empresas adicionadas!</div>`;
             }
             
-            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">2 cliques para desmarcar</small>`;
+            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">3 cliques para remover</small>`;
         } else {
             popupContent += `<b style="font-size:16px">${name}</b><br>`;
             popupContent += `<small style="color:#666">⭕ DISPONÍVEL</small><br><br>`;
-            popupContent += `<small style="color:#0066cc;font-weight:600">1 clique para marcar</small>`;
+            popupContent += `<small style="color:#0066cc;font-weight:600">1 clique para marcar<br>2 cliques para adicionar empresa</small>`;
         }
         
         popupContent += `</div>`;
@@ -336,14 +358,12 @@ class GeoClientApp {
         
         this.loadMunicipalitiesBoundaries();
         
-        // Fecha popup após 3.5 segundos usando referência direta
         setTimeout(() => {
             const layer = this.cityLayers[cityName];
             if (layer) {
                 this.updatePopup(layer, cityName);
                 layer.openPopup();
                 
-                console.log(`⏱️ Popup fechará em 3.5s`);
                 setTimeout(() => {
                     layer.closePopup();
                     console.log(`✅ Popup fechado: ${cityName}`);
