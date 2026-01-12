@@ -337,7 +337,7 @@
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
     <!-- ⚡ CACHE BUSTING: força reload do arquivo JS -->
-    <script src="js/main.js?v=20260112-4"></script>
+    <script src="js/main.js?v=20260112-5"></script>
 
     <script>
         feather.replace();
@@ -362,19 +362,23 @@
             
             // Exportar CSV
             exportCSV.addEventListener('click', () => {
+                exportDropdown.classList.remove('active');
                 if (window.app && typeof window.app.exportData === 'function') {
                     window.app.exportData();
-                    exportDropdown.classList.remove('active');
                     console.log('📥 Exportando CSV...');
+                } else {
+                    console.error('❌ app.exportData() não encontrado!');
                 }
             });
             
-            // Exportar JSON (mesma função por enquanto, pode ser diferenciada)
+            // Exportar JSON (mesma função)
             exportJSON.addEventListener('click', () => {
+                exportDropdown.classList.remove('active');
                 if (window.app && typeof window.app.exportData === 'function') {
                     window.app.exportData();
-                    exportDropdown.classList.remove('active');
                     console.log('📥 Exportando JSON...');
+                } else {
+                    console.error('❌ app.exportData() não encontrado!');
                 }
             });
             
