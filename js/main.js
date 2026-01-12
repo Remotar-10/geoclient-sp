@@ -1,5 +1,5 @@
 // GeoClient SP - VERSÃO ESTÁVEL
-// Sistema de cliques: 1=marca | 2=abre popup | Botão direito=remover
+// Sistema de cliques: 1=zoom + dropdown | Botão direito=remover
 
 class GeoClientApp {
     constructor() {
@@ -12,6 +12,7 @@ class GeoClientApp {
         this.cityLayers = {};
         this.contextMenu = null;
         this.tooltip = null;
+        this.companyDropdown = null;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
@@ -41,14 +42,132 @@ class GeoClientApp {
             this.setupEventListeners();
             this.createContextMenu();
             this.createTooltip();
+            this.createCompanyDropdown();
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
-            console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
-            console.log('🎨 2 CLIQUES = Abre popup com lista de empresas');
+            console.log('🔍 1 CLIQUE = Zoom 3x + marca cidade');
+            console.log('🔍 2 CLIQUES = Mostra dropdown de empresas');
             console.log('🖱️ BOTÃO DIREITO = Remover marcação');
             console.log('👆 HOVER = Mostra empresas da cidade');
         }, 100);
+    }
+
+    createCompanyDropdown() {
+        // Remove dropdown existente se houver
+        const existingDropdown = document.getElementById('company-dropdown');
+        if (existingDropdown) existingDropdown.remove();
+        
+        // Cria o dropdown
+        this.companyDropdown = document.createElement('div');
+        this.companyDropdown.id = 'company-dropdown';
+        this.companyDropdown.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding: 20px;
+            z-index: 10001;
+            min-width: 320px;
+            max-width: 400px;
+        `;
+        document.body.appendChild(this.companyDropdown);
+        
+        // Fecha dropdown ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!this.companyDropdown.contains(e.target) && e.target.closest('.leaflet-interactive') === null) {
+                this.hideCompanyDropdown();
+            }
+        });
+        
+        console.log('✅ Dropdown de empresas criado');
+    }
+
+    showCompanyDropdown(cityName) {
+        const cityData = this.markedCities[cityName];
+        if (!cityData) return;
+        
+        const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
+        
+        let dropdownContent = `
+            <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 20px; color: #1f2937;">${cityName}</h3>
+                <small style="color: #6b7280; display: block; margin-top: 4px;">Selecione a empresa</small>
+            </div>
+        `;
+        
+        if (availableCompanies.length === 0) {
+            dropdownContent += `
+                <div style="text-align: center; padding: 20px; color: #6b7280;">
+                    ✅ Todas as empresas já foram adicionadas!
+                </div>
+            `;
+        } else {
+            dropdownContent += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            
+            availableCompanies.forEach(company => {
+                const color = this.getCompanyColor(company);
+                dropdownContent += `
+                    <button onclick="app.addCompanyToCity('${cityName}', '${company}'); app.hideCompanyDropdown();"
+                            style="
+                                background: white;
+                                border: 2px solid ${color};
+                                padding: 14px 18px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-size: 16px;
+                                font-weight: 600;
+                                color: ${color};
+                                transition: all 0.2s;
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                            "
+                            onmouseover="this.style.background='${color}'; this.style.color='white';"
+                            onmouseout="this.style.background='white'; this.style.color='${color}';">
+                        <span style="display:inline-block;width:16px;height:16px;background:${color};border-radius:4px;"></span>
+                        ${company}
+                    </button>
+                `;
+            });
+            
+            dropdownContent += `</div>`;
+        }
+        
+        // Botão cancelar
+        dropdownContent += `
+            <button onclick="app.hideCompanyDropdown();"
+                    style="
+                        background: #f3f4f6;
+                        border: none;
+                        padding: 12px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        width: 100%;
+                        margin-top: 12px;
+                        font-size: 14px;
+                        color: #6b7280;
+                        font-weight: 600;
+                    "
+                    onmouseover="this.style.background='#e5e7eb';"
+                    onmouseout="this.style.background='#f3f4f6';">
+                Cancelar
+            </button>
+        `;
+        
+        this.companyDropdown.innerHTML = dropdownContent;
+        this.companyDropdown.style.display = 'block';
+        
+        console.log(`📝 Dropdown mostrado: ${cityName}`);
+    }
+
+    hideCompanyDropdown() {
+        this.companyDropdown.style.display = 'none';
+        console.log(`❌ Dropdown fechado`);
     }
 
     createTooltip() {
@@ -149,8 +268,6 @@ class GeoClientApp {
         
         this.tooltip.innerHTML = tooltipContent;
         this.tooltip.style.display = 'block';
-        
-        console.log(`👆 Tooltip mostrado: ${cityName}`);
     }
 
     hideTooltip() {
@@ -324,7 +441,6 @@ class GeoClientApp {
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
                         this.cityLayers[name] = layer;
-                        this.updatePopup(layer, name);
                         
                         // 👆 Mouseover - Mostra tooltip
                         layer.on('mouseover', () => {
@@ -357,7 +473,7 @@ class GeoClientApp {
 
                         layer.on('click', (e) => {
                             L.DomEvent.stop(e);
-                            this.handleCityClick(name, layer);
+                            this.handleCityClick(name, layer, e);
                         });
                     }
                 }).addTo(this.map);
@@ -369,7 +485,7 @@ class GeoClientApp {
             });
     }
 
-    handleCityClick(name, layer) {
+    handleCityClick(name, layer, event) {
         this.clickCount++;
         
         clearTimeout(this.clickTimer);
@@ -379,16 +495,33 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
-                this.markCity(name, layer);
+                // 1º CLIQUE: Zoom 3x + marca cidade
+                this.zoomAndMarkCity(name, layer, event);
             } else if (clicks >= 2) {
-                this.openCompanySelection(name, layer);
+                // 2º CLIQUE: Mostra dropdown de empresas
+                this.showCompanyDropdown(name);
             }
         }, this.clickTimeout);
     }
 
-    markCity(name, layer) {
+    zoomAndMarkCity(name, layer, event) {
+        // Pega as coordenadas do clique
+        const latlng = event.latlng;
+        
+        // Zoom 3x (multiplica o zoom atual por 1.5)
+        const currentZoom = this.map.getZoom();
+        const newZoom = Math.min(currentZoom + 3, 12); // Máximo zoom 12
+        
+        // Anima zoom para a cidade
+        this.map.flyTo(latlng, newZoom, {
+            duration: 0.8,
+            easeLinearity: 0.25
+        });
+        
+        console.log(`🔍 Zoom 3x: ${name} (${currentZoom} → ${newZoom})`);
+        
+        // Marca cidade se ainda não estiver marcada
         if (!this.markedCities[name]) {
-            // Marca cidade SEM empresa (cinza escuro - aguardando)
             this.markedCities[name] = { companies: [] };
             
             layer.setStyle({
@@ -399,37 +532,13 @@ class GeoClientApp {
                 fillOpacity: 0.6
             });
             
-            this.updatePopup(layer, name);
             console.log(`🟤 Marcado: ${name} (aguardando empresa)`);
             
-            // NÃO abre popup ao marcar
-        } else {
-            // Já está marcada, apenas abre popup para ver detalhes
-            layer.openPopup();
+            // Mostra dropdown após zoom
+            setTimeout(() => {
+                this.showCompanyDropdown(name);
+            }, 900);
         }
-    }
-
-    openCompanySelection(name, layer) {
-        const cityData = this.markedCities[name];
-        
-        if (!cityData) {
-            // Se não está marcada, marca primeiro
-            this.markCity(name, layer);
-            return;
-        }
-        
-        // Abre popup para seleção de empresa
-        console.log(`🎨 Abrindo seleção de empresa: ${name}`);
-        layer.openPopup();
-        
-        // ✅ Expande automaticamente a lista de empresas
-        setTimeout(() => {
-            const dropdown = document.getElementById(`company-list-${name.replace(/\s+/g, '-')}`);
-            if (dropdown) {
-                dropdown.style.display = 'block';
-                console.log(`✅ Lista de empresas expandida: ${name}`);
-            }
-        }, 100);
     }
 
     removeCity(name) {
@@ -447,98 +556,9 @@ class GeoClientApp {
                 fillOpacity: 0.2
             });
             
-            this.updatePopup(layer, name);
             console.log(`🗑️ Removido: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
-            
-            layer.closePopup();
         }
-    }
-
-    updatePopup(layer, name) {
-        const isMarked = this.markedCities[name];
-        const safeId = name.replace(/\s+/g, '-');
-        let popupContent = `<div style="padding:12px; min-width:250px">`;
-        
-        if (isMarked) {
-            // Cidade marcada
-            if (isMarked.companies.length > 0) {
-                // COM empresa
-                const color = this.getCompanyColor(isMarked.companies[0]);
-                popupContent += `<b style="color:${color}; font-size:16px">${name}</b><br>`;
-                popupContent += `<small style="color:#666">🎨 COM EMPRESA</small><br><br>`;
-            } else {
-                // SEM empresa (aguardando)
-                popupContent += `<b style="color:#6b7280; font-size:16px">${name}</b><br>`;
-                popupContent += `<small style="color:#f59e0b">⏳ AGUARDANDO EMPRESA</small><br><br>`;
-            }
-            
-            if (isMarked.companies.length > 0) {
-                popupContent += `<div style="margin-bottom:12px">`;
-                popupContent += `<b style="font-size:13px">Empresas (${isMarked.companies.length}):</b><br>`;
-                isMarked.companies.forEach(company => {
-                    const color = this.getCompanyColor(company);
-                    popupContent += `<span style="background:${color};color:white;padding:4px 10px;border-radius:6px;display:inline-block;margin:3px;font-size:12px;font-weight:600">${company}</span>`;
-                });
-                popupContent += `</div>`;
-            }
-            
-            const availableCompanies = this.availableCompanies.filter(c => !isMarked.companies.includes(c));
-            
-            if (availableCompanies.length > 0) {
-                popupContent += `
-                    <div style="margin-bottom:10px">
-                        <button class="add-company-btn" type="button" 
-                                style="background:#3b82f6;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;width:100%;font-size:14px;font-weight:600;color:white"
-                                onclick="event.stopPropagation(); var el = document.getElementById('company-list-${safeId}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">
-                            ➕ Adicionar Empresa
-                        </button>
-                        <div id="company-list-${safeId}" style="width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-radius:8px;padding:8px;display:none;margin-top:8px;background:white">
-                `;
-                
-                availableCompanies.forEach(company => {
-                    const color = this.getCompanyColor(company);
-                    popupContent += `
-                        <button type="button" 
-                                onclick="app.addCompanyToCity('${name}', '${company}')"
-                                style="padding:10px 14px;border-radius:6px;cursor:pointer;border:none;background:white;width:100%;text-align:left;margin:2px 0;transition:all 0.2s"
-                                onmouseover="this.style.background='${color}';this.style.color='white'"
-                                onmouseout="this.style.background='white';this.style.color='#333'">
-                            <span style="display:inline-block;width:14px;height:14px;background:${color};border-radius:3px;margin-right:8px"></span>
-                            <strong>${company}</strong>
-                        </button>
-                    `;
-                });
-                
-                popupContent += `
-                        </div>
-                    </div>
-                `;
-            } else {
-                popupContent += `<div style="padding:10px;background:#f3f4f6;border-radius:8px;text-align:center;color:#666;font-size:13px">✅ Todas as empresas adicionadas!</div>`;
-            }
-            
-            // ❌ BOTÃO REMOVER
-            popupContent += `
-                <button type="button" 
-                        onclick="if(confirm('Remover marcação de ${name}?')) app.removeCity('${name}')"
-                        style="background:#ef4444;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;width:100%;font-size:14px;font-weight:600;color:white;margin-top:8px;transition:all 0.2s"
-                        onmouseover="this.style.background='#dc2626'"
-                        onmouseout="this.style.background='#ef4444'">
-                    🗑️ Remover Marcação
-                </button>
-            `;
-            
-            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">🖱️ Botão direito para remover rápido</small>`;
-        } else {
-            // Cidade disponível
-            popupContent += `<b style="font-size:16px">${name}</b><br>`;
-            popupContent += `<small style="color:#666">⚪ DISPONÍVEL</small><br><br>`;
-            popupContent += `<small style="color:#0066cc;font-weight:600">1 clique para marcar<br>2 cliques para adicionar empresa</small>`;
-        }
-        
-        popupContent += `</div>`;
-        layer.bindPopup(popupContent, { maxWidth: 280 });
     }
 
     getCompanyColor(company) {
@@ -566,19 +586,6 @@ class GeoClientApp {
         }
         
         this.loadMunicipalitiesBoundaries();
-        
-        // ✅ Fecha popup automaticamente após adicionar
-        setTimeout(() => {
-            const layer = this.cityLayers[cityName];
-            if (layer) {
-                this.updatePopup(layer, cityName);
-                
-                setTimeout(() => {
-                    layer.closePopup();
-                    console.log(`✅ Popup fechado após adicionar: ${cityName}`);
-                }, 2000);
-            }
-        }, 300);
     }
 
     setupEventListeners() {
