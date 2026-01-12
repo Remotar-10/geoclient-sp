@@ -1,5 +1,5 @@
 // GeoClient SP - VERSÃO ESTÁVEL
-// Sistema de cliques: 1=marca | 2=adiciona empresa | 3=remove
+// Sistema de cliques: 1=marca | 2=abre popup | Botão=remove
 
 class GeoClientApp {
     constructor() {
@@ -40,9 +40,9 @@ class GeoClientApp {
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
-            console.log('🞪 1 CLIQUE = Marca cidade (aguardando empresa)');
-            console.log('🎨 2 CLIQUES = Adiciona empresa (ganha cor)');
-            console.log('🔴 3 CLIQUES = Remove marcação');
+            console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
+            console.log('🎨 2 CLIQUES = Abre popup (adiciona empresa)');
+            console.log('❌ BOTÃO = Remove marcação');
         }, 100);
     }
 
@@ -203,10 +203,8 @@ class GeoClientApp {
             
             if (clicks === 1) {
                 this.markCity(name, layer);
-            } else if (clicks === 2) {
+            } else if (clicks >= 2) {
                 this.openCompanySelection(name, layer);
-            } else if (clicks >= 3) {
-                this.unmarkCity(name, layer);
             }
         }, this.clickTimeout);
     }
@@ -225,7 +223,7 @@ class GeoClientApp {
             });
             
             this.updatePopup(layer, name);
-            console.log(`🞪 Marcado: ${name} (aguardando empresa)`);
+            console.log(`🟤 Marcado: ${name} (aguardando empresa)`);
             
             // NÃO abre popup ao marcar
         } else {
@@ -248,7 +246,10 @@ class GeoClientApp {
         layer.openPopup();
     }
 
-    unmarkCity(name, layer) {
+    removeCity(name) {
+        const layer = this.cityLayers[name];
+        if (!layer) return;
+        
         if (this.markedCities[name]) {
             delete this.markedCities[name];
             
@@ -261,7 +262,7 @@ class GeoClientApp {
             });
             
             this.updatePopup(layer, name);
-            console.log(`🔴 Removido: ${name}`);
+            console.log(`🗑️ Removido: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
             layer.closePopup();
@@ -330,11 +331,20 @@ class GeoClientApp {
                 popupContent += `<div style="padding:10px;background:#f3f4f6;border-radius:8px;text-align:center;color:#666;font-size:13px">✅ Todas as empresas adicionadas!</div>`;
             }
             
-            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">3 cliques para remover</small>`;
+            // ❌ BOTÃO REMOVER
+            popupContent += `
+                <button type="button" 
+                        onclick="if(confirm('Remover marcação de ${name}?')) app.removeCity('${name}')"
+                        style="background:#ef4444;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;width:100%;font-size:14px;font-weight:600;color:white;margin-top:8px;transition:all 0.2s"
+                        onmouseover="this.style.background='#dc2626'"
+                        onmouseout="this.style.background='#ef4444'">
+                    🗑️ Remover Marcação
+                </button>
+            `;
         } else {
             // Cidade disponível
             popupContent += `<b style="font-size:16px">${name}</b><br>`;
-            popupContent += `<small style="color:#666">⭕ DISPONÍVEL</small><br><br>`;
+            popupContent += `<small style="color:#666">⚪ DISPONÍVEL</small><br><br>`;
             popupContent += `<small style="color:#0066cc;font-weight:600">1 clique para marcar<br>2 cliques para adicionar empresa</small>`;
         }
         
@@ -368,17 +378,16 @@ class GeoClientApp {
         
         this.loadMunicipalitiesBoundaries();
         
-        // ✅ APENAS aqui fecha o popup automaticamente
+        // ✅ Fecha popup automaticamente após adicionar
         setTimeout(() => {
             const layer = this.cityLayers[cityName];
             if (layer) {
                 this.updatePopup(layer, cityName);
                 
-                // Fecha popup após adicionar empresa
                 setTimeout(() => {
                     layer.closePopup();
                     console.log(`✅ Popup fechado após adicionar: ${cityName}`);
-                }, 2000);  // 2s para ver a confirmação
+                }, 2000);
             }
         }, 300);
     }
