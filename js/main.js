@@ -136,10 +136,10 @@ class GeoClientApp {
                         // Cidade marcada SEM empresa - CINZA ESCURO (aguardando)
                         else if (cityData) {
                             return {
-                                fillColor: '#9ca3af',  // Cinza médio mais visível
+                                fillColor: '#9ca3af',
                                 weight: 2,
                                 opacity: 1,
-                                color: '#4b5563',      // Contorno cinza escuro
+                                color: '#4b5563',
                                 fillOpacity: 0.6
                             };
                         } 
@@ -227,14 +227,9 @@ class GeoClientApp {
             this.updatePopup(layer, name);
             console.log(`🞪 Marcado: ${name} (aguardando empresa)`);
             
-            layer.openPopup();
-            
-            // Fecha popup após 2s
-            setTimeout(() => {
-                layer.closePopup();
-            }, 2000);
+            // NÃO abre popup ao marcar
         } else {
-            // Já está marcada, apenas abre popup
+            // Já está marcada, apenas abre popup para ver detalhes
             layer.openPopup();
         }
     }
@@ -373,16 +368,17 @@ class GeoClientApp {
         
         this.loadMunicipalitiesBoundaries();
         
+        // ✅ APENAS aqui fecha o popup automaticamente
         setTimeout(() => {
             const layer = this.cityLayers[cityName];
             if (layer) {
                 this.updatePopup(layer, cityName);
-                layer.openPopup();
                 
+                // Fecha popup após adicionar empresa
                 setTimeout(() => {
                     layer.closePopup();
-                    console.log(`✅ Popup fechado: ${cityName}`);
-                }, 3500);
+                    console.log(`✅ Popup fechado após adicionar: ${cityName}`);
+                }, 2000);  // 2s para ver a confirmação
             }
         }, 300);
     }
