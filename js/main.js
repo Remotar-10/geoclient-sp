@@ -15,7 +15,7 @@ class GeoClientApp {
         
         this.clickCount = 0;
         this.clickTimer = null;
-        this.clickTimeout = 400; // 400ms para detectar múltiplos cliques
+        this.clickTimeout = 400;
         
         this.initialView = {
             center: [-22.5, -49.2],
@@ -40,8 +40,8 @@ class GeoClientApp {
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
-            console.log('🔵 1 CLIQUE = Marca cidade (azul)');
-            console.log('🟢 2 CLIQUES = Adiciona empresa');
+            console.log('🞪 1 CLIQUE = Marca cidade (aguardando empresa)');
+            console.log('🎨 2 CLIQUES = Adiciona empresa (ganha cor)');
             console.log('🔴 3 CLIQUES = Remove marcação');
         }, 100);
     }
@@ -63,7 +63,6 @@ class GeoClientApp {
             
             console.log('✅ Mapa criado');
             
-            // Bloqueia dblclick no mapa
             this.map.off('dblclick');
             this.map.on('dblclick', (e) => {
                 L.DomEvent.stopPropagation(e);
@@ -123,6 +122,7 @@ class GeoClientApp {
                         const name = this.getMunicipalityName(feature);
                         const cityData = this.markedCities[name];
                         
+                        // Cidade COM empresa - USA COR DA EMPRESA
                         if (cityData && cityData.companies.length > 0) {
                             const color = this.getCompanyColor(cityData.companies[0]);
                             return {
@@ -132,15 +132,19 @@ class GeoClientApp {
                                 color: '#374151',
                                 fillOpacity: 0.7
                             };
-                        } else if (cityData) {
+                        } 
+                        // Cidade marcada SEM empresa - CINZA ESCURO (aguardando)
+                        else if (cityData) {
                             return {
-                                fillColor: '#3b82f6',
+                                fillColor: '#9ca3af',  // Cinza médio mais visível
                                 weight: 2,
                                 opacity: 1,
-                                color: '#1e40af',
-                                fillOpacity: 0.7
+                                color: '#4b5563',      // Contorno cinza escuro
+                                fillOpacity: 0.6
                             };
-                        } else {
+                        } 
+                        // Cidade disponível - CINZA CLARO
+                        else {
                             return {
                                 fillColor: '#d1d5db',
                                 weight: 1.5,
@@ -209,19 +213,19 @@ class GeoClientApp {
 
     markCity(name, layer) {
         if (!this.markedCities[name]) {
-            // Marca cidade SEM empresa (azul)
+            // Marca cidade SEM empresa (cinza escuro - aguardando)
             this.markedCities[name] = { companies: [] };
             
             layer.setStyle({
-                fillColor: '#3b82f6',
+                fillColor: '#9ca3af',
                 weight: 2,
                 opacity: 1,
-                color: '#1e40af',
-                fillOpacity: 0.7
+                color: '#4b5563',
+                fillOpacity: 0.6
             });
             
             this.updatePopup(layer, name);
-            console.log(`🔵 Marcado: ${name} (sem empresa)`);
+            console.log(`🞪 Marcado: ${name} (aguardando empresa)`);
             
             layer.openPopup();
             
@@ -245,7 +249,7 @@ class GeoClientApp {
         }
         
         // Abre popup para seleção de empresa
-        console.log(`🟢 Abrindo seleção de empresa: ${name}`);
+        console.log(`🎨 Abrindo seleção de empresa: ${name}`);
         layer.openPopup();
     }
 
@@ -265,7 +269,6 @@ class GeoClientApp {
             console.log(`🔴 Removido: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
-            // NÃO abre popup ao remover
             layer.closePopup();
         }
     }
@@ -275,8 +278,17 @@ class GeoClientApp {
         let popupContent = `<div style="padding:12px; min-width:250px">`;
         
         if (isMarked) {
-            popupContent += `<b style="color:#3b82f6; font-size:16px">${name}</b><br>`;
-            popupContent += `<small style="color:#666">🎨 MARCADO</small><br><br>`;
+            // Cidade marcada
+            if (isMarked.companies.length > 0) {
+                // COM empresa
+                const color = this.getCompanyColor(isMarked.companies[0]);
+                popupContent += `<b style="color:${color}; font-size:16px">${name}</b><br>`;
+                popupContent += `<small style="color:#666">🎨 COM EMPRESA</small><br><br>`;
+            } else {
+                // SEM empresa (aguardando)
+                popupContent += `<b style="color:#6b7280; font-size:16px">${name}</b><br>`;
+                popupContent += `<small style="color:#f59e0b">⏳ AGUARDANDO EMPRESA</small><br><br>`;
+            }
             
             if (isMarked.companies.length > 0) {
                 popupContent += `<div style="margin-bottom:12px">`;
@@ -325,6 +337,7 @@ class GeoClientApp {
             
             popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">3 cliques para remover</small>`;
         } else {
+            // Cidade disponível
             popupContent += `<b style="font-size:16px">${name}</b><br>`;
             popupContent += `<small style="color:#666">⭕ DISPONÍVEL</small><br><br>`;
             popupContent += `<small style="color:#0066cc;font-weight:600">1 clique para marcar<br>2 cliques para adicionar empresa</small>`;
@@ -350,7 +363,8 @@ class GeoClientApp {
         if (!city) return;
         
         city.companies.push(company);
-        console.log(`✅ ${company} adicionada em ${cityName}`);
+        const color = this.getCompanyColor(company);
+        console.log(`✅ ${company} adicionada em ${cityName} - Cor: ${color}`);
         
         const oldLayer = this.geoJsonLayer;
         if (oldLayer) {
