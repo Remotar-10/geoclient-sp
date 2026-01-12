@@ -8,7 +8,7 @@
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
 
-    <!-- Leaflet - Volta para 1.9.4 (1.9.6 bloqueado pelo UNPKG) -->
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
@@ -23,6 +23,154 @@
             border-radius: 50%;
             border: 2px solid white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* Botões Modernos Import/Export (IMAGEM) */
+        .action-buttons-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .btn-modern {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-modern i {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Botão IMPORTAR (laranja/vermelho) */
+        .btn-import {
+            background: linear-gradient(135deg, #ff5722 0%, #f44336 100%);
+        }
+        
+        .btn-import:hover {
+            background: linear-gradient(135deg, #e64a19 0%, #d32f2f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+        }
+        
+        /* Botão EXPORTAR (azul) */
+        .btn-export {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            position: relative;
+        }
+        
+        .btn-export:hover {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+        
+        /* Seta dropdown */
+        .btn-export .dropdown-arrow {
+            margin-left: 8px;
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+        
+        /* Dropdown Exportar */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 52px;
+            background: white;
+            min-width: 220px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .export-dropdown.active .export-dropdown-content {
+            display: block;
+            animation: dropdownSlide 0.2s ease;
+        }
+        
+        .export-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .export-dropdown-content button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 14px 18px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 14px;
+            color: #374151;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .export-dropdown-content button:last-child {
+            border-bottom: none;
+        }
+        
+        .export-dropdown-content button:hover {
+            background-color: #f9fafb;
+        }
+        
+        .export-dropdown-content button i {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Botão destrutivo (vermelho) */
+        .btn-danger {
+            color: #dc2626 !important;
+        }
+        
+        .btn-danger:hover {
+            background-color: #fef2f2 !important;
+        }
+        
+        /* Botão Dashboard (roxo) */
+        .btn-dashboard {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+        }
+        
+        .btn-dashboard:hover {
+            background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3);
         }
         
         /* Tailwind-like utilities inline */
@@ -109,81 +257,6 @@
             .sm\:flex-row { flex-direction: row; }
             .sm\:items-center { align-items: center; }
         }
-        
-        /* 🆕 Dropdown de Exportação */
-        .export-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .export-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background-color: white;
-            min-width: 200px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-radius: 0.5rem;
-            z-index: 1000;
-            margin-top: 8px;
-            border: 2px solid #e5e7eb;
-            overflow: hidden;
-        }
-        
-        .export-dropdown-content button {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 14px 18px;
-            text-align: left;
-            background: white;
-            border: none;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-size: 14px;
-            color: #374151;
-            font-weight: 600;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .export-dropdown-content button:last-child {
-            border-bottom: none;
-        }
-        
-        .export-dropdown-content button:hover {
-            background-color: #f9fafb;
-        }
-        
-        .export-dropdown-content button i {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-        }
-        
-        .export-dropdown.active .export-dropdown-content {
-            display: block;
-        }
-        
-        /* Seta do dropdown */
-        .dropdown-arrow {
-            margin-left: 8px;
-            transition: transform 0.2s;
-            font-size: 11px;
-        }
-        
-        .export-dropdown.active .dropdown-arrow {
-            transform: rotate(180deg);
-        }
-        
-        /* Botão de ação destrutiva (vermelho) */
-        .btn-danger {
-            background-color: #dc2626;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #b91c1c;
-        }
     </style>
 </head>
 
@@ -250,23 +323,25 @@
                             <h1 class="text-2xl font-bold">São Paulo Map</h1>
                             <p class="text-gray-600 text-sm">Click on municipalities for details</p>
                         </div>
-                        <div class="flex gap-2">
-                            <!-- 🟪 Dashboard (primário - roxo) -->
-                            <button id="open-dashboard" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center">
-                                <i data-feather="bar-chart-2" class="w-4 h-4 mr-2"></i>
+                        
+                        <!-- ✨ BOTÕES MODERNOS (IMAGEM) -->
+                        <div class="action-buttons-container">
+                            <!-- Dashboard -->
+                            <button id="open-dashboard" class="btn-modern btn-dashboard">
+                                <i data-feather="bar-chart-2"></i>
                                 Dashboard
                             </button>
                             
-                            <!-- 📥 IMPORT CSV (NOVO - laranja) -->
-                            <button id="import-csv-btn" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 flex items-center">
-                                <i data-feather="upload" class="w-4 h-4 mr-2"></i>
+                            <!-- Importar CSV -->
+                            <button id="import-csv-btn" class="btn-modern btn-import">
+                                <i data-feather="upload"></i>
                                 Importar CSV
                             </button>
                             
-                            <!-- ⬇️ Exportar (dropdown unificado) -->
+                            <!-- Exportar (com dropdown) -->
                             <div class="export-dropdown">
-                                <button id="export-toggle" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
-                                    <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                <button id="export-toggle" class="btn-modern btn-export">
+                                    <i data-feather="download"></i>
                                     Exportar
                                     <span class="dropdown-arrow">▼</span>
                                 </button>
@@ -279,9 +354,9 @@
                                         <i data-feather="code"></i>
                                         Exportar JSON
                                     </button>
-                                    <button id="clear-data" class="btn-danger" style="color: white;">
+                                    <button id="clear-data" class="btn-danger">
                                         <i data-feather="trash-2"></i>
-                                        Limpar Dados
+                                        Limpar Todos os Dados
                                     </button>
                                 </div>
                             </div>
@@ -358,19 +433,17 @@
         </div>
     </div>
 
-    <!-- ✅ IMPORTANTE: Carregue os dados ANTES do main.js -->
+    <!-- Scripts -->
     <script src="data/clients.js"></script>
     <script src="components/navbar.js"></script>
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
-    <!-- ⚡ CACHE BUSTING: força reload do arquivo JS -->
-    <script src="js/main.js?v=20260112-8"></script>
+    <script src="js/main.js?v=20260112-9"></script>
 
     <script>
         feather.replace();
         
-        // 🆕 Aguarda o app estar pronto ANTES de configurar os event listeners
-        function setupExportButtons() {
+        function setupModernButtons() {
             const exportDropdown = document.querySelector('.export-dropdown');
             const exportToggle = document.getElementById('export-toggle');
             const exportCSV = document.getElementById('export-csv');
@@ -387,7 +460,7 @@
             exportToggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 exportDropdown.classList.toggle('active');
-                feather.replace(); // Atualiza ícones
+                feather.replace();
             });
             
             // Fecha ao clicar fora
@@ -395,7 +468,7 @@
                 exportDropdown.classList.remove('active');
             });
             
-            // 📥 IMPORT CSV (NOVO)
+            // Importar CSV
             importCSVBtn.addEventListener('click', () => {
                 if (window.app && typeof window.app.showImportModal === 'function') {
                     window.app.showImportModal();
@@ -434,21 +507,19 @@
                 }
             });
             
-            console.log('✅ Botões configurados (incluindo Import CSV)');
+            console.log('✨ Botões modernos configurados!');
         }
         
-        // Aguarda DOMContentLoaded E o app estar inicializado
         document.addEventListener('DOMContentLoaded', () => {
             console.log('✅ DOM carregado');
             
-            // Aguarda um pouco para o app estar pronto
             setTimeout(() => {
                 if (window.app) {
-                    setupExportButtons();
-                    console.log('✅ GeoClient SP Premium v2.1 - Import CSV Ativado!');
+                    setupModernButtons();
+                    console.log('✨ GeoClient SP Premium v2.2 - Botões Modernos Ativados!');
                     feather.replace();
                 } else {
-                    console.error('❌ window.app não encontrado após timeout!');
+                    console.error('❌ window.app não encontrado!');
                 }
             }, 600);
         });
