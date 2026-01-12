@@ -1,5 +1,5 @@
 // GeoClient SP - VERSÃO ESTÁVEL
-// Sistema de cliques: 1=marca | 2=abre popup | Botão=remove
+// Sistema de cliques: 1=marca | 2=abre popup | Botão direito=menu contexto
 
 class GeoClientApp {
     constructor() {
@@ -10,6 +10,7 @@ class GeoClientApp {
         this.geoJsonLayer = null;
         this.markedCities = {};
         this.cityLayers = {};
+        this.contextMenu = null;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
@@ -37,13 +38,94 @@ class GeoClientApp {
         setTimeout(() => {
             this.initMap();
             this.setupEventListeners();
+            this.createContextMenu();
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
             console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
             console.log('🎨 2 CLIQUES = Abre popup com lista de empresas');
-            console.log('❌ BOTÃO = Remove marcação');
+            console.log('🖱️ BOTÃO DIREITO = Menu contexto (remover)');
         }, 100);
+    }
+
+    createContextMenu() {
+        // Remove menu existente se houver
+        const existingMenu = document.getElementById('city-context-menu');
+        if (existingMenu) existingMenu.remove();
+        
+        // Cria o menu de contexto
+        this.contextMenu = document.createElement('div');
+        this.contextMenu.id = 'city-context-menu';
+        this.contextMenu.style.cssText = `
+            position: fixed;
+            display: none;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            padding: 8px;
+            z-index: 10000;
+            min-width: 200px;
+        `;
+        document.body.appendChild(this.contextMenu);
+        
+        // Fecha menu ao clicar fora
+        document.addEventListener('click', () => {
+            this.contextMenu.style.display = 'none';
+        });
+        
+        console.log('✅ Menu de contexto criado');
+    }
+
+    showContextMenu(event, cityName) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const cityData = this.markedCities[cityName];
+        if (!cityData) return; // Só mostra menu em cidades marcadas
+        
+        let menuContent = '';
+        
+        // Opção: Adicionar Empresa
+        const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
+        if (availableCompanies.length > 0) {
+            menuContent += `
+                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 12px;">
+                    ${cityName}
+                </div>
+            `;
+            
+            availableCompanies.forEach(company => {
+                const color = this.getCompanyColor(company);
+                menuContent += `
+                    <div onclick="app.addCompanyToCity('${cityName}', '${company}'); app.contextMenu.style.display='none';"
+                         style="padding: 10px; cursor: pointer; border-radius: 4px; margin: 4px 0; transition: all 0.2s;"
+                         onmouseover="this.style.background='${color}'; this.style.color='white';"
+                         onmouseout="this.style.background='transparent'; this.style.color='#333';">
+                        <span style="display:inline-block;width:12px;height:12px;background:${color};border-radius:3px;margin-right:8px;"></span>
+                        <strong>Adicionar ${company}</strong>
+                    </div>
+                `;
+            });
+            
+            menuContent += `<div style="border-top: 1px solid #e5e7eb; margin: 4px 0;"></div>`;
+        }
+        
+        // Opção: Remover Marcação
+        menuContent += `
+            <div onclick="if(confirm('Remover marcação de ${cityName}?')) { app.removeCity('${cityName}'); app.contextMenu.style.display='none'; }"
+                 style="padding: 10px; cursor: pointer; border-radius: 4px; color: #ef4444; font-weight: 600; transition: all 0.2s;"
+                 onmouseover="this.style.background='#fef2f2';"
+                 onmouseout="this.style.background='transparent';">
+                🗑️ Remover Marcação
+            </div>
+        `;
+        
+        this.contextMenu.innerHTML = menuContent;
+        this.contextMenu.style.display = 'block';
+        this.contextMenu.style.left = event.pageX + 'px';
+        this.contextMenu.style.top = event.pageY + 'px';
+        
+        console.log(`🖱️ Menu contexto aberto: ${cityName}`);
     }
 
     initMap() {
@@ -176,6 +258,12 @@ class GeoClientApp {
                         layer.on('dblclick', (e) => {
                             L.DomEvent.stop(e);
                             return false;
+                        });
+
+                        // 🖱️ Botão direito
+                        layer.on('contextmenu', (e) => {
+                            L.DomEvent.stop(e);
+                            this.showContextMenu(e.originalEvent, name);
                         });
 
                         layer.on('click', (e) => {
@@ -351,6 +439,8 @@ class GeoClientApp {
                     🗑️ Remover Marcação
                 </button>
             `;
+            
+            popupContent += `<small style="color:#999;font-size:11px;display:block;margin-top:8px;text-align:center">🖱️ Botão direito para menu rápido</small>`;
         } else {
             // Cidade disponível
             popupContent += `<b style="font-size:16px">${name}</b><br>`;
