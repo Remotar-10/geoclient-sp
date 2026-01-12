@@ -11,6 +11,7 @@ class GeoClientApp {
         this.markedCities = {};
         this.cityLayers = {};
         this.contextMenu = null;
+        this.tooltip = null;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
@@ -39,13 +40,144 @@ class GeoClientApp {
             this.initMap();
             this.setupEventListeners();
             this.createContextMenu();
+            this.createTooltip();
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
             console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
             console.log('🎨 2 CLIQUES = Abre popup com lista de empresas');
             console.log('🖱️ BOTÃO DIREITO = Menu contexto (remover)');
+            console.log('👆 HOVER = Mostra empresas e funcionários');
         }, 100);
+    }
+
+    createTooltip() {
+        // Remove tooltip existente se houver
+        const existingTooltip = document.getElementById('city-tooltip');
+        if (existingTooltip) existingTooltip.remove();
+        
+        // Cria o tooltip
+        this.tooltip = document.createElement('div');
+        this.tooltip.id = 'city-tooltip';
+        this.tooltip.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            padding: 16px;
+            z-index: 9999;
+            min-width: 280px;
+            max-width: 350px;
+            border: 2px solid #e5e7eb;
+        `;
+        document.body.appendChild(this.tooltip);
+        
+        console.log('✅ Tooltip criado');
+    }
+
+    showTooltip(cityName) {
+        const cityData = this.markedCities[cityName];
+        
+        if (!cityData) {
+            // Cidade não marcada
+            this.tooltip.innerHTML = `
+                <div style="text-align: center;">
+                    <b style="font-size: 16px; color: #6b7280;">${cityName}</b><br>
+                    <small style="color: #9ca3af;">⚪ Sem cobertura</small>
+                </div>
+            `;
+            this.tooltip.style.display = 'block';
+            return;
+        }
+        
+        let tooltipContent = '';
+        
+        // Cabeçalho
+        if (cityData.companies.length > 0) {
+            const color = this.getCompanyColor(cityData.companies[0]);
+            tooltipContent += `
+                <div style="border-bottom: 2px solid ${color}; padding-bottom: 12px; margin-bottom: 12px;">
+                    <b style="font-size: 18px; color: ${color};">${cityName}</b><br>
+                    <small style="color: #6b7280;">🎨 ${cityData.companies.length} empresa(s) atuando</small>
+                </div>
+            `;
+        } else {
+            tooltipContent += `
+                <div style="border-bottom: 2px solid #9ca3af; padding-bottom: 12px; margin-bottom: 12px;">
+                    <b style="font-size: 18px; color: #6b7280;">${cityName}</b><br>
+                    <small style="color: #f59e0b;">⏳ Aguardando empresa</small>
+                </div>
+            `;
+        }
+        
+        // Empresas
+        if (cityData.companies.length > 0) {
+            tooltipContent += `<div style="margin-bottom: 12px;">`;
+            tooltipContent += `<b style="font-size: 13px; color: #374151;">📍 Empresas:</b><br>`;
+            cityData.companies.forEach(company => {
+                const color = this.getCompanyColor(company);
+                tooltipContent += `
+                    <span style="
+                        background: ${color};
+                        color: white;
+                        padding: 4px 10px;
+                        border-radius: 6px;
+                        display: inline-block;
+                        margin: 4px 4px 4px 0;
+                        font-size: 12px;
+                        font-weight: 600;
+                    ">${company}</span>
+                `;
+            });
+            tooltipContent += `</div>`;
+        }
+        
+        // Funcionários (clientes na cidade)
+        const clientsInCity = this.currentClients.filter(c => c.municipality === cityName);
+        
+        if (clientsInCity.length > 0) {
+            tooltipContent += `
+                <div style="background: #f9fafb; padding: 10px; border-radius: 8px; margin-top: 8px;">
+                    <b style="font-size: 13px; color: #374151;">👥 Funcionários (${clientsInCity.length}):</b><br>
+            `;
+            
+            clientsInCity.slice(0, 5).forEach(client => {
+                const statusColor = client.status === 'ativo' ? '#10b981' : '#f59e0b';
+                const statusIcon = client.status === 'ativo' ? '✅' : '⚠️';
+                tooltipContent += `
+                    <div style="margin: 6px 0; font-size: 12px;">
+                        ${statusIcon} <b>${client.Funcionário}</b> - ${client.company}<br>
+                        <small style="color: #6b7280; margin-left: 20px;">${client.segment}</small>
+                    </div>
+                `;
+            });
+            
+            if (clientsInCity.length > 5) {
+                tooltipContent += `
+                    <small style="color: #6b7280; font-style: italic;">
+                        + ${clientsInCity.length - 5} funcionário(s)...
+                    </small>
+                `;
+            }
+            
+            tooltipContent += `</div>`;
+        } else {
+            tooltipContent += `
+                <div style="text-align: center; padding: 10px; color: #9ca3af; font-size: 12px;">
+                    👤 Nenhum funcionário cadastrado
+                </div>
+            `;
+        }
+        
+        this.tooltip.innerHTML = tooltipContent;
+        this.tooltip.style.display = 'block';
+    }
+
+    hideTooltip() {
+        this.tooltip.style.display = 'none';
     }
 
     createContextMenu() {
@@ -241,6 +373,7 @@ class GeoClientApp {
                         this.cityLayers[name] = layer;
                         this.updatePopup(layer, name);
                         
+                        // 👆 Mouseover - Mostra tooltip
                         layer.on('mouseover', () => {
                             const cityData = this.markedCities[name];
                             if (!cityData) {
@@ -248,10 +381,13 @@ class GeoClientApp {
                             } else {
                                 layer.setStyle({ weight: 4, fillOpacity: 0.85 });
                             }
+                            this.showTooltip(name);
                         });
                         
+                        // 👆 Mouseout - Esconde tooltip
                         layer.on('mouseout', () => {
                             this.geoJsonLayer.resetStyle(layer);
+                            this.hideTooltip();
                         });
 
                         layer.off('dblclick');
