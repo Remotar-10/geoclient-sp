@@ -25,7 +25,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
-        /* Botões Modernos Import/Export (IMAGEM) */
+        /* Botões Modernos */
         .action-buttons-container {
             display: flex;
             gap: 8px;
@@ -53,49 +53,49 @@
             height: 18px;
         }
         
-        /* Botão IMPORTAR (laranja/vermelho) */
-        .btn-import {
-            background: linear-gradient(135deg, #ff5722 0%, #f44336 100%);
+        /* Botão Dashboard (roxo) */
+        .btn-dashboard {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
         }
         
-        .btn-import:hover {
-            background: linear-gradient(135deg, #e64a19 0%, #d32f2f 100%);
+        .btn-dashboard:hover {
+            background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+            box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3);
         }
         
-        /* Botão EXPORTAR (azul) */
-        .btn-export {
+        /* Botão Import/Export Unificado (azul) */
+        .btn-import-export {
             background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
             position: relative;
         }
         
-        .btn-export:hover {
+        .btn-import-export:hover {
             background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
         }
         
         /* Seta dropdown */
-        .btn-export .dropdown-arrow {
+        .btn-import-export .dropdown-arrow {
             margin-left: 8px;
             font-size: 10px;
             transition: transform 0.2s;
         }
         
-        /* Dropdown Exportar */
-        .export-dropdown {
+        /* Dropdown Import/Export */
+        .import-export-dropdown {
             position: relative;
             display: inline-block;
         }
         
-        .export-dropdown-content {
+        .import-export-dropdown-content {
             display: none;
             position: absolute;
             right: 0;
             top: 52px;
             background: white;
-            min-width: 220px;
+            min-width: 240px;
             border-radius: 8px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             z-index: 1000;
@@ -103,12 +103,12 @@
             border: 1px solid #e5e7eb;
         }
         
-        .export-dropdown.active .export-dropdown-content {
+        .import-export-dropdown.active .import-export-dropdown-content {
             display: block;
             animation: dropdownSlide 0.2s ease;
         }
         
-        .export-dropdown.active .dropdown-arrow {
+        .import-export-dropdown.active .dropdown-arrow {
             transform: rotate(180deg);
         }
         
@@ -123,7 +123,7 @@
             }
         }
         
-        .export-dropdown-content button {
+        .import-export-dropdown-content button {
             display: flex;
             align-items: center;
             width: 100%;
@@ -139,15 +139,15 @@
             border-bottom: 1px solid #f3f4f6;
         }
         
-        .export-dropdown-content button:last-child {
+        .import-export-dropdown-content button:last-child {
             border-bottom: none;
         }
         
-        .export-dropdown-content button:hover {
+        .import-export-dropdown-content button:hover {
             background-color: #f9fafb;
         }
         
-        .export-dropdown-content button i {
+        .import-export-dropdown-content button i {
             margin-right: 12px;
             width: 18px;
             height: 18px;
@@ -162,15 +162,11 @@
             background-color: #fef2f2 !important;
         }
         
-        /* Botão Dashboard (roxo) */
-        .btn-dashboard {
-            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-        }
-        
-        .btn-dashboard:hover {
-            background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3);
+        /* Separador no dropdown */
+        .dropdown-separator {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 4px 0;
         }
         
         /* Tailwind-like utilities inline */
@@ -324,7 +320,7 @@
                             <p class="text-gray-600 text-sm">Click on municipalities for details</p>
                         </div>
                         
-                        <!-- ✨ BOTÕES MODERNOS (IMAGEM) -->
+                        <!-- ✨ BOTÕES UNIFICADOS (Dashboard + Import/Export) -->
                         <div class="action-buttons-container">
                             <!-- Dashboard -->
                             <button id="open-dashboard" class="btn-modern btn-dashboard">
@@ -332,28 +328,35 @@
                                 Dashboard
                             </button>
                             
-                            <!-- Importar CSV -->
-                            <button id="import-csv-btn" class="btn-modern btn-import">
-                                <i data-feather="upload"></i>
-                                Importar CSV
-                            </button>
-                            
-                            <!-- Exportar (com dropdown) -->
-                            <div class="export-dropdown">
-                                <button id="export-toggle" class="btn-modern btn-export">
-                                    <i data-feather="download"></i>
-                                    Exportar
+                            <!-- Importar/Exportar UNIFICADO -->
+                            <div class="import-export-dropdown">
+                                <button id="import-export-toggle" class="btn-modern btn-import-export">
+                                    <i data-feather="upload"></i>
+                                    Importar / Exportar
                                     <span class="dropdown-arrow">▼</span>
                                 </button>
-                                <div class="export-dropdown-content">
+                                <div class="import-export-dropdown-content">
+                                    <!-- IMPORTAR -->
+                                    <button id="import-csv">
+                                        <i data-feather="upload"></i>
+                                        Importar CSV
+                                    </button>
+                                    
+                                    <div class="dropdown-separator"></div>
+                                    
+                                    <!-- EXPORTAR -->
                                     <button id="export-csv">
-                                        <i data-feather="file-text"></i>
+                                        <i data-feather="download"></i>
                                         Exportar CSV
                                     </button>
                                     <button id="export-json">
                                         <i data-feather="code"></i>
                                         Exportar JSON
                                     </button>
+                                    
+                                    <div class="dropdown-separator"></div>
+                                    
+                                    <!-- LIMPAR -->
                                     <button id="clear-data" class="btn-danger">
                                         <i data-feather="trash-2"></i>
                                         Limpar Todos os Dados
@@ -438,38 +441,39 @@
     <script src="components/navbar.js"></script>
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
-    <script src="js/main.js?v=20260112-9"></script>
+    <script src="js/main.js?v=20260112-10"></script>
 
     <script>
         feather.replace();
         
-        function setupModernButtons() {
-            const exportDropdown = document.querySelector('.export-dropdown');
-            const exportToggle = document.getElementById('export-toggle');
+        function setupUnifiedButtons() {
+            const dropdown = document.querySelector('.import-export-dropdown');
+            const toggle = document.getElementById('import-export-toggle');
+            const importCSV = document.getElementById('import-csv');
             const exportCSV = document.getElementById('export-csv');
             const exportJSON = document.getElementById('export-json');
             const clearData = document.getElementById('clear-data');
-            const importCSVBtn = document.getElementById('import-csv-btn');
             
-            if (!exportDropdown || !exportToggle || !exportCSV || !exportJSON || !clearData || !importCSVBtn) {
+            if (!dropdown || !toggle || !importCSV || !exportCSV || !exportJSON || !clearData) {
                 console.error('❌ Botões não encontrados!');
                 return;
             }
             
             // Toggle dropdown
-            exportToggle.addEventListener('click', (e) => {
+            toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
-                exportDropdown.classList.toggle('active');
+                dropdown.classList.toggle('active');
                 feather.replace();
             });
             
             // Fecha ao clicar fora
             document.addEventListener('click', () => {
-                exportDropdown.classList.remove('active');
+                dropdown.classList.remove('active');
             });
             
             // Importar CSV
-            importCSVBtn.addEventListener('click', () => {
+            importCSV.addEventListener('click', () => {
+                dropdown.classList.remove('active');
                 if (window.app && typeof window.app.showImportModal === 'function') {
                     window.app.showImportModal();
                 } else {
@@ -479,7 +483,7 @@
             
             // Exportar CSV
             exportCSV.addEventListener('click', () => {
-                exportDropdown.classList.remove('active');
+                dropdown.classList.remove('active');
                 if (window.app && typeof window.app.exportCSV === 'function') {
                     window.app.exportCSV();
                 } else {
@@ -489,7 +493,7 @@
             
             // Exportar JSON
             exportJSON.addEventListener('click', () => {
-                exportDropdown.classList.remove('active');
+                dropdown.classList.remove('active');
                 if (window.app && typeof window.app.exportJSON === 'function') {
                     window.app.exportJSON();
                 } else {
@@ -499,7 +503,7 @@
             
             // Limpar Dados
             clearData.addEventListener('click', () => {
-                exportDropdown.classList.remove('active');
+                dropdown.classList.remove('active');
                 if (window.app && typeof window.app.clearAllData === 'function') {
                     window.app.clearAllData();
                 } else {
@@ -507,7 +511,7 @@
                 }
             });
             
-            console.log('✨ Botões modernos configurados!');
+            console.log('✨ Botão unificado Import/Export configurado!');
         }
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -515,8 +519,8 @@
             
             setTimeout(() => {
                 if (window.app) {
-                    setupModernButtons();
-                    console.log('✨ GeoClient SP Premium v2.2 - Botões Modernos Ativados!');
+                    setupUnifiedButtons();
+                    console.log('✨ GeoClient SP Premium v2.2 - Botão Unificado Ativado!');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado!');
