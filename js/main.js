@@ -14,6 +14,7 @@ class GeoClientApp {
         this.tooltip = null;
         this.companyDropdown = null;
         this.isDropdownOpen = false;
+        this.currentCityName = null;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
@@ -69,18 +70,22 @@ class GeoClientApp {
             transform: translate(-50%, -50%);
             display: none;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            padding: 24px;
             z-index: 10001;
-            min-width: 320px;
-            max-width: 400px;
+            min-width: 380px;
+            max-width: 450px;
         `;
         document.body.appendChild(this.companyDropdown);
         
         // Fecha dropdown ao clicar fora
         document.addEventListener('click', (e) => {
-            if (!this.companyDropdown.contains(e.target) && e.target.closest('.leaflet-interactive') === null) {
+            const clickedInside = this.companyDropdown.contains(e.target);
+            const clickedOnMap = e.target.closest('.leaflet-interactive');
+            const clickedOnSelectBox = e.target.closest('#company-select-box');
+            
+            if (!clickedInside && !clickedOnMap && !clickedOnSelectBox) {
                 this.hideCompanyDropdown();
             }
         });
@@ -92,84 +97,110 @@ class GeoClientApp {
         const cityData = this.markedCities[cityName];
         if (!cityData) return;
         
+        this.currentCityName = cityName;
         const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
         
         this.isDropdownOpen = false; // Começa fechado
         
         let dropdownContent = `
-            <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
-                <h3 style="margin: 0; font-size: 20px; color: #1f2937;">${cityName}</h3>
-                <small style="color: #6b7280; display: block; margin-top: 4px;">Selecione a empresa</small>
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 22px; color: #1f2937; font-weight: 700;">${cityName}</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 14px;">Selecione a empresa para atuar nesta cidade</p>
             </div>
         `;
         
         if (availableCompanies.length === 0) {
             dropdownContent += `
-                <div style="text-align: center; padding: 20px; color: #6b7280;">
-                    ✅ Todas as empresas já foram adicionadas!
+                <div style="
+                    text-align: center;
+                    padding: 40px 20px;
+                    background: #f0fdf4;
+                    border-radius: 8px;
+                    color: #15803d;
+                    font-size: 15px;
+                ">
+                    ✅ <b>Todas as empresas já foram adicionadas!</b>
                 </div>
             `;
         } else {
-            // SELECT FECHADO com seta
+            // SELECT BOX - Estilo HTML nativo (como na imagem)
             dropdownContent += `
-                <div id="dropdown-select-container" style="position: relative;">
-                    <button id="dropdown-select-button" onclick="app.toggleDropdownList()"
-                            style="
-                                width: 100%;
-                                background: #f3f4f6;
-                                border: 2px solid #d1d5db;
-                                padding: 14px 18px;
-                                border-radius: 8px;
-                                cursor: pointer;
-                                font-size: 16px;
-                                font-weight: 600;
-                                color: #374151;
-                                display: flex;
-                                align-items: center;
-                                justify-content: space-between;
-                                transition: all 0.2s;
-                            "
-                            onmouseover="this.style.background='#e5e7eb'; this.style.borderColor='#9ca3af';"
-                            onmouseout="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';">
-                        <span>Selecionar empresa...</span>
-                        <span id="dropdown-arrow" style="font-size: 12px; transition: transform 0.2s;">▼</span>
-                    </button>
+                <div style="position: relative; margin-bottom: 16px;">
+                    <div id="company-select-box" 
+                         onclick="app.toggleDropdownList()"
+                         style="
+                            width: 100%;
+                            background: white;
+                            border: 2px solid #d1d5db;
+                            padding: 14px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 15px;
+                            color: #6b7280;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            transition: all 0.2s;
+                            user-select: none;
+                         "
+                         onmouseover="this.style.borderColor='#9ca3af';"
+                         onmouseout="this.style.borderColor='#d1d5db';">
+                        <span id="select-placeholder" style="color: #6b7280;">Selecione a empresa...</span>
+                        <span id="dropdown-arrow" style="
+                            font-size: 11px;
+                            color: #6b7280;
+                            transition: transform 0.2s;
+                            margin-left: 10px;
+                        ">▼</span>
+                    </div>
                     
                     <div id="dropdown-list" style="
                         display: none;
-                        margin-top: 8px;
-                        max-height: 280px;
+                        position: absolute;
+                        top: calc(100% + 4px);
+                        left: 0;
+                        right: 0;
+                        max-height: 260px;
                         overflow-y: auto;
                         background: white;
-                        border-radius: 8px;
-                        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+                        border: 2px solid #d1d5db;
+                        border-radius: 4px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        z-index: 10;
                     ">
             `;
             
-            availableCompanies.forEach(company => {
+            availableCompanies.forEach((company, index) => {
                 const color = this.getCompanyColor(company);
+                const isLast = index === availableCompanies.length - 1;
+                
                 dropdownContent += `
-                    <button onclick="app.addCompanyToCity('${cityName}', '${company}'); app.hideCompanyDropdown();"
-                            style="
-                                width: 100%;
-                                background: white;
-                                border: none;
-                                padding: 14px 18px;
-                                cursor: pointer;
-                                font-size: 16px;
-                                font-weight: 600;
-                                color: ${color};
-                                transition: all 0.2s;
-                                display: flex;
-                                align-items: center;
-                                gap: 10px;
-                                border-bottom: 1px solid #f3f4f6;
-                            "
-                            onmouseover="this.style.background='${color}'; this.style.color='white';"
-                            onmouseout="this.style.background='white'; this.style.color='${color}';">
-                        <span style="display:inline-block;width:16px;height:16px;background:${color};border-radius:4px;"></span>
-                        ${company}
-                    </button>
+                    <div onclick="app.selectCompany('${company}'); event.stopPropagation();"
+                         style="
+                            width: 100%;
+                            background: white;
+                            padding: 13px 16px;
+                            cursor: pointer;
+                            font-size: 15px;
+                            color: #374151;
+                            transition: background 0.15s;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            border-bottom: ${isLast ? 'none' : '1px solid #f3f4f6'};
+                         "
+                         onmouseover="this.style.background='#f9fafb';"
+                         onmouseout="this.style.background='white';">
+                        <span style="
+                            display: inline-block;
+                            width: 14px;
+                            height: 14px;
+                            background: ${color};
+                            border-radius: 3px;
+                            flex-shrink: 0;
+                        "></span>
+                        <span style="font-weight: 500;">${company}</span>
+                    </div>
                 `;
             });
             
@@ -184,15 +215,15 @@ class GeoClientApp {
             <button onclick="app.hideCompanyDropdown();"
                     style="
                         background: #f3f4f6;
-                        border: none;
-                        padding: 12px;
-                        border-radius: 8px;
+                        border: 1px solid #e5e7eb;
+                        padding: 11px 16px;
+                        border-radius: 6px;
                         cursor: pointer;
                         width: 100%;
-                        margin-top: 12px;
                         font-size: 14px;
                         color: #6b7280;
                         font-weight: 600;
+                        transition: all 0.2s;
                     "
                     onmouseover="this.style.background='#e5e7eb';"
                     onmouseout="this.style.background='#f3f4f6';">
@@ -203,28 +234,43 @@ class GeoClientApp {
         this.companyDropdown.innerHTML = dropdownContent;
         this.companyDropdown.style.display = 'block';
         
-        console.log(`📝 Dropdown mostrado: ${cityName} (fechado)`);
+        console.log(`📝 Dropdown mostrado: ${cityName} (select fechado)`);
     }
 
     toggleDropdownList() {
         this.isDropdownOpen = !this.isDropdownOpen;
         const list = document.getElementById('dropdown-list');
         const arrow = document.getElementById('dropdown-arrow');
+        const selectBox = document.getElementById('company-select-box');
         
         if (this.isDropdownOpen) {
             list.style.display = 'block';
             arrow.style.transform = 'rotate(180deg)';
+            selectBox.style.borderColor = '#3b82f6';
+            selectBox.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
             console.log('📖 Dropdown expandido');
         } else {
             list.style.display = 'none';
             arrow.style.transform = 'rotate(0deg)';
+            selectBox.style.borderColor = '#d1d5db';
+            selectBox.style.boxShadow = 'none';
             console.log('📕 Dropdown fechado');
         }
+    }
+
+    selectCompany(company) {
+        if (!this.currentCityName) return;
+        
+        this.addCompanyToCity(this.currentCityName, company);
+        this.hideCompanyDropdown();
+        
+        console.log(`✅ Empresa ${company} selecionada para ${this.currentCityName}`);
     }
 
     hideCompanyDropdown() {
         this.companyDropdown.style.display = 'none';
         this.isDropdownOpen = false;
+        this.currentCityName = null;
         console.log(`❌ Dropdown fechado`);
     }
 
