@@ -337,17 +337,22 @@
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
     <!-- ⚡ CACHE BUSTING: força reload do arquivo JS -->
-    <script src="js/main.js?v=20260112-5"></script>
+    <script src="js/main.js?v=20260112-6"></script>
 
     <script>
         feather.replace();
         
-        // 🆕 Lógica do Dropdown de Exportação
-        document.addEventListener('DOMContentLoaded', () => {
+        // 🆕 Aguarda o app estar pronto ANTES de configurar os event listeners
+        function setupExportButtons() {
             const exportDropdown = document.querySelector('.export-dropdown');
             const exportToggle = document.getElementById('export-toggle');
             const exportCSV = document.getElementById('export-csv');
             const exportJSON = document.getElementById('export-json');
+            
+            if (!exportDropdown || !exportToggle || !exportCSV || !exportJSON) {
+                console.error('❌ Botões de exportar não encontrados!');
+                return;
+            }
             
             // Toggle dropdown
             exportToggle.addEventListener('click', (e) => {
@@ -368,6 +373,7 @@
                     console.log('📥 Exportando CSV...');
                 } else {
                     console.error('❌ app.exportData() não encontrado!');
+                    console.log('🔍 window.app:', window.app);
                 }
             });
             
@@ -379,13 +385,27 @@
                     console.log('📥 Exportando JSON...');
                 } else {
                     console.error('❌ app.exportData() não encontrado!');
+                    console.log('🔍 window.app:', window.app);
                 }
             });
             
-            console.log('GeoClient SP system loaded');
+            console.log('✅ Botões de exportar configurados');
+        }
+        
+        // Aguarda DOMContentLoaded E o app estar inicializado
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ DOM carregado');
             
-            // Atualiza ícones do Feather após carregar dropdown
-            feather.replace();
+            // Aguarda um pouco para o app estar pronto
+            setTimeout(() => {
+                if (window.app) {
+                    setupExportButtons();
+                    console.log('✅ GeoClient SP system loaded');
+                    feather.replace();
+                } else {
+                    console.error('❌ window.app não encontrado após timeout!');
+                }
+            }, 500); // Aguarda 500ms para o app estar pronto
         });
     </script>
 </body>
