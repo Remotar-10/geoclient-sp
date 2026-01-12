@@ -58,6 +58,7 @@
         .bg-blue-600 { background-color: #2563eb; }
         .bg-green-600 { background-color: #16a34a; }
         .bg-purple-600 { background-color: #9333ea; }
+        .bg-red-600 { background-color: #dc2626; }
         
         .rounded-md { border-radius: 0.375rem; }
         .rounded-lg { border-radius: 0.5rem; }
@@ -100,6 +101,7 @@
         .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
         .hover\:bg-green-700:hover { background-color: #15803d; }
         .hover\:bg-purple-700:hover { background-color: #7e22ce; }
+        .hover\:bg-red-700:hover { background-color: #b91c1c; }
         
         @media (min-width: 640px) {
             .sm\:flex-row { flex-direction: row; }
@@ -117,44 +119,43 @@
             position: absolute;
             right: 0;
             background-color: white;
-            min-width: 180px;
+            min-width: 200px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             z-index: 1000;
-            margin-top: 4px;
-            border: 1px solid #e5e7eb;
+            margin-top: 8px;
+            border: 2px solid #e5e7eb;
+            overflow: hidden;
         }
         
         .export-dropdown-content button {
             display: flex;
             align-items: center;
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             text-align: left;
-            background: none;
+            background: white;
             border: none;
             cursor: pointer;
-            transition: background 0.15s;
+            transition: all 0.15s;
             font-size: 14px;
             color: #374151;
-        }
-        
-        .export-dropdown-content button:first-child {
-            border-radius: 0.375rem 0.375rem 0 0;
+            font-weight: 600;
+            border-bottom: 1px solid #f3f4f6;
         }
         
         .export-dropdown-content button:last-child {
-            border-radius: 0 0 0.375rem 0.375rem;
+            border-bottom: none;
         }
         
         .export-dropdown-content button:hover {
-            background-color: #f3f4f6;
+            background-color: #f9fafb;
         }
         
         .export-dropdown-content button i {
             margin-right: 12px;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
         }
         
         .export-dropdown.active .export-dropdown-content {
@@ -165,11 +166,21 @@
         .dropdown-arrow {
             margin-left: 8px;
             transition: transform 0.2s;
-            font-size: 12px;
+            font-size: 11px;
         }
         
         .export-dropdown.active .dropdown-arrow {
             transform: rotate(180deg);
+        }
+        
+        /* Botão de ação destrutiva (vermelho) */
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #b91c1c;
         }
     </style>
 </head>
@@ -238,7 +249,7 @@
                             <p class="text-gray-600 text-sm">Click on municipalities for details</p>
                         </div>
                         <div class="flex gap-2">
-                            <!-- 🟣 Dashboard (primário - roxo) -->
+                            <!-- 🟪 Dashboard (primário - roxo) -->
                             <button id="open-dashboard" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center">
                                 <i data-feather="bar-chart-2" class="w-4 h-4 mr-2"></i>
                                 Dashboard
@@ -260,6 +271,10 @@
                                         <i data-feather="code"></i>
                                         Exportar JSON
                                     </button>
+                                    <button id="clear-data" class="btn-danger" style="color: white;">
+                                        <i data-feather="trash-2"></i>
+                                        Limpar Dados
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -274,8 +289,12 @@
                                 <span class="text-sm">Available</span>
                             </div>
                             <div class="flex items-center">
+                                <div class="w-4 h-4 bg-gray-400 border border-gray-600 rounded mr-2"></div>
+                                <span class="text-sm">Marked (Waiting)</span>
+                            </div>
+                            <div class="flex items-center">
                                 <div class="w-4 h-4 bg-green-500 border border-green-700 rounded mr-2"></div>
-                                <span class="text-sm">Occupied</span>
+                                <span class="text-sm">With Company</span>
                             </div>
                         </div>
                     </div>
@@ -337,7 +356,7 @@
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
     <!-- ⚡ CACHE BUSTING: força reload do arquivo JS -->
-    <script src="js/main.js?v=20260112-6"></script>
+    <script src="js/main.js?v=20260112-7"></script>
 
     <script>
         feather.replace();
@@ -348,9 +367,10 @@
             const exportToggle = document.getElementById('export-toggle');
             const exportCSV = document.getElementById('export-csv');
             const exportJSON = document.getElementById('export-json');
+            const clearData = document.getElementById('clear-data');
             
-            if (!exportDropdown || !exportToggle || !exportCSV || !exportJSON) {
-                console.error('❌ Botões de exportar não encontrados!');
+            if (!exportDropdown || !exportToggle || !exportCSV || !exportJSON || !clearData) {
+                console.error('❌ Botões não encontrados!');
                 return;
             }
             
@@ -358,6 +378,7 @@
             exportToggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 exportDropdown.classList.toggle('active');
+                feather.replace(); // Atualiza ícones
             });
             
             // Fecha ao clicar fora
@@ -368,28 +389,34 @@
             // Exportar CSV
             exportCSV.addEventListener('click', () => {
                 exportDropdown.classList.remove('active');
-                if (window.app && typeof window.app.exportData === 'function') {
-                    window.app.exportData();
-                    console.log('📥 Exportando CSV...');
+                if (window.app && typeof window.app.exportCSV === 'function') {
+                    window.app.exportCSV();
                 } else {
-                    console.error('❌ app.exportData() não encontrado!');
-                    console.log('🔍 window.app:', window.app);
+                    console.error('❌ app.exportCSV() não encontrado!');
                 }
             });
             
-            // Exportar JSON (mesma função)
+            // Exportar JSON
             exportJSON.addEventListener('click', () => {
                 exportDropdown.classList.remove('active');
-                if (window.app && typeof window.app.exportData === 'function') {
-                    window.app.exportData();
-                    console.log('📥 Exportando JSON...');
+                if (window.app && typeof window.app.exportJSON === 'function') {
+                    window.app.exportJSON();
                 } else {
-                    console.error('❌ app.exportData() não encontrado!');
-                    console.log('🔍 window.app:', window.app);
+                    console.error('❌ app.exportJSON() não encontrado!');
                 }
             });
             
-            console.log('✅ Botões de exportar configurados');
+            // Limpar Dados
+            clearData.addEventListener('click', () => {
+                exportDropdown.classList.remove('active');
+                if (window.app && typeof window.app.clearAllData === 'function') {
+                    window.app.clearAllData();
+                } else {
+                    console.error('❌ app.clearAllData() não encontrado!');
+                }
+            });
+            
+            console.log('✅ Botões configurados');
         }
         
         // Aguarda DOMContentLoaded E o app estar inicializado
@@ -400,12 +427,12 @@
             setTimeout(() => {
                 if (window.app) {
                     setupExportButtons();
-                    console.log('✅ GeoClient SP system loaded');
+                    console.log('✅ GeoClient SP Premium v2.0 loaded');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado após timeout!');
                 }
-            }, 500); // Aguarda 500ms para o app estar pronto
+            }, 600);
         });
     </script>
 </body>
