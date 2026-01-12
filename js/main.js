@@ -265,6 +265,7 @@ class GeoClientApp {
             console.log(`🔴 Removido: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
             
+            // NÃO abre popup ao remover
             layer.closePopup();
         }
     }
