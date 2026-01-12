@@ -1,5 +1,5 @@
 // GeoClient SP - VERSÃO ESTÁVEL
-// Sistema de cliques: 1=zoom + dropdown | Botão direito=remover
+// Sistema de cliques: 1=zoom (sem marcar) | 2=marca + dropdown | Botão direito=remover
 
 class GeoClientApp {
     constructor() {
@@ -53,8 +53,8 @@ class GeoClientApp {
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
-            console.log('🔍 1 CLIQUE = Zoom 3x + marca cidade');
-            console.log('🔍 2 CLIQUES = Mostra dropdown de empresas');
+            console.log('🔍 1 CLIQUE = Zoom 3x (SEM marcar)');
+            console.log('🔍 2 CLIQUES = Marca cidade + dropdown');
             console.log('🖱️ BOTÃO DIREITO = Remover marcação');
             console.log('👆 HOVER = Mostra empresas da cidade');
             console.log('🏠 BOTÃO HOME = Volta à visualização inicial');
@@ -1024,32 +1024,31 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
-                // 1º CLIQUE: Zoom 3x + marca cidade
-                this.zoomAndMarkCity(name, layer, event);
+                // 1º CLIQUE: Apenas zoom 3x (SEM marcar)
+                this.zoomToCity(name, event);
             } else if (clicks >= 2) {
-                // 2º CLIQUE: Mostra dropdown de empresas
-                this.showCompanyDropdown(name);
+                // 2º CLIQUE: Marca + dropdown
+                this.markAndShowDropdown(name, layer);
             }
         }, this.clickTimeout);
     }
 
-    zoomAndMarkCity(name, layer, event) {
-        // Pega as coordenadas do clique
+    zoomToCity(name, event) {
+        // Apenas zoom, SEM marcar
         const latlng = event.latlng;
-        
-        // Zoom 3x (multiplica o zoom atual por 1.5)
         const currentZoom = this.map.getZoom();
-        const newZoom = Math.min(currentZoom + 3, 12); // Máximo zoom 12
+        const newZoom = Math.min(currentZoom + 3, 12);
         
-        // Anima zoom para a cidade
         this.map.flyTo(latlng, newZoom, {
             duration: 0.8,
             easeLinearity: 0.25
         });
         
-        console.log(`🔍 Zoom 3x: ${name} (${currentZoom} → ${newZoom})`);
-        
-        // Marca cidade se ainda não estiver marcada
+        console.log(`🔍 1º CLIQUE: Zoom 3x em ${name} (${currentZoom} → ${newZoom}) - SEM marcar`);
+    }
+
+    markAndShowDropdown(name, layer) {
+        // Marca cidade (se ainda não estiver marcada)
         if (!this.markedCities[name]) {
             this.markedCities[name] = { companies: [] };
             
@@ -1061,13 +1060,13 @@ class GeoClientApp {
                 fillOpacity: 0.6
             });
             
-            console.log(`🟤 Marcado: ${name} (aguardando empresa)`);
-            
-            // Mostra dropdown após zoom
-            setTimeout(() => {
-                this.showCompanyDropdown(name);
-            }, 900);
+            console.log(`🟤 2º CLIQUE: ${name} marcado (aguardando empresa)`);
+        } else {
+            console.log(`🔄 2º CLIQUE: ${name} já estava marcado`);
         }
+        
+        // Mostra dropdown
+        this.showCompanyDropdown(name);
     }
 
     removeCity(name) {
@@ -1295,7 +1294,8 @@ class GeoClientApp {
 
     exportData() {
         if (Object.keys(this.markedCities).length === 0) {
-            alert('Nenhuma cidade marcada para exportar!');
+            alert('⚠️ Nenhuma cidade marcada para exportar!\n\n🔍 Clique 2x em uma cidade para marcá-la.');
+            console.log('⚠️ Tentou exportar sem cidades marcadas');
             return;
         }
         
