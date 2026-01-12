@@ -106,7 +106,7 @@
             .sm\:items-center { align-items: center; }
         }
         
-        /* 🆕 NOVO: Dropdown de Exportação */
+        /* 🆕 Dropdown de Exportação */
         .export-dropdown {
             position: relative;
             display: inline-block;
@@ -244,12 +244,6 @@
                                 Dashboard
                             </button>
                             
-                            <!-- 🔄 Reset Map (secundário - cinza) -->
-                            <button id="reset-map" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 flex items-center" title="Voltar à visualização inicial">
-                                <i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>
-                                Reset Map
-                            </button>
-                            
                             <!-- ⬇️ Exportar (dropdown unificado) -->
                             <div class="export-dropdown">
                                 <button id="export-toggle" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
@@ -343,7 +337,7 @@
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
     <!-- ⚡ CACHE BUSTING: força reload do arquivo JS -->
-    <script src="js/main.js?v=20260112-3"></script>
+    <script src="js/main.js?v=20260112-4"></script>
 
     <script>
         feather.replace();
