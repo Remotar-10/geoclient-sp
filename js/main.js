@@ -1,11 +1,15 @@
-// GeoClient SP - VERSÃO PREMIUM v2.1
+// GeoClient SP - VERSÃO PREMIUM v2.2
 // Sistema de cliques: 1=zoom (sem marcar) | 2=marca + dropdown | Botão direito=remover
-// ✨ NOVO: Import CSV + Filtros Avançados Dashboard
+// ✨ NOVO: Filtros Ultra Avançados + Busca + Visual Map Filters
 
 class GeoClientApp {
     constructor() {
         this.map = null;
-        this.currentFilters = { company: '', segment: '', status: 'todos', dateFrom: '', dateTo: '' };
+        this.currentFilters = { 
+            companies: [], // MUDOU: array ao invés de string
+            status: 'todos',
+            searchQuery: '' // NOVO
+        };
         this.currentClients = [];
         this.markers = {};
         this.geoJsonLayer = null;
@@ -19,6 +23,7 @@ class GeoClientApp {
         this.currentCityName = null;
         this.homeButton = null;
         this.searchBox = null;
+        this.filtersAppliedToMap = false; // NOVO: controla se filtros estão no mapa
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         this.totalMunicipalitiesSP = 645;
@@ -32,7 +37,6 @@ class GeoClientApp {
             zoom: 7.2
         };
         
-        // 💾 Carrega dados do localStorage
         this.loadFromLocalStorage();
     }
 
@@ -74,7 +78,6 @@ class GeoClientApp {
         this.showToast('🗑️ Todos os dados foram limpos!', 'info');
     }
     
-    // 🔔 Toast de notificação
     showToast(message, type = 'success') {
         const colors = {
             success: '#10b981',
@@ -224,7 +227,6 @@ Cidade,Empresas,Total de Empresas,Cores<br>
         
         document.body.appendChild(modal);
         
-        // Setup drag and drop
         const dropZone = modal.querySelector('#drop-zone');
         const fileInput = modal.querySelector('#csv-file-input');
         
@@ -284,10 +286,8 @@ Cidade,Empresas,Total de Empresas,Cores<br>
             return;
         }
         
-        // Remove BOM se existir
         const header = lines[0].replace(/^\uFEFF/, '');
         
-        // Valida header
         if (!header.includes('Cidade')) {
             this.showToast('❌ Formato inválido: coluna "Cidade" não encontrada', 'error');
             return;
@@ -302,7 +302,6 @@ Cidade,Empresas,Total de Empresas,Cores<br>
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                // Parse CSV line (handle quoted values)
                 const matches = line.match(/"([^"]*)"|([^,]+)/g);
                 if (!matches || matches.length < 2) continue;
                 
@@ -331,15 +330,12 @@ Cidade,Empresas,Total de Empresas,Cores<br>
             return;
         }
         
-        // Apply import mode
         if (mode === 'replace') {
             this.markedCities = newData;
             this.showToast(`✅ ${imported} cidades importadas (substituindo dados anteriores)`, 'success');
         } else {
-            // Merge mode
             Object.entries(newData).forEach(([cidade, data]) => {
                 if (this.markedCities[cidade]) {
-                    // Merge companies (remove duplicates)
                     const existingCompanies = this.markedCities[cidade].companies || [];
                     const allCompanies = [...new Set([...existingCompanies, ...data.companies])];
                     this.markedCities[cidade].companies = allCompanies;
@@ -360,17 +356,24 @@ Cidade,Empresas,Total de Empresas,Cores<br>
         console.log(`📥 Import concluído: ${imported} cidades, ${errors} erros`);
     }
     
-    // 📤 ==================== EXPORTAR CSV ====================
+    // 📤 ==================== EXPORTAR CSV (com filtros) ====================
     
-    exportCSV() {
-        if (Object.keys(this.markedCities).length === 0) {
-            alert('⚠️ Nenhuma cidade marcada para exportar!\n\n🔍 Clique 2x em uma cidade para marcá-la.');
+    exportCSV(filtered = false) {
+        let citiesToExport = this.markedCities;
+        
+        if (filtered && this.filtersAppliedToMap) {
+            // Exporta apenas cidades filtradas
+            citiesToExport = this.getFilteredCities();
+        }
+        
+        if (Object.keys(citiesToExport).length === 0) {
+            alert('⚠️ Nenhuma cidade para exportar!');
             return;
         }
         
         let csv = 'Cidade,Empresas,Total de Empresas,Cores\n';
         
-        Object.entries(this.markedCities).forEach(([city, info]) => {
+        Object.entries(citiesToExport).forEach(([city, info]) => {
             const empresas = info.companies.join(' | ');
             const total = info.companies.length;
             const cores = info.companies.map(c => this.getCompanyColor(c)).join(' | ');
@@ -382,7 +385,8 @@ Cidade,Empresas,Total de Empresas,Cores<br>
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `geoclient_${new Date().toISOString().split('T')[0]}.csv`;
+        const suffix = filtered ? '_filtered' : '';
+        a.download = `geoclient${suffix}_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         
         console.log('📥 CSV exportado');
@@ -391,7 +395,7 @@ Cidade,Empresas,Total de Empresas,Cores<br>
     
     exportJSON() {
         if (Object.keys(this.markedCities).length === 0) {
-            alert('⚠️ Nenhuma cidade marcada para exportar!\n\n🔍 Clique 2x em uma cidade para marcá-la.');
+            alert('⚠️ Nenhuma cidade marcada para exportar!');
             return;
         }
         
@@ -528,7 +532,7 @@ Cidade,Empresas,Total de Empresas,Cores<br>
     // ==================== INIT ====================
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.1...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.2...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -555,10 +559,11 @@ Cidade,Empresas,Total de Empresas,Cores<br>
             console.log('🖱️ BOTÃO DIREITO = Remover marcação');
             console.log('👆 HOVER = Mostra empresas da cidade');
             console.log('🏠 BOTÃO HOME = Volta à visualização inicial');
-            console.log('📊 DASHBOARD = Estatísticas com filtros avançados');
+            console.log('📊 DASHBOARD = Estatísticas com filtros ultra avançados');
             console.log('💾 LOCALSTORAGE = Salva automaticamente');
             console.log('📥📤 IMPORT/EXPORT CSV = Importar e exportar dados');
             console.log('🔍 BUSCA = Campo de busca na navbar');
+            console.log('✨ NOVO: Filtros múltiplos + Busca + Visual no Mapa!');
         }, 100);
     }
 
@@ -591,34 +596,49 @@ Cidade,Empresas,Total de Empresas,Cores<br>
         console.log('✅ Dashboard modal criado');
     }
 
+    // 🎯 ==================== FILTROS ULTRA AVANÇADOS ====================
+    
+    getFilteredCities() {
+        let filteredCities = {};
+        
+        Object.entries(this.markedCities).forEach(([city, data]) => {
+            // Filtro por empresa (multi-select)
+            if (this.currentFilters.companies.length > 0) {
+                const hasAnyCompany = this.currentFilters.companies.some(c => 
+                    data.companies.includes(c)
+                );
+                if (!hasAnyCompany) return;
+            }
+            
+            // Filtro por status
+            if (this.currentFilters.status === 'com_empresa' && data.companies.length === 0) return;
+            if (this.currentFilters.status === 'aguardando' && data.companies.length > 0) return;
+            
+            // Filtro por busca
+            if (this.currentFilters.searchQuery) {
+                const normalize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                if (!normalize(city).includes(normalize(this.currentFilters.searchQuery))) return;
+            }
+            
+            filteredCities[city] = data;
+        });
+        
+        return filteredCities;
+    }
+
     showDashboard() {
-        // Apply filters
-        let filteredCities = Object.entries(this.markedCities);
+        const filteredCities = this.getFilteredCities();
+        const filteredEntries = Object.entries(filteredCities);
         
-        // Filter by company
-        if (this.currentFilters.company) {
-            filteredCities = filteredCities.filter(([_, data]) => 
-                data.companies.includes(this.currentFilters.company)
-            );
-        }
-        
-        // Filter by status
-        if (this.currentFilters.status === 'com_empresa') {
-            filteredCities = filteredCities.filter(([_, data]) => data.companies.length > 0);
-        } else if (this.currentFilters.status === 'aguardando') {
-            filteredCities = filteredCities.filter(([_, data]) => data.companies.length === 0);
-        }
-        
-        // Calculate stats from filtered data
-        const totalMarked = filteredCities.length;
-        const citiesWithCompanies = filteredCities.filter(([_, c]) => c.companies.length > 0).length;
+        const totalMarked = filteredEntries.length;
+        const citiesWithCompanies = filteredEntries.filter(([_, c]) => c.companies.length > 0).length;
         const citiesWaiting = totalMarked - citiesWithCompanies;
         const coveragePercent = ((Object.keys(this.markedCities).length / this.totalMunicipalitiesSP) * 100).toFixed(1);
         
         const companyCounts = {};
         this.availableCompanies.forEach(c => companyCounts[c] = 0);
         
-        filteredCities.forEach(([_, city]) => {
+        filteredEntries.forEach(([_, city]) => {
             city.companies.forEach(company => {
                 companyCounts[company]++;
             });
@@ -628,7 +648,7 @@ Cidade,Empresas,Total de Empresas,Cores<br>
             .sort((a, b) => b[1] - a[1])
             .filter(([_, count]) => count > 0);
         
-        const recentCities = filteredCities
+        const recentCities = filteredEntries
             .filter(([_, data]) => data.companies.length > 0)
             .slice(-5)
             .reverse();
@@ -638,8 +658,8 @@ Cidade,Empresas,Total de Empresas,Cores<br>
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px; color: white;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h2 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">📊 Dashboard Avançado</h2>
-                            <p style="margin: 0; opacity: 0.9; font-size: 16px;">Estatísticas com Filtros em Tempo Real</p>
+                            <h2 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">📊 Dashboard Ultra Avançado</h2>
+                            <p style="margin: 0; opacity: 0.9; font-size: 16px;">Filtros Múltiplos + Busca + Visual no Mapa</p>
                         </div>
                         <button onclick="window.app.hideDashboard();" style="
                             background: rgba(255,255,255,0.2);
@@ -659,24 +679,55 @@ Cidade,Empresas,Total de Empresas,Cores<br>
                 </div>
                 
                 <div style="padding: 32px;">
-                    <!-- FILTROS AVANÇADOS -->
+                    <!-- FILTROS ULTRA AVANÇADOS -->
                     <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 32px; border: 2px solid #e5e7eb;">
-                        <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🔍 Filtros Avançados</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🔍 Filtros Ultra Avançados</h3>
+                        
+                        <!-- BUSCA -->
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Buscar Cidade:</label>
+                            <input type="text" id="dashboard-search" placeholder="Digite o nome da cidade..." oninput="window.app.applyDashboardFilters()" style="
+                                width: 100%;
+                                padding: 12px;
+                                border: 2px solid #d1d5db;
+                                border-radius: 8px;
+                                font-size: 14px;
+                            " value="${this.currentFilters.searchQuery}">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                            <!-- EMPRESAS (MULTI-SELECT) -->
                             <div>
-                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Empresa:</label>
-                                <select id="filter-company" onchange="window.app.applyDashboardFilters()" style="
-                                    width: 100%;
-                                    padding: 10px;
-                                    border: 2px solid #d1d5db;
-                                    border-radius: 8px;
-                                    font-size: 14px;
-                                    cursor: pointer;
-                                ">
-                                    <option value="">Todas</option>
-                                    ${this.availableCompanies.map(c => `<option value="${c}" ${this.currentFilters.company === c ? 'selected' : ''}>${c}</option>`).join('')}
-                                </select>
+                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Empresas (selecione múltiplas):</label>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                                    ${this.availableCompanies.map(company => {
+                                        const isChecked = this.currentFilters.companies.includes(company);
+                                        const color = this.getCompanyColor(company);
+                                        const count = companyCounts[company];
+                                        return `
+                                            <label style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 8px;
+                                                padding: 10px;
+                                                background: ${isChecked ? color + '20' : 'white'};
+                                                border: 2px solid ${isChecked ? color : '#e5e7eb'};
+                                                border-radius: 8px;
+                                                cursor: pointer;
+                                                transition: all 0.2s;
+                                            " onmouseover="this.style.background='${color}20';" onmouseout="this.style.background='${isChecked ? color + '20' : 'white'}'">
+                                                <input type="checkbox" value="${company}" ${isChecked ? 'checked' : ''} onchange="window.app.toggleCompanyFilter('${company}')" style="cursor: pointer;">
+                                                <div style="flex: 1;">
+                                                    <div style="font-weight: 600; color: #374151; font-size: 13px;">${company}</div>
+                                                    <div style="font-size: 11px; color: #6b7280;">${count} cidade${count !== 1 ? 's' : ''}</div>
+                                                </div>
+                                            </label>
+                                        `;
+                                    }).join('')}
+                                </div>
                             </div>
+                            
+                            <!-- STATUS -->
                             <div>
                                 <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Status:</label>
                                 <select id="filter-status" onchange="window.app.applyDashboardFilters()" style="
@@ -692,19 +743,44 @@ Cidade,Empresas,Total de Empresas,Cores<br>
                                     <option value="aguardando" ${this.currentFilters.status === 'aguardando' ? 'selected' : ''}>Aguardando</option>
                                 </select>
                             </div>
-                            <div style="display: flex; align-items: flex-end;">
-                                <button onclick="window.app.resetDashboardFilters()" style="
-                                    width: 100%;
-                                    padding: 10px;
-                                    background: #ef4444;
-                                    color: white;
-                                    border: none;
-                                    border-radius: 8px;
-                                    font-weight: 600;
-                                    cursor: pointer;
-                                    font-size: 14px;
-                                ">🔄 Limpar Filtros</button>
-                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; margin-top: 20px;">
+                            <button onclick="window.app.resetDashboardFilters()" style="
+                                flex: 1;
+                                padding: 10px;
+                                background: #ef4444;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                            ">🔄 Limpar Filtros</button>
+                            
+                            <button onclick="window.app.applyFiltersToMap()" style="
+                                flex: 1;
+                                padding: 10px;
+                                background: ${this.filtersAppliedToMap ? '#10b981' : '#3b82f6'};
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                            ">${this.filtersAppliedToMap ? '✅ Filtros Ativos no Mapa' : '🗺️ Aplicar no Mapa'}</button>
+                            
+                            <button onclick="window.app.exportCSV(true)" style="
+                                flex: 1;
+                                padding: 10px;
+                                background: #f59e0b;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                            ">📥 Exportar Filtrados</button>
                         </div>
                     </div>
                     
@@ -833,24 +909,62 @@ Cidade,Empresas,Total de Empresas,Cores<br>
         
         this.dashboardModal.innerHTML = dashboardContent;
         this.dashboardModal.style.display = 'block';
-        console.log('📊 Dashboard aberto com filtros');
+        console.log('📊 Dashboard aberto com filtros ultra avançados');
+    }
+    
+    toggleCompanyFilter(company) {
+        const index = this.currentFilters.companies.indexOf(company);
+        if (index > -1) {
+            this.currentFilters.companies.splice(index, 1);
+        } else {
+            this.currentFilters.companies.push(company);
+        }
+        this.showDashboard();
+        console.log('🔍 Filtro de empresa alterado:', this.currentFilters.companies);
     }
     
     applyDashboardFilters() {
-        const companyFilter = document.getElementById('filter-company');
+        const searchInput = document.getElementById('dashboard-search');
         const statusFilter = document.getElementById('filter-status');
         
-        if (companyFilter) this.currentFilters.company = companyFilter.value;
+        if (searchInput) this.currentFilters.searchQuery = searchInput.value;
         if (statusFilter) this.currentFilters.status = statusFilter.value;
         
-        this.showDashboard(); // Refresh dashboard
+        this.showDashboard();
         console.log('🔍 Filtros aplicados:', this.currentFilters);
     }
     
     resetDashboardFilters() {
-        this.currentFilters = { company: '', status: 'todos', dateFrom: '', dateTo: '' };
+        this.currentFilters = { companies: [], status: 'todos', searchQuery: '' };
+        this.filtersAppliedToMap = false;
         this.showDashboard();
+        this.loadMunicipalitiesBoundaries(); // Remove filtros do mapa
         console.log('🔄 Filtros resetados');
+    }
+    
+    applyFiltersToMap() {
+        this.filtersAppliedToMap = !this.filtersAppliedToMap;
+        
+        if (this.filtersAppliedToMap) {
+            const filteredCities = this.getFilteredCities();
+            
+            // Aplica opacidade nas cidades não filtradas
+            Object.keys(this.cityLayers).forEach(cityName => {
+                const layer = this.cityLayers[cityName];
+                if (!filteredCities[cityName]) {
+                    // Cidade não passa no filtro = opacidade baixa
+                    layer.setStyle({ fillOpacity: 0.05, opacity: 0.2 });
+                }
+            });
+            
+            this.showToast('✅ Filtros aplicados no mapa!', 'success');
+        } else {
+            // Remove filtros visuais
+            this.loadMunicipalitiesBoundaries();
+            this.showToast('❌ Filtros removidos do mapa', 'info');
+        }
+        
+        this.showDashboard(); // Atualiza botão
     }
 
     hideDashboard() {
@@ -858,6 +972,10 @@ Cidade,Empresas,Total de Empresas,Cores<br>
         console.log('❌ Dashboard fechado');
     }
 
+    // ==================== RESTO DO CÓDIGO IGUAL ====================
+    // (mantive apenas as funções modificadas acima)
+    // Todas as outras funções permanecem iguais ao código original
+    
     createHomeButton() {
         const existingButton = document.getElementById('home-button');
         if (existingButton) existingButton.remove();
@@ -1387,7 +1505,7 @@ Cidade,Empresas,Total de Empresas,Cores<br>
 
     resetMap() {
         this.map.setView(this.initialView.center, this.initialView.zoom);
-        this.currentFilters = { company: '', segment: '', status: 'todos' };
+        this.currentFilters = { companies: [], status: 'todos', searchQuery: '' };
         this.currentClients = [];
         this.loadMunicipalitiesBoundaries();
         this.renderClientTable();
@@ -1483,5 +1601,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.app = app;
     app.init();
     console.log('✅ window.app disponível globalmente');
-    console.log('✨ GeoClient SP Premium v2.1 - IMPORT CSV + FILTROS AVANÇADOS ATIVADOS');
+    console.log('✨ GeoClient SP Premium v2.2 - FILTROS ULTRA AVANÇADOS ATIVADOS!');
+    console.log('🎯 Multi-select empresas | 🔍 Busca no dashboard | 🗺️ Filtros visuais no mapa');
 });
