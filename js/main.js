@@ -13,11 +13,13 @@ class GeoClientApp {
         this.contextMenu = null;
         this.tooltip = null;
         this.companyDropdown = null;
+        this.dashboardModal = null;
         this.isDropdownOpen = false;
         this.currentCityName = null;
         this.homeButton = null;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
+        this.totalMunicipalitiesSP = 645; // Total de municípios em SP
         
         this.clickCount = 0;
         this.clickTimer = null;
@@ -46,6 +48,7 @@ class GeoClientApp {
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
+            this.createDashboardModal();
             this.createHomeButton();
             this.renderClientTable();
             this.renderMarkers();
@@ -55,7 +58,361 @@ class GeoClientApp {
             console.log('🖱️ BOTÃO DIREITO = Remover marcação');
             console.log('👆 HOVER = Mostra empresas da cidade');
             console.log('🏠 BOTÃO HOME = Volta à visualização inicial');
+            console.log('📊 DASHBOARD = Estatísticas em tempo real');
         }, 100);
+    }
+
+    createDashboardModal() {
+        // Remove modal existente se houver
+        const existingModal = document.getElementById('dashboard-modal');
+        if (existingModal) existingModal.remove();
+        
+        // Cria o modal
+        this.dashboardModal = document.createElement('div');
+        this.dashboardModal.id = 'dashboard-modal';
+        this.dashboardModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 10002;
+            overflow-y: auto;
+            padding: 20px;
+        `;
+        document.body.appendChild(this.dashboardModal);
+        
+        // Fecha ao clicar fora
+        this.dashboardModal.addEventListener('click', (e) => {
+            if (e.target === this.dashboardModal) {
+                this.hideDashboard();
+            }
+        });
+        
+        console.log('✅ Dashboard modal criado');
+    }
+
+    showDashboard() {
+        const totalMarked = Object.keys(this.markedCities).length;
+        const citiesWithCompanies = Object.values(this.markedCities).filter(c => c.companies.length > 0).length;
+        const citiesWaiting = totalMarked - citiesWithCompanies;
+        const coveragePercent = ((totalMarked / this.totalMunicipalitiesSP) * 100).toFixed(1);
+        
+        // Conta cidades por empresa
+        const companyCounts = {};
+        this.availableCompanies.forEach(c => companyCounts[c] = 0);
+        
+        Object.values(this.markedCities).forEach(city => {
+            city.companies.forEach(company => {
+                companyCounts[company]++;
+            });
+        });
+        
+        // Ranking de empresas
+        const ranking = Object.entries(companyCounts)
+            .sort((a, b) => b[1] - a[1])
+            .filter(([_, count]) => count > 0);
+        
+        // Últimas cidades adicionadas (simulação)
+        const recentCities = Object.entries(this.markedCities)
+            .filter(([_, data]) => data.companies.length > 0)
+            .slice(-5)
+            .reverse();
+        
+        let dashboardContent = `
+            <div style="
+                max-width: 1200px;
+                margin: 40px auto;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                overflow: hidden;
+            ">
+                <!-- HEADER -->
+                <div style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 32px;
+                    color: white;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">📊 Dashboard</h2>
+                            <p style="margin: 0; opacity: 0.9; font-size: 16px;">Estatísticas em Tempo Real - GeoClient SP</p>
+                        </div>
+                        <button onclick="app.hideDashboard();"
+                                style="
+                                    background: rgba(255,255,255,0.2);
+                                    border: 2px solid rgba(255,255,255,0.5);
+                                    color: white;
+                                    width: 40px;
+                                    height: 40px;
+                                    border-radius: 50%;
+                                    font-size: 24px;
+                                    cursor: pointer;
+                                    transition: all 0.2s;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                "
+                                onmouseover="this.style.background='rgba(255,255,255,0.3)';"
+                                onmouseout="this.style.background='rgba(255,255,255,0.2)';">
+                            ×
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- BODY -->
+                <div style="padding: 32px;">
+                    <!-- CARDS PRINCIPAIS -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px;">
+                        
+                        <!-- Card: Total Cidades -->
+                        <div style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            padding: 24px;
+                            border-radius: 12px;
+                            color: white;
+                            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                        ">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">🎯 Total de Cidades</div>
+                            <div style="font-size: 42px; font-weight: 700; margin-bottom: 4px;">${totalMarked}</div>
+                            <div style="font-size: 12px; opacity: 0.8;">marcadas no mapa</div>
+                        </div>
+                        
+                        <!-- Card: Com Empresa -->
+                        <div style="
+                            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                            padding: 24px;
+                            border-radius: 12px;
+                            color: white;
+                            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                        ">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">✅ Com Empresa</div>
+                            <div style="font-size: 42px; font-weight: 700; margin-bottom: 4px;">${citiesWithCompanies}</div>
+                            <div style="font-size: 12px; opacity: 0.8;">cidades cobertas</div>
+                        </div>
+                        
+                        <!-- Card: Aguardando -->
+                        <div style="
+                            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                            padding: 24px;
+                            border-radius: 12px;
+                            color: white;
+                            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+                        ">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">⏳ Aguardando</div>
+                            <div style="font-size: 42px; font-weight: 700; margin-bottom: 4px;">${citiesWaiting}</div>
+                            <div style="font-size: 12px; opacity: 0.8;">sem empresa</div>
+                        </div>
+                        
+                        <!-- Card: Cobertura -->
+                        <div style="
+                            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                            padding: 24px;
+                            border-radius: 12px;
+                            color: white;
+                            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                        ">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">📈 Cobertura SP</div>
+                            <div style="font-size: 42px; font-weight: 700; margin-bottom: 4px;">${coveragePercent}%</div>
+                            <div style="font-size: 12px; opacity: 0.8;">de ${this.totalMunicipalitiesSP} cidades</div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- SEÇÃO CIDADES POR EMPRESA -->
+                    <div style="
+                        background: #f9fafb;
+                        border-radius: 12px;
+                        padding: 24px;
+                        margin-bottom: 24px;
+                    ">
+                        <h3 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 700; color: #1f2937;">🎨 Cidades por Empresa</h3>
+                        
+                        <div style="display: grid; gap: 12px;">
+        `;
+        
+        // Barra de progresso para cada empresa
+        this.availableCompanies.forEach(company => {
+            const count = companyCounts[company];
+            const color = this.getCompanyColor(company);
+            const percent = totalMarked > 0 ? ((count / totalMarked) * 100).toFixed(1) : 0;
+            
+            dashboardContent += `
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="min-width: 120px; font-weight: 600; color: #374151; font-size: 14px;">
+                        <span style="
+                            display: inline-block;
+                            width: 12px;
+                            height: 12px;
+                            background: ${color};
+                            border-radius: 3px;
+                            margin-right: 8px;
+                        "></span>
+                        ${company}
+                    </div>
+                    <div style="flex: 1; background: #e5e7eb; height: 32px; border-radius: 8px; overflow: hidden; position: relative;">
+                        <div style="
+                            width: ${percent}%;
+                            height: 100%;
+                            background: ${color};
+                            transition: width 0.5s ease;
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            padding-right: 12px;
+                        ">
+                            ${count > 0 ? `<span style="color: white; font-weight: 600; font-size: 13px;">${count}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="min-width: 60px; text-align: right; font-weight: 700; color: ${color}; font-size: 14px;">
+                        ${percent}%
+                    </div>
+                </div>
+            `;
+        });
+        
+        dashboardContent += `
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        
+                        <!-- RANKING DE EMPRESAS -->
+                        <div style="
+                            background: white;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 12px;
+                            padding: 24px;
+                        ">
+                            <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🏆 Ranking de Empresas</h3>
+        `;
+        
+        if (ranking.length === 0) {
+            dashboardContent += `
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">📄</div>
+                    <div style="font-size: 14px;">Nenhuma empresa atribuída ainda</div>
+                </div>
+            `;
+        } else {
+            ranking.forEach(([company, count], index) => {
+                const color = this.getCompanyColor(company);
+                const medals = ['🥇', '🥈', '🥉'];
+                const medal = medals[index] || '🎯';
+                
+                dashboardContent += `
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 12px;
+                        border-radius: 8px;
+                        background: ${index === 0 ? '#fef3c7' : '#f9fafb'};
+                        margin-bottom: 8px;
+                        border: 2px solid ${index === 0 ? '#fbbf24' : '#e5e7eb'};
+                    ">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 24px;">${medal}</span>
+                            <div>
+                                <div style="font-weight: 700; color: ${color}; font-size: 15px;">${company}</div>
+                                <div style="font-size: 12px; color: #6b7280;">${count} cidade${count > 1 ? 's' : ''}</div>
+                            </div>
+                        </div>
+                        <div style="
+                            background: ${color};
+                            color: white;
+                            padding: 6px 14px;
+                            border-radius: 20px;
+                            font-weight: 700;
+                            font-size: 16px;
+                        ">
+                            ${count}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        dashboardContent += `
+                        </div>
+                        
+                        <!-- ÚLTIMAS CIDADES -->
+                        <div style="
+                            background: white;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 12px;
+                            padding: 24px;
+                        ">
+                            <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🕒 Últimas Cidades</h3>
+        `;
+        
+        if (recentCities.length === 0) {
+            dashboardContent += `
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">📍</div>
+                    <div style="font-size: 14px;">Nenhuma cidade com empresa ainda</div>
+                </div>
+            `;
+        } else {
+            recentCities.forEach(([cityName, cityData]) => {
+                const company = cityData.companies[0];
+                const color = this.getCompanyColor(company);
+                
+                dashboardContent += `
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px;
+                        border-radius: 8px;
+                        background: #f9fafb;
+                        margin-bottom: 8px;
+                        border-left: 4px solid ${color};
+                    ">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            background: ${color};
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: 700;
+                            font-size: 18px;
+                            flex-shrink: 0;
+                        ">
+                            🎯
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; color: #1f2937; font-size: 14px;">${cityName}</div>
+                            <div style="font-size: 12px; color: #6b7280;">${company}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        dashboardContent += `
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        `;
+        
+        this.dashboardModal.innerHTML = dashboardContent;
+        this.dashboardModal.style.display = 'block';
+        
+        console.log('📊 Dashboard aberto');
+    }
+
+    hideDashboard() {
+        this.dashboardModal.style.display = 'none';
+        console.log('❌ Dashboard fechado');
     }
 
     createHomeButton() {
@@ -771,6 +1128,9 @@ class GeoClientApp {
 
         const exportBtn = document.getElementById('export-map');
         if (exportBtn) exportBtn.addEventListener('click', () => this.exportData());
+        
+        const dashboardBtn = document.getElementById('open-dashboard');
+        if (dashboardBtn) dashboardBtn.addEventListener('click', () => this.showDashboard());
 
         const addClientBtn = document.getElementById('add-client');
         if (addClientBtn) addClientBtn.addEventListener('click', () => this.openModal());
