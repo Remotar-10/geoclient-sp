@@ -41,7 +41,7 @@ class GeoClientApp {
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
             console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
-            console.log('🎨 2 CLIQUES = Abre popup (adiciona empresa)');
+            console.log('🎨 2 CLIQUES = Abre popup com lista de empresas');
             console.log('❌ BOTÃO = Remove marcação');
         }, 100);
     }
@@ -244,6 +244,15 @@ class GeoClientApp {
         // Abre popup para seleção de empresa
         console.log(`🎨 Abrindo seleção de empresa: ${name}`);
         layer.openPopup();
+        
+        // ✅ Expande automaticamente a lista de empresas
+        setTimeout(() => {
+            const dropdown = document.getElementById(`company-list-${name.replace(/\s+/g, '-')}`);
+            if (dropdown) {
+                dropdown.style.display = 'block';
+                console.log(`✅ Lista de empresas expandida: ${name}`);
+            }
+        }, 100);
     }
 
     removeCity(name) {
@@ -271,6 +280,7 @@ class GeoClientApp {
 
     updatePopup(layer, name) {
         const isMarked = this.markedCities[name];
+        const safeId = name.replace(/\s+/g, '-');
         let popupContent = `<div style="padding:12px; min-width:250px">`;
         
         if (isMarked) {
@@ -303,10 +313,10 @@ class GeoClientApp {
                     <div style="margin-bottom:10px">
                         <button class="add-company-btn" type="button" 
                                 style="background:#3b82f6;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;width:100%;font-size:14px;font-weight:600;color:white"
-                                onclick="event.stopPropagation(); this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                                onclick="event.stopPropagation(); var el = document.getElementById('company-list-${safeId}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">
                             ➕ Adicionar Empresa
                         </button>
-                        <div style="width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-radius:8px;padding:8px;display:none;margin-top:8px;background:white">
+                        <div id="company-list-${safeId}" style="width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-radius:8px;padding:8px;display:none;margin-top:8px;background:white">
                 `;
                 
                 availableCompanies.forEach(company => {
