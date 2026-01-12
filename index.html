@@ -59,6 +59,7 @@
         .bg-green-600 { background-color: #16a34a; }
         .bg-purple-600 { background-color: #9333ea; }
         .bg-red-600 { background-color: #dc2626; }
+        .bg-orange-600 { background-color: #ea580c; }
         
         .rounded-md { border-radius: 0.375rem; }
         .rounded-lg { border-radius: 0.5rem; }
@@ -102,6 +103,7 @@
         .hover\:bg-green-700:hover { background-color: #15803d; }
         .hover\:bg-purple-700:hover { background-color: #7e22ce; }
         .hover\:bg-red-700:hover { background-color: #b91c1c; }
+        .hover\:bg-orange-700:hover { background-color: #c2410c; }
         
         @media (min-width: 640px) {
             .sm\:flex-row { flex-direction: row; }
@@ -255,6 +257,12 @@
                                 Dashboard
                             </button>
                             
+                            <!-- 📥 IMPORT CSV (NOVO - laranja) -->
+                            <button id="import-csv-btn" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 flex items-center">
+                                <i data-feather="upload" class="w-4 h-4 mr-2"></i>
+                                Importar CSV
+                            </button>
+                            
                             <!-- ⬇️ Exportar (dropdown unificado) -->
                             <div class="export-dropdown">
                                 <button id="export-toggle" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
@@ -356,7 +364,7 @@
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
     <!-- ⚡ CACHE BUSTING: força reload do arquivo JS -->
-    <script src="js/main.js?v=20260112-7"></script>
+    <script src="js/main.js?v=20260112-8"></script>
 
     <script>
         feather.replace();
@@ -368,8 +376,9 @@
             const exportCSV = document.getElementById('export-csv');
             const exportJSON = document.getElementById('export-json');
             const clearData = document.getElementById('clear-data');
+            const importCSVBtn = document.getElementById('import-csv-btn');
             
-            if (!exportDropdown || !exportToggle || !exportCSV || !exportJSON || !clearData) {
+            if (!exportDropdown || !exportToggle || !exportCSV || !exportJSON || !clearData || !importCSVBtn) {
                 console.error('❌ Botões não encontrados!');
                 return;
             }
@@ -384,6 +393,15 @@
             // Fecha ao clicar fora
             document.addEventListener('click', () => {
                 exportDropdown.classList.remove('active');
+            });
+            
+            // 📥 IMPORT CSV (NOVO)
+            importCSVBtn.addEventListener('click', () => {
+                if (window.app && typeof window.app.showImportModal === 'function') {
+                    window.app.showImportModal();
+                } else {
+                    console.error('❌ app.showImportModal() não encontrado!');
+                }
             });
             
             // Exportar CSV
@@ -416,7 +434,7 @@
                 }
             });
             
-            console.log('✅ Botões configurados');
+            console.log('✅ Botões configurados (incluindo Import CSV)');
         }
         
         // Aguarda DOMContentLoaded E o app estar inicializado
@@ -427,7 +445,7 @@
             setTimeout(() => {
                 if (window.app) {
                     setupExportButtons();
-                    console.log('✅ GeoClient SP Premium v2.0 loaded');
+                    console.log('✅ GeoClient SP Premium v2.1 - Import CSV Ativado!');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado após timeout!');
