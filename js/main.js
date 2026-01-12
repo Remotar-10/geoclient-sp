@@ -186,111 +186,48 @@ class GeoClientApp {
         this.showToast('📥 JSON exportado com sucesso!', 'success');
     }
     
-    // 🔍 ==================== BUSCA DE CIDADE ====================
+    // 🔍 ==================== BUSCA DE CIDADE (USA NAVBAR) ====================
     
-    createSearchBox() {
-        // Remove search box existente
-        const existingSearch = document.getElementById('city-search-box');
-        if (existingSearch) existingSearch.remove();
-        
-        // Cria container de busca
-        this.searchBox = document.createElement('div');
-        this.searchBox.id = 'city-search-box';
-        this.searchBox.style.cssText = `
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 350px;
-        `;
-        
-        // Input de busca
-        const input = document.createElement('input');
-        input.id = 'city-search-input';
-        input.type = 'text';
-        input.placeholder = '🔍 Buscar cidade...';
-        input.style.cssText = `
-            flex: 1;
-            border: none;
-            outline: none;
-            font-size: 15px;
-            padding: 8px;
-        `;
-        
-        // Botão limpar
-        const clearBtn = document.createElement('button');
-        clearBtn.innerHTML = '×';
-        clearBtn.style.cssText = `
-            background: #f3f4f6;
-            border: none;
-            border-radius: 4px;
-            width: 28px;
-            height: 28px;
-            cursor: pointer;
-            font-size: 20px;
-            color: #6b7280;
-            display: none;
-        `;
-        
-        clearBtn.addEventListener('click', () => {
-            input.value = '';
-            clearBtn.style.display = 'none';
-            this.hideSearchResults();
-        });
-        
-        // Lista de resultados
-        const results = document.createElement('div');
-        results.id = 'search-results';
-        results.style.cssText = `
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        `;
-        
-        // Event listeners
-        input.addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            clearBtn.style.display = query ? 'block' : 'none';
+    setupSearchListeners() {
+        // Aguarda a navbar carregar
+        setTimeout(() => {
+            const input = document.getElementById('city-search-input');
+            const clearBtn = document.getElementById('search-clear-btn');
+            const results = document.getElementById('search-results');
             
-            if (query.length >= 2) {
-                this.performSearch(query, results);
-            } else {
-                this.hideSearchResults(results);
+            if (!input || !clearBtn || !results) {
+                console.error('❌ Elementos de busca não encontrados na navbar!');
+                return;
             }
-        });
-        
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+            
+            // Event listeners
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearBtn.style.display = query ? 'block' : 'none';
+                
+                if (query.length >= 2) {
+                    this.performSearch(query, results);
+                } else {
+                    this.hideSearchResults(results);
+                }
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    input.value = '';
+                    clearBtn.style.display = 'none';
+                    this.hideSearchResults(results);
+                }
+            });
+            
+            clearBtn.addEventListener('click', () => {
                 input.value = '';
                 clearBtn.style.display = 'none';
                 this.hideSearchResults(results);
-            }
-        });
-        
-        this.searchBox.appendChild(input);
-        this.searchBox.appendChild(clearBtn);
-        this.searchBox.appendChild(results);
-        
-        const mapElement = document.getElementById('map');
-        if (mapElement) {
-            mapElement.appendChild(this.searchBox);
-            console.log('✅ Search box criado');
-        }
+            });
+            
+            console.log('✅ Search listeners configurados (navbar)');
+        }, 500);
     }
     
     performSearch(query, resultsContainer) {
@@ -414,7 +351,7 @@ class GeoClientApp {
             this.createCompanyDropdown();
             this.createDashboardModal();
             this.createHomeButton();
-            this.createSearchBox(); // ✨ NOVO
+            this.setupSearchListeners(); // ✨ Conecta com navbar
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
@@ -426,7 +363,7 @@ class GeoClientApp {
             console.log('📊 DASHBOARD = Estatísticas em tempo real');
             console.log('💾 LOCALSTORAGE = Salva automaticamente');
             console.log('📤 CSV/JSON = Exportação de dados');
-            console.log('🔍 BUSCA = Campo de busca no mapa');
+            console.log('🔍 BUSCA = Campo de busca na navbar');
         }, 100);
     }
 
