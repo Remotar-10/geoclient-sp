@@ -141,7 +141,7 @@ class GeoClientApp {
                             <h2 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">📊 Dashboard</h2>
                             <p style="margin: 0; opacity: 0.9; font-size: 16px;">Estatísticas em Tempo Real - GeoClient SP</p>
                         </div>
-                        <button onclick="app.hideDashboard();"
+                        <button onclick="window.app.hideDashboard();"
                                 style="
                                     background: rgba(255,255,255,0.2);
                                     border: 2px solid rgba(255,255,255,0.5);
@@ -552,7 +552,7 @@ class GeoClientApp {
             dropdownContent += `
                 <div style="position: relative; margin-bottom: 16px;">
                     <div id="company-select-box" 
-                         onclick="app.toggleDropdownList()"
+                         onclick="window.app.toggleDropdownList()"
                          style="
                             width: 100%;
                             background: white;
@@ -600,7 +600,7 @@ class GeoClientApp {
                 const isLast = index === availableCompanies.length - 1;
                 
                 dropdownContent += `
-                    <div onclick="app.selectCompany('${company}'); event.stopPropagation();"
+                    <div onclick="window.app.selectCompany('${company}'); event.stopPropagation();"
                          style="
                             width: 100%;
                             background: white;
@@ -637,7 +637,7 @@ class GeoClientApp {
         
         // Botão cancelar
         dropdownContent += `
-            <button onclick="app.hideCompanyDropdown();"
+            <button onclick="window.app.hideCompanyDropdown();"
                     style="
                         background: #f3f4f6;
                         border: 1px solid #e5e7eb;
@@ -843,7 +843,7 @@ class GeoClientApp {
             <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 13px; margin-bottom: 4px;">
                 ${cityName}
             </div>
-            <div onclick="if(confirm('Remover marcação de ${cityName}?')) { app.removeCity('${cityName}'); app.contextMenu.style.display='none'; }"
+            <div onclick="if(confirm('Remover marcação de ${cityName}?')) { window.app.removeCity('${cityName}'); window.app.contextMenu.style.display='none'; }"
                  style="padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600; transition: all 0.2s; font-size: 14px;"
                  onmouseover="this.style.background='#fef2f2';"
                  onmouseout="this.style.background='transparent';">
@@ -1192,8 +1192,8 @@ class GeoClientApp {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${client.municipality}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                    <button onclick="app.editClient(${client.id})" class="text-blue-600">✏️</button>
-                    <button onclick="app.deleteClient(${client.id})" class="text-red-600">🗑️</button>
+                    <button onclick="window.app.editClient(${client.id})" class="text-blue-600">✏️</button>
+                    <button onclick="window.app.deleteClient(${client.id})" class="text-red-600">🗑️</button>
                 </td>
             </tr>
         `).join('');
@@ -1329,10 +1329,13 @@ class GeoClientApp {
     }
 }
 
+// ✅ EXPÕE APP GLOBALMENTE
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM Carregado!');
     feather.replace();
     app = new GeoClientApp();
+    window.app = app; // ⚡ IMPORTANTE: Expõe no window
     app.init();
+    console.log('✅ window.app disponível globalmente');
 });
