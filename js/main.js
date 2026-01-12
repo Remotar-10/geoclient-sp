@@ -47,7 +47,7 @@ class GeoClientApp {
             console.log('🟤 1 CLIQUE = Marca cidade (aguardando empresa)');
             console.log('🎨 2 CLIQUES = Abre popup com lista de empresas');
             console.log('🖱️ BOTÃO DIREITO = Menu contexto (remover)');
-            console.log('👆 HOVER = Mostra empresas e funcionários');
+            console.log('👆 HOVER = Mostra empresas da cidade');
         }, 100);
     }
 
@@ -81,99 +81,76 @@ class GeoClientApp {
     showTooltip(cityName) {
         const cityData = this.markedCities[cityName];
         
-        if (!cityData) {
-            // Cidade não marcada
-            this.tooltip.innerHTML = `
-                <div style="text-align: center;">
-                    <b style="font-size: 16px; color: #6b7280;">${cityName}</b><br>
-                    <small style="color: #9ca3af;">⚪ Sem cobertura</small>
-                </div>
-            `;
-            this.tooltip.style.display = 'block';
-            return;
-        }
-        
         let tooltipContent = '';
         
-        // Cabeçalho
-        if (cityData.companies.length > 0) {
-            const color = this.getCompanyColor(cityData.companies[0]);
-            tooltipContent += `
-                <div style="border-bottom: 2px solid ${color}; padding-bottom: 12px; margin-bottom: 12px;">
-                    <b style="font-size: 18px; color: ${color};">${cityName}</b><br>
-                    <small style="color: #6b7280;">🎨 ${cityData.companies.length} empresa(s) atuando</small>
+        if (!cityData) {
+            // Cidade não marcada
+            tooltipContent = `
+                <div style="text-align: center;">
+                    <b style="font-size: 16px; color: #6b7280;">${cityName}</b><br>
+                    <small style="color: #9ca3af; margin-top: 4px; display: block;">⚪ Disponível para marcação</small>
+                </div>
+            `;
+        } else if (cityData.companies.length === 0) {
+            // Cidade marcada SEM empresa
+            tooltipContent = `
+                <div style="border-bottom: 2px solid #9ca3af; padding-bottom: 12px; margin-bottom: 12px;">
+                    <b style="font-size: 18px; color: #6b7280;">${cityName}</b><br>
+                    <small style="color: #f59e0b; margin-top: 4px; display: block;">⏳ Aguardando empresa</small>
+                </div>
+                <div style="text-align: center; padding: 10px; background: #fef3c7; border-radius: 8px; color: #92400e; font-size: 13px;">
+                    ⚠️ Nenhuma empresa atribuída
                 </div>
             `;
         } else {
-            tooltipContent += `
-                <div style="border-bottom: 2px solid #9ca3af; padding-bottom: 12px; margin-bottom: 12px;">
-                    <b style="font-size: 18px; color: #6b7280;">${cityName}</b><br>
-                    <small style="color: #f59e0b;">⏳ Aguardando empresa</small>
+            // Cidade COM empresa
+            const color = this.getCompanyColor(cityData.companies[0]);
+            tooltipContent = `
+                <div style="border-bottom: 2px solid ${color}; padding-bottom: 12px; margin-bottom: 12px;">
+                    <b style="font-size: 18px; color: ${color};">${cityName}</b><br>
+                    <small style="color: #6b7280; margin-top: 4px; display: block;">🎨 ${cityData.companies.length} empresa(s) atuando</small>
                 </div>
             `;
-        }
-        
-        // Empresas
-        if (cityData.companies.length > 0) {
-            tooltipContent += `<div style="margin-bottom: 12px;">`;
-            tooltipContent += `<b style="font-size: 13px; color: #374151;">📍 Empresas:</b><br>`;
-            cityData.companies.forEach(company => {
-                const color = this.getCompanyColor(company);
-                tooltipContent += `
-                    <span style="
-                        background: ${color};
-                        color: white;
-                        padding: 4px 10px;
-                        border-radius: 6px;
-                        display: inline-block;
-                        margin: 4px 4px 4px 0;
-                        font-size: 12px;
-                        font-weight: 600;
-                    ">${company}</span>
-                `;
-            });
-            tooltipContent += `</div>`;
-        }
-        
-        // Funcionários (clientes na cidade)
-        const clientsInCity = this.currentClients.filter(c => c.municipality === cityName);
-        
-        if (clientsInCity.length > 0) {
-            tooltipContent += `
-                <div style="background: #f9fafb; padding: 10px; border-radius: 8px; margin-top: 8px;">
-                    <b style="font-size: 13px; color: #374151;">👥 Funcionários (${clientsInCity.length}):</b><br>
-            `;
             
-            clientsInCity.slice(0, 5).forEach(client => {
-                const statusColor = client.status === 'ativo' ? '#10b981' : '#f59e0b';
-                const statusIcon = client.status === 'ativo' ? '✅' : '⚠️';
+            // Lista de Empresas
+            tooltipContent += `<div style="margin-bottom: 8px;">`;
+            tooltipContent += `<b style="font-size: 14px; color: #374151; display: block; margin-bottom: 8px;">📍 Empresas:</b>`;
+            
+            cityData.companies.forEach((company, index) => {
+                const companyColor = this.getCompanyColor(company);
                 tooltipContent += `
-                    <div style="margin: 6px 0; font-size: 12px;">
-                        ${statusIcon} <b>${client.Funcionário}</b> - ${client.company}<br>
-                        <small style="color: #6b7280; margin-left: 20px;">${client.segment}</small>
+                    <div style="
+                        background: ${companyColor};
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 8px;
+                        margin: 6px 0;
+                        font-size: 14px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    ">
+                        <span>${company}</span>
+                        <span style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 4px; font-size: 12px;">#${index + 1}</span>
                     </div>
                 `;
             });
             
-            if (clientsInCity.length > 5) {
-                tooltipContent += `
-                    <small style="color: #6b7280; font-style: italic;">
-                        + ${clientsInCity.length - 5} funcionário(s)...
-                    </small>
-                `;
-            }
-            
             tooltipContent += `</div>`;
-        } else {
+            
+            // Status adicional
             tooltipContent += `
-                <div style="text-align: center; padding: 10px; color: #9ca3af; font-size: 12px;">
-                    👤 Nenhum funcionário cadastrado
+                <div style="margin-top: 12px; padding: 8px; background: #f0fdf4; border-radius: 6px; text-align: center;">
+                    <small style="color: #15803d; font-weight: 600;">✅ Cidade coberta</small>
                 </div>
             `;
         }
         
         this.tooltip.innerHTML = tooltipContent;
         this.tooltip.style.display = 'block';
+        
+        console.log(`👆 Tooltip mostrado: ${cityName}`);
     }
 
     hideTooltip() {
