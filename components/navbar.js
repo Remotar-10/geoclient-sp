@@ -23,12 +23,7 @@ class CustomNavbar extends HTMLElement {
                     </div>
                     
                     <div class="flex items-center gap-4">
-                        <button id="nav-export-csv" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition" title="Exportar CSV">
-                            📊 Exportar CSV
-                        </button>
-                        <button id="nav-export-json" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition" title="Exportar JSON">
-                            📄 JSON
-                        </button>
+                        <!-- Avatar do usuário -->
                         <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-700 font-bold cursor-pointer hover:bg-gray-400 transition" title="Perfil">
                             U
                         </div>
@@ -36,10 +31,6 @@ class CustomNavbar extends HTMLElement {
                 </div>
             </nav>
         `;
-
-        // Event listeners
-        document.getElementById('nav-export-csv').addEventListener('click', exportClientsCSV);
-        document.getElementById('nav-export-json').addEventListener('click', exportClientsJSON);
     }
 }
 
