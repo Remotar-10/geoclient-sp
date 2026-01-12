@@ -13,6 +13,7 @@ class GeoClientApp {
         this.contextMenu = null;
         this.tooltip = null;
         this.companyDropdown = null;
+        this.isDropdownOpen = false;
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         
@@ -93,6 +94,8 @@ class GeoClientApp {
         
         const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
         
+        this.isDropdownOpen = false; // Começa fechado
+        
         let dropdownContent = `
             <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
                 <h3 style="margin: 0; font-size: 20px; color: #1f2937;">${cityName}</h3>
@@ -107,17 +110,51 @@ class GeoClientApp {
                 </div>
             `;
         } else {
-            dropdownContent += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            // SELECT FECHADO com seta
+            dropdownContent += `
+                <div id="dropdown-select-container" style="position: relative;">
+                    <button id="dropdown-select-button" onclick="app.toggleDropdownList()"
+                            style="
+                                width: 100%;
+                                background: #f3f4f6;
+                                border: 2px solid #d1d5db;
+                                padding: 14px 18px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-size: 16px;
+                                font-weight: 600;
+                                color: #374151;
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                transition: all 0.2s;
+                            "
+                            onmouseover="this.style.background='#e5e7eb'; this.style.borderColor='#9ca3af';"
+                            onmouseout="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';">
+                        <span>Selecionar empresa...</span>
+                        <span id="dropdown-arrow" style="font-size: 12px; transition: transform 0.2s;">▼</span>
+                    </button>
+                    
+                    <div id="dropdown-list" style="
+                        display: none;
+                        margin-top: 8px;
+                        max-height: 280px;
+                        overflow-y: auto;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+                    ">
+            `;
             
             availableCompanies.forEach(company => {
                 const color = this.getCompanyColor(company);
                 dropdownContent += `
                     <button onclick="app.addCompanyToCity('${cityName}', '${company}'); app.hideCompanyDropdown();"
                             style="
+                                width: 100%;
                                 background: white;
-                                border: 2px solid ${color};
+                                border: none;
                                 padding: 14px 18px;
-                                border-radius: 8px;
                                 cursor: pointer;
                                 font-size: 16px;
                                 font-weight: 600;
@@ -126,6 +163,7 @@ class GeoClientApp {
                                 display: flex;
                                 align-items: center;
                                 gap: 10px;
+                                border-bottom: 1px solid #f3f4f6;
                             "
                             onmouseover="this.style.background='${color}'; this.style.color='white';"
                             onmouseout="this.style.background='white'; this.style.color='${color}';">
@@ -135,7 +173,10 @@ class GeoClientApp {
                 `;
             });
             
-            dropdownContent += `</div>`;
+            dropdownContent += `
+                    </div>
+                </div>
+            `;
         }
         
         // Botão cancelar
@@ -162,11 +203,28 @@ class GeoClientApp {
         this.companyDropdown.innerHTML = dropdownContent;
         this.companyDropdown.style.display = 'block';
         
-        console.log(`📝 Dropdown mostrado: ${cityName}`);
+        console.log(`📝 Dropdown mostrado: ${cityName} (fechado)`);
+    }
+
+    toggleDropdownList() {
+        this.isDropdownOpen = !this.isDropdownOpen;
+        const list = document.getElementById('dropdown-list');
+        const arrow = document.getElementById('dropdown-arrow');
+        
+        if (this.isDropdownOpen) {
+            list.style.display = 'block';
+            arrow.style.transform = 'rotate(180deg)';
+            console.log('📖 Dropdown expandido');
+        } else {
+            list.style.display = 'none';
+            arrow.style.transform = 'rotate(0deg)';
+            console.log('📕 Dropdown fechado');
+        }
     }
 
     hideCompanyDropdown() {
         this.companyDropdown.style.display = 'none';
+        this.isDropdownOpen = false;
         console.log(`❌ Dropdown fechado`);
     }
 
