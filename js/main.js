@@ -1,5 +1,6 @@
-// GeoClient SP - VERSÃO ESTÁVEL
+// GeoClient SP - VERSÃO PREMIUM v2.0
 // Sistema de cliques: 1=zoom (sem marcar) | 2=marca + dropdown | Botão direito=remover
+// ✨ NOVO: LocalStorage + CSV + Busca
 
 class GeoClientApp {
     constructor() {
@@ -17,9 +18,10 @@ class GeoClientApp {
         this.isDropdownOpen = false;
         this.currentCityName = null;
         this.homeButton = null;
+        this.searchBox = null; // ✨ NOVO
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
-        this.totalMunicipalitiesSP = 645; // Total de municípios em SP
+        this.totalMunicipalitiesSP = 645;
         
         this.clickCount = 0;
         this.clickTimer = null;
@@ -29,10 +31,372 @@ class GeoClientApp {
             center: [-22.5, -49.2],
             zoom: 7.2
         };
+        
+        // 💾 NOVO: Carrega dados do localStorage
+        this.loadFromLocalStorage();
     }
 
+    // 💾 ==================== LOCALSTORAGE ====================
+    
+    loadFromLocalStorage() {
+        try {
+            const saved = localStorage.getItem('geoclient-marked-cities');
+            if (saved) {
+                this.markedCities = JSON.parse(saved);
+                console.log(`💾 ${Object.keys(this.markedCities).length} cidades restauradas do localStorage`);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar localStorage:', error);
+        }
+    }
+    
+    saveToLocalStorage() {
+        try {
+            localStorage.setItem('geoclient-marked-cities', JSON.stringify(this.markedCities));
+            console.log('💾 Dados salvos no localStorage');
+            this.showToast('💾 Dados salvos automaticamente!', 'success');
+        } catch (error) {
+            console.error('❌ Erro ao salvar localStorage:', error);
+            this.showToast('❌ Erro ao salvar dados', 'error');
+        }
+    }
+    
+    clearAllData() {
+        if (!confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nIsso vai remover todas as cidades marcadas e não pode ser desfeito!')) {
+            return;
+        }
+        
+        // Limpa tudo
+        this.markedCities = {};
+        localStorage.removeItem('geoclient-marked-cities');
+        
+        // Recarrega mapa
+        this.loadMunicipalitiesBoundaries();
+        
+        console.log('🗑️ Todos os dados foram limpos');
+        this.showToast('🗑️ Todos os dados foram limpos!', 'info');
+    }
+    
+    // 🔔 Toast de notificação
+    showToast(message, type = 'success') {
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            info: '#3b82f6',
+            warning: '#f59e0b'
+        };
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: ${colors[type]};
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10003;
+            font-size: 14px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        `;
+        toast.textContent = message;
+        
+        // Adiciona animação
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(toast);
+        
+        // Remove após 3s
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    // 📤 ==================== EXPORTAR CSV REAL ====================
+    
+    exportCSV() {
+        if (Object.keys(this.markedCities).length === 0) {
+            alert('⚠️ Nenhuma cidade marcada para exportar!\n\n🔍 Clique 2x em uma cidade para marcá-la.');
+            return;
+        }
+        
+        // Cabeçalho CSV
+        let csv = 'Cidade,Empresas,Total de Empresas,Cores\n';
+        
+        // Dados
+        Object.entries(this.markedCities).forEach(([city, info]) => {
+            const empresas = info.companies.join(' | ');
+            const total = info.companies.length;
+            const cores = info.companies.map(c => this.getCompanyColor(c)).join(' | ');
+            
+            csv += `"${city}","${empresas}",${total},"${cores}"\n`;
+        });
+        
+        // Cria blob com BOM para UTF-8 (Excel compatibility)
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        // Download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `geoclient_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        
+        console.log('📥 CSV exportado');
+        this.showToast('📥 CSV exportado com sucesso!', 'success');
+    }
+    
+    exportJSON() {
+        if (Object.keys(this.markedCities).length === 0) {
+            alert('⚠️ Nenhuma cidade marcada para exportar!\n\n🔍 Clique 2x em uma cidade para marcá-la.');
+            return;
+        }
+        
+        const data = Object.entries(this.markedCities).map(([city, info]) => ({
+            cidade: city,
+            empresas: info.companies.join(', '),
+            total_empresas: info.companies.length,
+            cores: info.companies.map(c => this.getCompanyColor(c))
+        }));
+        
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `geoclient_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        
+        console.log('📥 JSON exportado');
+        this.showToast('📥 JSON exportado com sucesso!', 'success');
+    }
+    
+    // 🔍 ==================== BUSCA DE CIDADE ====================
+    
+    createSearchBox() {
+        // Remove search box existente
+        const existingSearch = document.getElementById('city-search-box');
+        if (existingSearch) existingSearch.remove();
+        
+        // Cria container de busca
+        this.searchBox = document.createElement('div');
+        this.searchBox.id = 'city-search-box';
+        this.searchBox.style.cssText = `
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 350px;
+        `;
+        
+        // Input de busca
+        const input = document.createElement('input');
+        input.id = 'city-search-input';
+        input.type = 'text';
+        input.placeholder = '🔍 Buscar cidade...';
+        input.style.cssText = `
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            padding: 8px;
+        `;
+        
+        // Botão limpar
+        const clearBtn = document.createElement('button');
+        clearBtn.innerHTML = '×';
+        clearBtn.style.cssText = `
+            background: #f3f4f6;
+            border: none;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #6b7280;
+            display: none;
+        `;
+        
+        clearBtn.addEventListener('click', () => {
+            input.value = '';
+            clearBtn.style.display = 'none';
+            this.hideSearchResults();
+        });
+        
+        // Lista de resultados
+        const results = document.createElement('div');
+        results.id = 'search-results';
+        results.style.cssText = `
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        `;
+        
+        // Event listeners
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearBtn.style.display = query ? 'block' : 'none';
+            
+            if (query.length >= 2) {
+                this.performSearch(query, results);
+            } else {
+                this.hideSearchResults(results);
+            }
+        });
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                input.value = '';
+                clearBtn.style.display = 'none';
+                this.hideSearchResults(results);
+            }
+        });
+        
+        this.searchBox.appendChild(input);
+        this.searchBox.appendChild(clearBtn);
+        this.searchBox.appendChild(results);
+        
+        const mapElement = document.getElementById('map');
+        if (mapElement) {
+            mapElement.appendChild(this.searchBox);
+            console.log('✅ Search box criado');
+        }
+    }
+    
+    performSearch(query, resultsContainer) {
+        // Normaliza query (remove acentos, lowercase)
+        const normalize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizedQuery = normalize(query);
+        
+        // Busca em todas as cidades
+        const allCities = Object.keys(this.cityLayers);
+        const matches = allCities
+            .filter(city => normalize(city).includes(normalizedQuery))
+            .slice(0, 10); // Limita a 10 resultados
+        
+        if (matches.length === 0) {
+            resultsContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #9ca3af;">
+                    🔍 Nenhuma cidade encontrada para "${query}"
+                </div>
+            `;
+            resultsContainer.style.display = 'block';
+            return;
+        }
+        
+        // Renderiza resultados
+        resultsContainer.innerHTML = matches.map(city => {
+            const cityData = this.markedCities[city];
+            const hasCompany = cityData && cityData.companies.length > 0;
+            const color = hasCompany ? this.getCompanyColor(cityData.companies[0]) : '#9ca3af';
+            const status = hasCompany ? cityData.companies[0] : 'Disponível';
+            
+            return `
+                <div onclick="window.app.searchSelectCity('${city}');"
+                     style="
+                        padding: 12px 16px;
+                        cursor: pointer;
+                        border-bottom: 1px solid #f3f4f6;
+                        transition: background 0.15s;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                     "
+                     onmouseover="this.style.background='#f9fafb';"
+                     onmouseout="this.style.background='white';">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="
+                            display: inline-block;
+                            width: 10px;
+                            height: 10px;
+                            background: ${color};
+                            border-radius: 50%;
+                        "></span>
+                        <span style="font-weight: 600; color: #1f2937;">${city}</span>
+                    </div>
+                    <span style="font-size: 12px; color: #6b7280;">${status}</span>
+                </div>
+            `;
+        }).join('');
+        
+        resultsContainer.style.display = 'block';
+    }
+    
+    searchSelectCity(cityName) {
+        const layer = this.cityLayers[cityName];
+        if (!layer) return;
+        
+        // Zoom na cidade
+        const bounds = layer.getBounds();
+        this.map.flyToBounds(bounds, {
+            padding: [50, 50],
+            duration: 1
+        });
+        
+        // Destaca temporariamente
+        const originalStyle = {
+            weight: layer.options.weight,
+            color: layer.options.color,
+            fillOpacity: layer.options.fillOpacity
+        };
+        
+        layer.setStyle({
+            weight: 4,
+            color: '#3b82f6',
+            fillOpacity: 0.8
+        });
+        
+        setTimeout(() => {
+            this.geoJsonLayer.resetStyle(layer);
+        }, 2000);
+        
+        // Limpa busca
+        const input = document.getElementById('city-search-input');
+        if (input) input.value = '';
+        this.hideSearchResults();
+        
+        console.log(`🔍 Busca: Zoom em ${cityName}`);
+    }
+    
+    hideSearchResults(resultsContainer) {
+        const results = resultsContainer || document.getElementById('search-results');
+        if (results) results.style.display = 'none';
+    }
+
+    // ==================== INIT ====================
+
     init() {
-        console.log('🗺️ Inicializando GeoClient SP...');
+        console.log('🗺️ Inicializando GeoClient SP Premium...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -50,6 +414,7 @@ class GeoClientApp {
             this.createCompanyDropdown();
             this.createDashboardModal();
             this.createHomeButton();
+            this.createSearchBox(); // ✨ NOVO
             this.renderClientTable();
             this.renderMarkers();
             console.log('✅ GeoClient SP iniciado!');
@@ -59,15 +424,16 @@ class GeoClientApp {
             console.log('👆 HOVER = Mostra empresas da cidade');
             console.log('🏠 BOTÃO HOME = Volta à visualização inicial');
             console.log('📊 DASHBOARD = Estatísticas em tempo real');
+            console.log('💾 LOCALSTORAGE = Salva automaticamente');
+            console.log('📤 CSV/JSON = Exportação de dados');
+            console.log('🔍 BUSCA = Campo de busca no mapa');
         }, 100);
     }
 
     createDashboardModal() {
-        // Remove modal existente se houver
         const existingModal = document.getElementById('dashboard-modal');
         if (existingModal) existingModal.remove();
         
-        // Cria o modal
         this.dashboardModal = document.createElement('div');
         this.dashboardModal.id = 'dashboard-modal';
         this.dashboardModal.style.cssText = `
@@ -84,7 +450,6 @@ class GeoClientApp {
         `;
         document.body.appendChild(this.dashboardModal);
         
-        // Fecha ao clicar fora
         this.dashboardModal.addEventListener('click', (e) => {
             if (e.target === this.dashboardModal) {
                 this.hideDashboard();
@@ -100,7 +465,6 @@ class GeoClientApp {
         const citiesWaiting = totalMarked - citiesWithCompanies;
         const coveragePercent = ((totalMarked / this.totalMunicipalitiesSP) * 100).toFixed(1);
         
-        // Conta cidades por empresa
         const companyCounts = {};
         this.availableCompanies.forEach(c => companyCounts[c] = 0);
         
@@ -110,12 +474,10 @@ class GeoClientApp {
             });
         });
         
-        // Ranking de empresas
         const ranking = Object.entries(companyCounts)
             .sort((a, b) => b[1] - a[1])
             .filter(([_, count]) => count > 0);
         
-        // Últimas cidades adicionadas (simulação)
         const recentCities = Object.entries(this.markedCities)
             .filter(([_, data]) => data.companies.length > 0)
             .slice(-5)
@@ -130,7 +492,6 @@ class GeoClientApp {
                 box-shadow: 0 10px 40px rgba(0,0,0,0.2);
                 overflow: hidden;
             ">
-                <!-- HEADER -->
                 <div style="
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     padding: 32px;
@@ -163,12 +524,9 @@ class GeoClientApp {
                     </div>
                 </div>
                 
-                <!-- BODY -->
                 <div style="padding: 32px;">
-                    <!-- CARDS PRINCIPAIS -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px;">
                         
-                        <!-- Card: Total Cidades -->
                         <div style="
                             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                             padding: 24px;
@@ -181,7 +539,6 @@ class GeoClientApp {
                             <div style="font-size: 12px; opacity: 0.8;">marcadas no mapa</div>
                         </div>
                         
-                        <!-- Card: Com Empresa -->
                         <div style="
                             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                             padding: 24px;
@@ -194,7 +551,6 @@ class GeoClientApp {
                             <div style="font-size: 12px; opacity: 0.8;">cidades cobertas</div>
                         </div>
                         
-                        <!-- Card: Aguardando -->
                         <div style="
                             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
                             padding: 24px;
@@ -207,7 +563,6 @@ class GeoClientApp {
                             <div style="font-size: 12px; opacity: 0.8;">sem empresa</div>
                         </div>
                         
-                        <!-- Card: Cobertura -->
                         <div style="
                             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
                             padding: 24px;
@@ -222,7 +577,6 @@ class GeoClientApp {
                         
                     </div>
                     
-                    <!-- SEÇÃO CIDADES POR EMPRESA -->
                     <div style="
                         background: #f9fafb;
                         border-radius: 12px;
@@ -234,7 +588,6 @@ class GeoClientApp {
                         <div style="display: grid; gap: 12px;">
         `;
         
-        // Barra de progresso para cada empresa
         this.availableCompanies.forEach(company => {
             const count = companyCounts[company];
             const color = this.getCompanyColor(company);
@@ -280,7 +633,6 @@ class GeoClientApp {
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                         
-                        <!-- RANKING DE EMPRESAS -->
                         <div style="
                             background: white;
                             border: 2px solid #e5e7eb;
@@ -339,7 +691,6 @@ class GeoClientApp {
         dashboardContent += `
                         </div>
                         
-                        <!-- ÚLTIMAS CIDADES -->
                         <div style="
                             background: white;
                             border: 2px solid #e5e7eb;
@@ -416,11 +767,9 @@ class GeoClientApp {
     }
 
     createHomeButton() {
-        // Remove botão existente se houver
         const existingButton = document.getElementById('home-button');
         if (existingButton) existingButton.remove();
         
-        // Cria o botão Home flutuante
         this.homeButton = document.createElement('button');
         this.homeButton.id = 'home-button';
         this.homeButton.innerHTML = '🏠';
@@ -446,7 +795,6 @@ class GeoClientApp {
             line-height: 1;
         `;
         
-        // Efeitos hover
         this.homeButton.addEventListener('mouseover', () => {
             this.homeButton.style.background = '#f4f4f4';
             this.homeButton.style.transform = 'scale(1.1)';
@@ -457,12 +805,10 @@ class GeoClientApp {
             this.homeButton.style.transform = 'scale(1)';
         });
         
-        // Click para resetar mapa
         this.homeButton.addEventListener('click', () => {
             this.resetMapView();
         });
         
-        // Adiciona ao container do mapa
         const mapElement = document.getElementById('map');
         if (mapElement) {
             mapElement.appendChild(this.homeButton);
@@ -471,7 +817,6 @@ class GeoClientApp {
     }
 
     resetMapView() {
-        // Anima volta ao estado inicial
         this.map.flyTo(this.initialView.center, this.initialView.zoom, {
             duration: 1,
             easeLinearity: 0.25
@@ -481,11 +826,9 @@ class GeoClientApp {
     }
 
     createCompanyDropdown() {
-        // Remove dropdown existente se houver
         const existingDropdown = document.getElementById('company-dropdown');
         if (existingDropdown) existingDropdown.remove();
         
-        // Cria o dropdown
         this.companyDropdown = document.createElement('div');
         this.companyDropdown.id = 'company-dropdown';
         this.companyDropdown.style.cssText = `
@@ -504,7 +847,6 @@ class GeoClientApp {
         `;
         document.body.appendChild(this.companyDropdown);
         
-        // Fecha dropdown ao clicar fora
         document.addEventListener('click', (e) => {
             const clickedInside = this.companyDropdown.contains(e.target);
             const clickedOnMap = e.target.closest('.leaflet-interactive');
@@ -525,7 +867,7 @@ class GeoClientApp {
         this.currentCityName = cityName;
         const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
         
-        this.isDropdownOpen = false; // Começa fechado
+        this.isDropdownOpen = false;
         
         let dropdownContent = `
             <div style="margin-bottom: 20px;">
@@ -548,7 +890,6 @@ class GeoClientApp {
                 </div>
             `;
         } else {
-            // SELECT BOX - Estilo HTML nativo (como na imagem)
             dropdownContent += `
                 <div style="position: relative; margin-bottom: 16px;">
                     <div id="company-select-box" 
@@ -635,7 +976,6 @@ class GeoClientApp {
             `;
         }
         
-        // Botão cancelar
         dropdownContent += `
             <button onclick="window.app.hideCompanyDropdown();"
                     style="
@@ -700,11 +1040,9 @@ class GeoClientApp {
     }
 
     createTooltip() {
-        // Remove tooltip existente se houver
         const existingTooltip = document.getElementById('city-tooltip');
         if (existingTooltip) existingTooltip.remove();
         
-        // Cria o tooltip
         this.tooltip = document.createElement('div');
         this.tooltip.id = 'city-tooltip';
         this.tooltip.style.cssText = `
@@ -732,7 +1070,6 @@ class GeoClientApp {
         let tooltipContent = '';
         
         if (!cityData) {
-            // Cidade não marcada
             tooltipContent = `
                 <div style="text-align: center;">
                     <b style="font-size: 16px; color: #6b7280;">${cityName}</b><br>
@@ -740,7 +1077,6 @@ class GeoClientApp {
                 </div>
             `;
         } else if (cityData.companies.length === 0) {
-            // Cidade marcada SEM empresa
             tooltipContent = `
                 <div style="border-bottom: 2px solid #9ca3af; padding-bottom: 12px; margin-bottom: 12px;">
                     <b style="font-size: 18px; color: #6b7280;">${cityName}</b><br>
@@ -751,7 +1087,6 @@ class GeoClientApp {
                 </div>
             `;
         } else {
-            // Cidade COM empresa
             const color = this.getCompanyColor(cityData.companies[0]);
             tooltipContent = `
                 <div style="border-bottom: 2px solid ${color}; padding-bottom: 12px; margin-bottom: 12px;">
@@ -760,7 +1095,6 @@ class GeoClientApp {
                 </div>
             `;
             
-            // Lista de Empresas
             tooltipContent += `<div style="margin-bottom: 8px;">`;
             tooltipContent += `<b style="font-size: 14px; color: #374151; display: block; margin-bottom: 8px;">📍 Empresas:</b>`;
             
@@ -787,7 +1121,6 @@ class GeoClientApp {
             
             tooltipContent += `</div>`;
             
-            // Status adicional
             tooltipContent += `
                 <div style="margin-top: 12px; padding: 8px; background: #f0fdf4; border-radius: 6px; text-align: center;">
                     <small style="color: #15803d; font-weight: 600;">✅ Cidade coberta</small>
@@ -804,11 +1137,9 @@ class GeoClientApp {
     }
 
     createContextMenu() {
-        // Remove menu existente se houver
         const existingMenu = document.getElementById('city-context-menu');
         if (existingMenu) existingMenu.remove();
         
-        // Cria o menu de contexto
         this.contextMenu = document.createElement('div');
         this.contextMenu.id = 'city-context-menu';
         this.contextMenu.style.cssText = `
@@ -823,7 +1154,6 @@ class GeoClientApp {
         `;
         document.body.appendChild(this.contextMenu);
         
-        // Fecha menu ao clicar fora
         document.addEventListener('click', () => {
             this.contextMenu.style.display = 'none';
         });
@@ -836,9 +1166,8 @@ class GeoClientApp {
         event.stopPropagation();
         
         const cityData = this.markedCities[cityName];
-        if (!cityData) return; // Só mostra menu em cidades marcadas
+        if (!cityData) return;
         
-        // Menu simplificado - apenas remover
         let menuContent = `
             <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600; font-size: 13px; margin-bottom: 4px;">
                 ${cityName}
@@ -935,7 +1264,6 @@ class GeoClientApp {
                         const name = this.getMunicipalityName(feature);
                         const cityData = this.markedCities[name];
                         
-                        // Cidade COM empresa - USA COR DA EMPRESA
                         if (cityData && cityData.companies.length > 0) {
                             const color = this.getCompanyColor(cityData.companies[0]);
                             return {
@@ -946,7 +1274,6 @@ class GeoClientApp {
                                 fillOpacity: 0.7
                             };
                         } 
-                        // Cidade marcada SEM empresa - CINZA ESCURO (aguardando)
                         else if (cityData) {
                             return {
                                 fillColor: '#9ca3af',
@@ -956,7 +1283,6 @@ class GeoClientApp {
                                 fillOpacity: 0.6
                             };
                         } 
-                        // Cidade disponível - CINZA CLARO
                         else {
                             return {
                                 fillColor: '#d1d5db',
@@ -971,7 +1297,6 @@ class GeoClientApp {
                         const name = this.getMunicipalityName(feature);
                         this.cityLayers[name] = layer;
                         
-                        // 👆 Mouseover - Mostra tooltip
                         layer.on('mouseover', () => {
                             const cityData = this.markedCities[name];
                             if (!cityData) {
@@ -982,7 +1307,6 @@ class GeoClientApp {
                             this.showTooltip(name);
                         });
                         
-                        // 👆 Mouseout - Esconde tooltip
                         layer.on('mouseout', () => {
                             this.geoJsonLayer.resetStyle(layer);
                             this.hideTooltip();
@@ -994,7 +1318,6 @@ class GeoClientApp {
                             return false;
                         });
 
-                        // 🖱️ Botão direito
                         layer.on('contextmenu', (e) => {
                             L.DomEvent.stop(e);
                             this.showContextMenu(e.originalEvent, name);
@@ -1024,17 +1347,14 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
-                // 1º CLIQUE: Apenas zoom 3x (SEM marcar)
                 this.zoomToCity(name, event);
             } else if (clicks >= 2) {
-                // 2º CLIQUE: Marca + dropdown
                 this.markAndShowDropdown(name, layer);
             }
         }, this.clickTimeout);
     }
 
     zoomToCity(name, event) {
-        // Apenas zoom, SEM marcar
         const latlng = event.latlng;
         const currentZoom = this.map.getZoom();
         const newZoom = Math.min(currentZoom + 3, 12);
@@ -1048,7 +1368,6 @@ class GeoClientApp {
     }
 
     markAndShowDropdown(name, layer) {
-        // Marca cidade (se ainda não estiver marcada)
         if (!this.markedCities[name]) {
             this.markedCities[name] = { companies: [] };
             
@@ -1060,12 +1379,12 @@ class GeoClientApp {
                 fillOpacity: 0.6
             });
             
+            this.saveToLocalStorage(); // 💾 SALVA
             console.log(`🟤 2º CLIQUE: ${name} marcado (aguardando empresa)`);
         } else {
             console.log(`🔄 2º CLIQUE: ${name} já estava marcado`);
         }
         
-        // Mostra dropdown
         this.showCompanyDropdown(name);
     }
 
@@ -1084,6 +1403,7 @@ class GeoClientApp {
                 fillOpacity: 0.2
             });
             
+            this.saveToLocalStorage(); // 💾 SALVA
             console.log(`🗑️ Removido: ${name}`);
             console.log(`📊 Total marcadas: ${Object.keys(this.markedCities).length}`);
         }
@@ -1108,6 +1428,8 @@ class GeoClientApp {
         const color = this.getCompanyColor(company);
         console.log(`✅ ${company} adicionada em ${cityName} - Cor: ${color}`);
         
+        this.saveToLocalStorage(); // 💾 SALVA
+        
         const oldLayer = this.geoJsonLayer;
         if (oldLayer) {
             this.map.removeLayer(oldLayer);
@@ -1126,7 +1448,7 @@ class GeoClientApp {
         if (resetBtn) resetBtn.addEventListener('click', () => this.resetMap());
 
         const exportBtn = document.getElementById('export-map');
-        if (exportBtn) exportBtn.addEventListener('click', () => this.exportData());
+        if (exportBtn) exportBtn.addEventListener('click', () => this.exportJSON());
         
         const dashboardBtn = document.getElementById('open-dashboard');
         if (dashboardBtn) dashboardBtn.addEventListener('click', () => this.showDashboard());
@@ -1292,28 +1614,9 @@ class GeoClientApp {
         }
     }
 
+    // EXPORTAÇÃO LEGADA (mantém compatibilidade)
     exportData() {
-        if (Object.keys(this.markedCities).length === 0) {
-            alert('⚠️ Nenhuma cidade marcada para exportar!\n\n🔍 Clique 2x em uma cidade para marcá-la.');
-            console.log('⚠️ Tentou exportar sem cidades marcadas');
-            return;
-        }
-        
-        const data = Object.entries(this.markedCities).map(([city, info]) => ({
-            cidade: city,
-            empresas: info.companies.join(', '),
-            total_empresas: info.companies.length,
-            cores: info.companies.map(c => this.getCompanyColor(c))
-        }));
-        
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'cidades_marcadas.json';
-        a.click();
-        console.log('📥 Dados exportados');
+        this.exportJSON();
     }
 
     getMunicipalityName(feature) {
@@ -1335,7 +1638,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM Carregado!');
     feather.replace();
     app = new GeoClientApp();
-    window.app = app; // ⚡ IMPORTANTE: Expõe no window
+    window.app = app;
     app.init();
     console.log('✅ window.app disponível globalmente');
+    console.log('✨ GeoClient SP Premium v2.0 - TOP 3 MELHORIAS ATIVADAS');
 });
