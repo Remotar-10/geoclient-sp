@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+    <!-- 📄 PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <!-- Local styles -->
     <link rel="stylesheet" href="style.css">
 
@@ -62,6 +66,17 @@
             background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3);
+        }
+        
+        /* Botão Histórico (indigo) */
+        .btn-history {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+        
+        .btn-history:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
         }
         
         /* Botão Import/Export Unificado (azul) */
@@ -160,6 +175,15 @@
         
         .btn-danger:hover {
             background-color: #fef2f2 !important;
+        }
+        
+        /* Botão PDF (laranja) */
+        .btn-pdf {
+            color: #ea580c !important;
+        }
+        
+        .btn-pdf:hover {
+            background-color: #fff7ed !important;
         }
         
         /* Separador no dropdown */
@@ -320,12 +344,18 @@
                             <p class="text-gray-600 text-sm">Click on municipalities for details</p>
                         </div>
                         
-                        <!-- ✨ BOTÕES UNIFICADOS (Dashboard + Import/Export) -->
+                        <!-- ✨ BOTÕES -->
                         <div class="action-buttons-container">
                             <!-- Dashboard -->
                             <button id="open-dashboard" class="btn-modern btn-dashboard">
                                 <i data-feather="bar-chart-2"></i>
                                 Dashboard
+                            </button>
+                            
+                            <!-- 🆕 Histórico -->
+                            <button id="open-history" class="btn-modern btn-history">
+                                <i data-feather="clock"></i>
+                                Histórico
                             </button>
                             
                             <!-- Importar/Exportar UNIFICADO -->
@@ -352,6 +382,10 @@
                                     <button id="export-json">
                                         <i data-feather="code"></i>
                                         Exportar JSON
+                                    </button>
+                                    <button id="export-pdf" class="btn-pdf">
+                                        <i data-feather="file-text"></i>
+                                        Exportar Dashboard PDF
                                     </button>
                                     
                                     <div class="dropdown-separator"></div>
@@ -441,7 +475,8 @@
     <script src="components/navbar.js"></script>
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
-    <script src="js/main.js?v=20260112-10"></script>
+    <script src="js/reports-and-history.js"></script>
+    <script src="js/main.js?v=20260113-1"></script>
 
     <script>
         feather.replace();
@@ -452,9 +487,11 @@
             const importCSV = document.getElementById('import-csv');
             const exportCSV = document.getElementById('export-csv');
             const exportJSON = document.getElementById('export-json');
+            const exportPDF = document.getElementById('export-pdf');
             const clearData = document.getElementById('clear-data');
+            const openHistory = document.getElementById('open-history');
             
-            if (!dropdown || !toggle || !importCSV || !exportCSV || !exportJSON || !clearData) {
+            if (!dropdown || !toggle || !importCSV || !exportCSV || !exportJSON || !exportPDF || !clearData || !openHistory) {
                 console.error('❌ Botões não encontrados!');
                 return;
             }
@@ -501,6 +538,16 @@
                 }
             });
             
+            // 🆕 Exportar PDF
+            exportPDF.addEventListener('click', () => {
+                dropdown.classList.remove('active');
+                if (window.reportsAndHistory && typeof window.reportsAndHistory.exportDashboardToPDF === 'function') {
+                    window.reportsAndHistory.exportDashboardToPDF();
+                } else {
+                    console.error('❌ reportsAndHistory.exportDashboardToPDF() não encontrado!');
+                }
+            });
+            
             // Limpar Dados
             clearData.addEventListener('click', () => {
                 dropdown.classList.remove('active');
@@ -511,7 +558,16 @@
                 }
             });
             
-            console.log('✨ Botão unificado Import/Export configurado!');
+            // 🆕 Histórico
+            openHistory.addEventListener('click', () => {
+                if (window.reportsAndHistory && typeof window.reportsAndHistory.showActivityLog === 'function') {
+                    window.reportsAndHistory.showActivityLog();
+                } else {
+                    console.error('❌ reportsAndHistory.showActivityLog() não encontrado!');
+                }
+            });
+            
+            console.log('✨ Botões configurados (Dashboard + Histórico + Import/Export + PDF)!');
         }
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -519,8 +575,11 @@
             
             setTimeout(() => {
                 if (window.app) {
+                    // Inicializa ReportsAndHistory
+                    window.reportsAndHistory = new ReportsAndHistory(window.app);
+                    
                     setupUnifiedButtons();
-                    console.log('✨ GeoClient SP Premium v2.2 - Botão Unificado Ativado!');
+                    console.log('✨ GeoClient SP Premium v2.4 - PDF + Histórico Ativados!');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado!');
