@@ -1,0 +1,86 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Optimize GeoJSON (Reduce Size)
+        run: |
+          echo "📊 Original GeoJSON size:"
+          ls -lh data/municipios-sp.geojson
+          
+          # Install jq for JSON optimization
+          sudo apt-get update && sudo apt-get install -y jq
+          
+          # Remove unnecessary properties to reduce size
+          # Keep only essential: name, geometry
+          jq '.features |= map({
+            type: .type,
+            properties: {
+              name: .properties.name // .properties.NAME // .properties.NOME // .properties.NM_MUNI
+            },
+            geometry: .geometry
+          })' data/municipios-sp.geojson > data/municipios-sp-optimized.geojson
+          
+          # Replace original with optimized
+          mv data/municipios-sp-optimized.geojson data/municipios-sp.geojson
+          
+          echo "✅ Optimized GeoJSON size:"
+          ls -lh data/municipios-sp.geojson
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build artifact
+        run: |
+          # Create build directory
+          mkdir -p _site
+          
+          # Copy all files except .git
+          cp -r * _site/ 2>/dev/null || true
+          cp .nojekyll _site/ 2>/dev/null || true
+          
+          echo "📦 Artifact contents:"
+          du -sh _site
+          du -sh _site/data
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          timeout: 600000
+          error_count: 10
