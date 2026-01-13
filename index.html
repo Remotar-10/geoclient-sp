@@ -129,7 +129,6 @@
             <div class="lg:col-span-1 space-y-6">
                 <custom-filter-panel></custom-filter-panel>
 
-                <!-- ✅ CORRIGIDO: Sidebar dinâmica agora -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold mb-4">Initial Companies</h2>
                     <div class="space-y-3">
@@ -140,7 +139,6 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold mb-4">Quick Stats</h2>
                     <div class="space-y-4">
-                        <!-- Será preenchido por sidebar-stats.js -->
                         <div></div>
                         <div></div>
                     </div>
@@ -156,7 +154,6 @@
                             <p class="text-gray-600 text-sm">Click on municipalities for details</p>
                         </div>
                         
-                        <!-- ✨ BOTÕES -->
                         <div class="action-buttons-container">
                             <button id="open-dashboard" class="btn-modern btn-dashboard">
                                 <i data-feather="bar-chart-2"></i>
@@ -251,35 +248,166 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- 🔴 BUG FIX #3: Modal Cliente -->
     <div id="client-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
         <div class="relative top-20 mx-auto p-5 w-full max-w-md bg-white rounded-md shadow-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium" id="modal-title">New Client</h3>
-                <button id="close-modal"><i data-feather="x"></i></button>
+                <button id="close-modal" class="text-gray-600 hover:text-gray-900"><i data-feather="x"></i></button>
             </div>
             <form id="client-form" class="space-y-4">
                 <input type="hidden" id="client-id">
-                <input type="text" id="client-name" placeholder="Client name" required class="w-full border p-2 rounded">
-                <input type="text" id="client-municipality" placeholder="Click on map" required class="w-full border p-2 rounded">
-                <button class="w-full bg-blue-600 text-white py-2 rounded">Save</button>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
+                    <input type="text" id="client-name" placeholder="Enter client name" required class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Municipality *</label>
+                    <input type="text" id="client-municipality" placeholder="Enter municipality" required class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                    <select id="client-company" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select company</option>
+                        <option value="CDO">CDO</option>
+                        <option value="SUPORTE">SUPORTE</option>
+                        <option value="WAUX">WAUX</option>
+                        <option value="MONTEBELLO">MONTEBELLO</option>
+                        <option value="HIRATA">HIRATA</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Segment</label>
+                    <input type="text" id="client-segment" placeholder="e.g., Retail, Healthcare" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select id="client-status" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold">Save Client</button>
             </form>
         </div>
     </div>
 
-    <!-- ✅ Scripts COM VERSÃO PARA CACHE BUSTING -->
-    <script src="data/clients.js?v=2026011301"></script>
-    <script src="components/navbar.js?v=2026011301"></script>
-    <script src="components/filter-panel.js?v=2026011301"></script>
-    <script src="components/map-controls.js?v=2026011301"></script>
-    <script src="js/sidebar-stats.js?v=2026011301"></script>
-    <script src="js/dashboard.js?v=2026011301"></script>
-    <script src="js/reports-and-history.js?v=2026011301"></script>
-    <script src="js/activity-logger.js?v=2026011301"></script>
-    <script src="js/main.js?v=2026011301"></script>
+    <!-- Scripts -->
+    <script src="data/clients.js?v=2026011302"></script>
+    <script src="components/navbar.js?v=2026011302"></script>
+    <script src="components/filter-panel.js?v=2026011302"></script>
+    <script src="components/map-controls.js?v=2026011302"></script>
+    <script src="js/sidebar-stats.js?v=2026011302"></script>
+    <script src="js/dashboard.js?v=2026011302"></script>
+    <script src="js/reports-and-history.js?v=2026011302"></script>
+    <script src="js/activity-logger.js?v=2026011302"></script>
+    <script src="js/main.js?v=2026011302"></script>
 
     <script>
         feather.replace();
+        
+        // 🔴 BUG FIX #2: Promise-based initialization (sem race condition)
+        function waitForApp() {
+            return new Promise((resolve) => {
+                if (window.app && window.app.map) {
+                    resolve();
+                } else {
+                    const interval = setInterval(() => {
+                        if (window.app && window.app.map) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 50);
+                }
+            });
+        }
+        
+        async function initializeSystem() {
+            console.log('⏳ Aguardando app carregar...');
+            await waitForApp();
+            console.log('✅ App carregado!');
+            
+            // Agora tudo está pronto, inicializa dependências
+            if (typeof Dashboard !== 'undefined') {
+                window.dashboard = new Dashboard(window.app);
+                console.log('✅ Dashboard inicializado');
+            }
+            
+            if (typeof ReportsAndHistory !== 'undefined') {
+                window.reportsAndHistory = new ReportsAndHistory(window.app);
+                console.log('✅ ReportsAndHistory inicializado');
+            }
+            
+            if (typeof SidebarStats !== 'undefined') {
+                window.sidebarStats = new SidebarStats(window.app);
+                window.sidebarStats.init();
+                console.log('✅ SidebarStats inicializado');
+            }
+            
+            setupUnifiedButtons();
+            setupClientModal();
+            feather.replace();
+            
+            console.log('✨ GeoClient SP Premium v2.9 - CRITICAL BUGS FIXED!');
+        }
+        
+        // 🔴 BUG FIX #3: Setup do modal de cliente
+        function setupClientModal() {
+            const addClientBtn = document.getElementById('add-client');
+            const modal = document.getElementById('client-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const form = document.getElementById('client-form');
+            
+            if (!addClientBtn || !modal || !closeModalBtn || !form) {
+                console.error('❌ Elementos do modal de cliente não encontrados!');
+                return;
+            }
+            
+            addClientBtn.addEventListener('click', () => {
+                document.getElementById('modal-title').textContent = 'New Client';
+                document.getElementById('client-id').value = '';
+                document.getElementById('client-name').value = '';
+                document.getElementById('client-municipality').value = '';
+                document.getElementById('client-company').value = '';
+                document.getElementById('client-segment').value = '';
+                document.getElementById('client-status').value = 'active';
+                modal.classList.remove('hidden');
+                feather.replace();
+            });
+            
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const clientData = {
+                    id: Date.now(),
+                    name: document.getElementById('client-name').value,
+                    municipality: document.getElementById('client-municipality').value,
+                    company: document.getElementById('client-company').value,
+                    segment: document.getElementById('client-segment').value,
+                    status: document.getElementById('client-status').value
+                };
+                
+                if (window.app && typeof window.app.addClient === 'function') {
+                    window.app.addClient(clientData);
+                    modal.classList.add('hidden');
+                } else {
+                    console.error('❌ app.addClient() não encontrado!');
+                    alert('❌ Erro ao adicionar cliente. Recarregue a página.');
+                }
+            });
+            
+            console.log('✅ Modal de cliente configurado');
+        }
         
         function setupUnifiedButtons() {
             const dropdown = document.querySelector('.import-export-dropdown');
@@ -292,8 +420,8 @@
             const openHistory = document.getElementById('open-history');
             const openDashboard = document.getElementById('open-dashboard');
             
-            if (!dropdown || !toggle || !importCSV || !exportCSV || !exportJSON || !exportPDF || !clearData || !openHistory || !openDashboard) {
-                console.error('❌ Botões não encontrados!');
+            if (!dropdown || !toggle) {
+                console.error('❌ Dropdown não encontrado!');
                 return;
             }
             
@@ -305,95 +433,61 @@
             
             document.addEventListener('click', () => dropdown.classList.remove('active'));
             
-            openDashboard.addEventListener('click', () => {
-                if (window.dashboard && typeof window.dashboard.showDashboard === 'function') {
-                    window.dashboard.showDashboard();
-                } else {
-                    console.error('❌ dashboard.showDashboard() não encontrado!');
-                }
-            });
+            if (openDashboard) {
+                openDashboard.addEventListener('click', () => {
+                    if (window.dashboard?.showDashboard) {
+                        window.dashboard.showDashboard();
+                    } else {
+                        console.error('❌ dashboard.showDashboard() não disponível');
+                    }
+                });
+            }
             
-            importCSV.addEventListener('click', () => {
-                dropdown.classList.remove('active');
-                if (window.app && typeof window.app.showImportModal === 'function') {
-                    window.app.showImportModal();
-                } else {
-                    console.error('❌ app.showImportModal() não encontrado!');
-                }
-            });
+            if (importCSV) {
+                importCSV.addEventListener('click', () => {
+                    dropdown.classList.remove('active');
+                    window.app?.showImportModal?.();
+                });
+            }
             
-            exportCSV.addEventListener('click', () => {
-                dropdown.classList.remove('active');
-                if (window.app && typeof window.app.exportCSV === 'function') {
-                    window.app.exportCSV();
-                } else {
-                    console.error('❌ app.exportCSV() não encontrado!');
-                }
-            });
+            if (exportCSV) {
+                exportCSV.addEventListener('click', () => {
+                    dropdown.classList.remove('active');
+                    window.app?.exportCSV?.();
+                });
+            }
             
-            exportJSON.addEventListener('click', () => {
-                dropdown.classList.remove('active');
-                if (window.app && typeof window.app.exportJSON === 'function') {
-                    window.app.exportJSON();
-                } else {
-                    console.error('❌ app.exportJSON() não encontrado!');
-                }
-            });
+            if (exportJSON) {
+                exportJSON.addEventListener('click', () => {
+                    dropdown.classList.remove('active');
+                    window.app?.exportJSON?.();
+                });
+            }
             
-            exportPDF.addEventListener('click', () => {
-                dropdown.classList.remove('active');
-                if (window.reportsAndHistory && typeof window.reportsAndHistory.exportDashboardToPDF === 'function') {
-                    window.reportsAndHistory.exportDashboardToPDF();
-                } else {
-                    console.error('❌ reportsAndHistory.exportDashboardToPDF() não encontrado!');
-                }
-            });
+            if (exportPDF) {
+                exportPDF.addEventListener('click', () => {
+                    dropdown.classList.remove('active');
+                    window.reportsAndHistory?.exportDashboardToPDF?.();
+                });
+            }
             
-            clearData.addEventListener('click', () => {
-                dropdown.classList.remove('active');
-                if (window.app && typeof window.app.clearAllData === 'function') {
-                    window.app.clearAllData();
-                } else {
-                    console.error('❌ app.clearAllData() não encontrado!');
-                }
-            });
+            if (clearData) {
+                clearData.addEventListener('click', () => {
+                    dropdown.classList.remove('active');
+                    window.app?.clearAllData?.();
+                });
+            }
             
-            openHistory.addEventListener('click', () => {
-                if (window.reportsAndHistory && typeof window.reportsAndHistory.showActivityLog === 'function') {
-                    window.reportsAndHistory.showActivityLog();
-                } else {
-                    console.error('❌ reportsAndHistory.showActivityLog() não encontrado!');
-                }
-            });
+            if (openHistory) {
+                openHistory.addEventListener('click', () => {
+                    window.reportsAndHistory?.showActivityLog?.();
+                });
+            }
             
-            console.log('✨ Botões configurados!');
+            console.log('✅ Botões configurados');
         }
         
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('✅ DOM carregado - GeoClient SP v2.8');
-            
-            setTimeout(() => {
-                if (window.app) {
-                    window.dashboard = new Dashboard(window.app);
-                    
-                    if (typeof ReportsAndHistory !== 'undefined') {
-                        window.reportsAndHistory = new ReportsAndHistory(window.app);
-                    }
-                    
-                    // ✅ NOVO: Inicializa SidebarStats
-                    if (typeof SidebarStats !== 'undefined') {
-                        window.sidebarStats = new SidebarStats(window.app);
-                        window.sidebarStats.init();
-                    }
-                    
-                    setupUnifiedButtons();
-                    console.log('✨ GeoClient SP Premium v2.8 - ALL BUGS FIXED!');
-                    feather.replace();
-                } else {
-                    console.error('❌ window.app não encontrado!');
-                }
-            }, 700);
-        });
+        document.addEventListener('DOMContentLoaded', initializeSystem);
     </script>
 </body>
 </html>
