@@ -1,7 +1,7 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.1 - FIX #7: CLICK BEHAVIOR CORRECTED
-// Sistema de cliques: 1=zoom APENAS | 2=marca + dropdown | Botão direito=remover
+// GeoClient SP - VERSÃO PREMIUM v2.9.2 - FIX #7 FINAL: NATIVE SELECT DROPDOWN
+// Sistema de cliques: 1=zoom APENAS | 2=marca + dropdown nativo | Botão direito=remover
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
-// ✅ FIX: 1 clique NÃO marca mais a cidade, apenas dá zoom
+// ✅ FIX: Dropdown agora é <select> nativo
 
 class GeoClientApp {
     constructor() {
@@ -173,7 +173,7 @@ class GeoClientApp {
     // ==================== INIT ====================
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.1...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.2...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -192,7 +192,7 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.1 iniciado!');
+            console.log('✅ GeoClient SP v2.9.2 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom APENAS | 2 CLIQUES = Marca cidade + dropdown');
         }, 100);
     }
@@ -376,7 +376,7 @@ class GeoClientApp {
             this.logActivity('logCityMarked', name);
         }
         
-        // ✅ Mostra dropdown pequeno
+        // ✅ Mostra dropdown <select> nativo
         this.showCompanyDropdown(name);
     }
 
@@ -512,7 +512,7 @@ class GeoClientApp {
         this.tooltip.style.display = 'none';
     }
 
-    // ✅ Dropdown próximo ao clique (já implementado corretamente)
+    // ✅ NOVO: Dropdown com <select> nativo
     createCompanyDropdown() {
         const existingDropdown = document.getElementById('company-dropdown');
         if (existingDropdown) existingDropdown.remove();
@@ -527,8 +527,8 @@ class GeoClientApp {
             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
             padding: 20px;
             z-index: 10001;
-            min-width: 320px;
-            max-width: 400px;
+            min-width: 280px;
+            max-width: 320px;
         `;
         document.body.appendChild(this.companyDropdown);
         
@@ -560,28 +560,31 @@ class GeoClientApp {
         if (availableCompanies.length === 0) {
             content += `<p style="text-align: center; color: #9ca3af; padding: 12px;">Todas as empresas já foram adicionadas</p>`;
         } else {
-            availableCompanies.forEach(company => {
-                const color = this.getCompanyColor(company);
-                content += `
-                    <div onclick="window.app.selectCompany('${company}');"
-                         style="
-                            background: ${color};
-                            color: white;
-                            padding: 14px 16px;
-                            margin: 8px 0;
-                            cursor: pointer;
-                            border-radius: 8px;
-                            font-weight: 600;
+            // ✅ NATIVE SELECT DROPDOWN
+            content += `
+                <select id="company-select" 
+                        style="
+                            width: 100%;
+                            padding: 12px 16px;
                             font-size: 15px;
+                            font-weight: 600;
+                            border: 2px solid #d1d5db;
+                            border-radius: 8px;
+                            background: white;
+                            color: #374151;
+                            cursor: pointer;
+                            outline: none;
                             transition: all 0.2s;
-                            text-align: center;
-                         "
-                         onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
-                         onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
-                        ${company}
-                    </div>
-                `;
+                        "
+                        onchange="window.app.handleCompanySelect(this.value);">
+                    <option value="" disabled selected>- Selecione -</option>
+            `;
+            
+            availableCompanies.forEach(company => {
+                content += `<option value="${company}">${company}</option>`;
             });
+            
+            content += `</select>`;
         }
         
         content += `
@@ -606,9 +609,9 @@ class GeoClientApp {
         
         this.companyDropdown.innerHTML = content;
         
-        // Posiciona próximo ao clique, mas ajusta se estiver fora da tela
-        const dropdownWidth = 320;
-        const dropdownHeight = 400; // estimativa
+        // Posiciona próximo ao clique
+        const dropdownWidth = 280;
+        const dropdownHeight = 250;
         
         let left = this.lastClickPosition.x - (dropdownWidth / 2);
         let top = this.lastClickPosition.y + 20;
@@ -625,6 +628,12 @@ class GeoClientApp {
         this.companyDropdown.style.left = left + 'px';
         this.companyDropdown.style.top = top + 'px';
         this.companyDropdown.style.display = 'block';
+    }
+
+    handleCompanySelect(company) {
+        if (!company || !this.currentCityName) return;
+        this.addCompanyToCity(this.currentCityName, company);
+        this.hideCompanyDropdown();
     }
 
     selectCompany(company) {
@@ -1074,5 +1083,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.1 - FIX #7: CLICK BEHAVIOR CORRECTED!');
+    console.log('✨ GeoClient SP Premium v2.9.2 - FIX #7 FINAL: NATIVE <SELECT> DROPDOWN!');
 });
