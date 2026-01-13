@@ -1,6 +1,6 @@
-// GeoClient SP - VERSÃO PREMIUM v2.7 - ALL BUGS FIXED
+// GeoClient SP - VERSÃO PREMIUM v2.8 - FIX #3: NAVBAR SEARCH INTEGRATED
 // Sistema de cliques: 1=zoom | 2=marca + dropdown | Botão direito=remover
-// ✅ TODOS OS BUGS CORRIGIDOS
+// ✅ TODOS OS BUGS CORRIGIDOS + BUSCA NA NAVBAR
 
 class GeoClientApp {
     constructor() {
@@ -159,7 +159,7 @@ class GeoClientApp {
     // ==================== INIT ====================
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.7...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.8...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -174,10 +174,11 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.createHomeButton();
+            this.setupSearchListeners(); // ✅ FIX #3: Busca na navbar
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.7 iniciado!');
+            console.log('✅ GeoClient SP v2.8 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom | 2 CLIQUES = Marca cidade');
         }, 100);
     }
@@ -632,6 +633,110 @@ class GeoClientApp {
         }
     }
 
+    // ✅ FIX #3: NAVBAR SEARCH INTEGRATION
+    setupSearchListeners() {
+        setTimeout(() => {
+            const input = document.getElementById('city-search-input');
+            const clearBtn = document.getElementById('search-clear-btn');
+            const results = document.getElementById('search-results');
+            
+            if (!input || !clearBtn || !results) {
+                console.error('❌ Elementos de busca não encontrados na navbar!');
+                return;
+            }
+            
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearBtn.style.display = query ? 'block' : 'none';
+                
+                if (query.length >= 2) {
+                    this.performSearch(query, results);
+                } else {
+                    this.hideSearchResults(results);
+                }
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    input.value = '';
+                    clearBtn.style.display = 'none';
+                    this.hideSearchResults(results);
+                }
+            });
+            
+            clearBtn.addEventListener('click', () => {
+                input.value = '';
+                clearBtn.style.display = 'none';
+                this.hideSearchResults(results);
+            });
+            
+            console.log('✅ Search listeners configurados (navbar)');
+        }, 500);
+    }
+
+    performSearch(query, resultsContainer) {
+        const allCities = Object.keys(this.cityLayers);
+        const matches = allCities.filter(city => 
+            city.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+        
+        if (matches.length === 0) {
+            resultsContainer.innerHTML = '<div style="padding: 12px; color: #9ca3af;">Nenhum município encontrado</div>';
+            resultsContainer.style.display = 'block';
+            return;
+        }
+        
+        resultsContainer.innerHTML = matches.map(city => {
+            const cityData = this.markedCities[city];
+            let statusBadge = '';
+            
+            if (cityData && cityData.companies && cityData.companies.length > 0) {
+                const color = this.getCompanyColor(cityData.companies[0]);
+                statusBadge = `<span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${cityData.companies[0]}</span>`;
+            } else if (cityData) {
+                statusBadge = '<span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Aguardando</span>';
+            }
+            
+            return `
+                <div onclick="window.app.searchSelectCity('${city}');" 
+                     style="padding: 12px; cursor: pointer; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;"
+                     onmouseover="this.style.background='#f3f4f6';"
+                     onmouseout="this.style.background='white';">
+                    <span style="font-weight: 600;">${city}</span>
+                    ${statusBadge}
+                </div>
+            `;
+        }).join('');
+        
+        resultsContainer.style.display = 'block';
+    }
+
+    searchSelectCity(cityName) {
+        const layer = this.cityLayers[cityName];
+        if (!layer) return;
+        
+        const bounds = layer.getBounds();
+        this.map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
+        
+        // Esconde resultados
+        const results = document.getElementById('search-results');
+        if (results) results.style.display = 'none';
+        
+        // Limpa input
+        const input = document.getElementById('city-search-input');
+        if (input) input.value = '';
+        
+        const clearBtn = document.getElementById('search-clear-btn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        
+        this.showToast(`🗺️ ${cityName}`, 'info');
+    }
+
+    hideSearchResults(resultsContainer) {
+        resultsContainer.style.display = 'none';
+        resultsContainer.innerHTML = '';
+    }
+
     // ✅ IMPLEMENTADO: setupClientSearch
     setupClientSearch() {
         const searchInput = document.getElementById('client-search');
@@ -876,6 +981,15 @@ class GeoClientApp {
         reader.readAsText(file);
     }
 
+    addClient(clientData) {
+        this.clients.push(clientData);
+        this.currentClients = this.clients;
+        this.saveToLocalStorage();
+        this.renderClientTable();
+        this.renderMarkers();
+        this.showToast(`✅ Cliente ${clientData.name} adicionado!`, 'success');
+    }
+
     editClient(clientId) {
         const client = this.clients.find(c => c.id === clientId);
         if (!client) return;
@@ -901,5 +1015,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.7 - ALL BUGS FIXED!');
+    console.log('✨ GeoClient SP Premium v2.8 - FIX #3 COMPLETE!');
 });
