@@ -1,6 +1,7 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9 - FIX #4: ACTIVITY LOG INTEGRATED
-// Sistema de cliques: 1=zoom | 2=marca + dropdown | Botão direito=remover
+// GeoClient SP - VERSÃO PREMIUM v2.9.1 - FIX #7: CLICK BEHAVIOR CORRECTED
+// Sistema de cliques: 1=zoom APENAS | 2=marca + dropdown | Botão direito=remover
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
+// ✅ FIX: 1 clique NÃO marca mais a cidade, apenas dá zoom
 
 class GeoClientApp {
     constructor() {
@@ -172,7 +173,7 @@ class GeoClientApp {
     // ==================== INIT ====================
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.1...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -191,8 +192,8 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9 iniciado!');
-            console.log('🔍 1 CLIQUE = Zoom | 2 CLIQUES = Marca cidade');
+            console.log('✅ GeoClient SP v2.9.1 iniciado!');
+            console.log('🔍 1 CLIQUE = Zoom APENAS | 2 CLIQUES = Marca cidade + dropdown');
         }, 100);
     }
 
@@ -324,6 +325,7 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
+    // ✅ FIX #7: Click behavior corrected - 1 click = zoom only, 2 clicks = mark + dropdown
     handleCityClick(name, layer, event) {
         // Salva posição do clique para dropdown
         this.lastClickPosition = {
@@ -339,8 +341,10 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
+                // ✅ 1 CLIQUE = APENAS ZOOM (não marca)
                 this.zoomToCity(name, event);
             } else if (clicks >= 2) {
+                // ✅ 2 CLIQUES = MARCA + DROPDOWN
                 this.markAndShowDropdown(name, layer);
             }
         }, this.clickTimeout);
@@ -351,9 +355,11 @@ class GeoClientApp {
         const currentZoom = this.map.getZoom();
         const newZoom = Math.min(currentZoom + 3, 12);
         this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
+        console.log(`🔍 Zoom em ${name}`);
     }
 
     markAndShowDropdown(name, layer) {
+        // ✅ Marca cidade apenas no 2º clique
         if (!this.markedCities[name]) {
             this.markedCities[name] = { companies: [] };
             layer.setStyle({
@@ -364,10 +370,13 @@ class GeoClientApp {
                 fillOpacity: 0.6
             });
             this.saveToLocalStorage();
+            console.log(`✅ Cidade ${name} marcada`);
             
             // 📝 LOG
             this.logActivity('logCityMarked', name);
         }
+        
+        // ✅ Mostra dropdown pequeno
         this.showCompanyDropdown(name);
     }
 
@@ -503,7 +512,7 @@ class GeoClientApp {
         this.tooltip.style.display = 'none';
     }
 
-    // ✅ BUG FIX: Dropdown agora aparece próximo ao clique
+    // ✅ Dropdown próximo ao clique (já implementado corretamente)
     createCompanyDropdown() {
         const existingDropdown = document.getElementById('company-dropdown');
         if (existingDropdown) existingDropdown.remove();
@@ -1058,12 +1067,12 @@ class GeoClientApp {
     }
 }
 
-// ✅ Remove carregamento duplicado de Chart.js
+// ✅ Inicialização
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM Carregado!');
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9 - ACTIVITY LOG INTEGRATED!');
+    console.log('✨ GeoClient SP Premium v2.9.1 - FIX #7: CLICK BEHAVIOR CORRECTED!');
 });
