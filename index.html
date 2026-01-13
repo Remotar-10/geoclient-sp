@@ -23,180 +23,32 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        .leaflet-control-attribution {
-            font-size: 10px;
-        }
-        .company-marker {
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        /* Botões Modernos */
-        .action-buttons-container {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
-        .btn-modern {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 20px;
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .btn-modern i {
-            margin-right: 8px;
-            width: 18px;
-            height: 18px;
-        }
-        
-        /* Botão Dashboard (roxo) */
-        .btn-dashboard {
-            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-        }
-        
-        .btn-dashboard:hover {
-            background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3);
-        }
-        
-        /* Botão Histórico (indigo) */
-        .btn-history {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        }
-        
-        .btn-history:hover {
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
-        }
-        
-        /* Botão Import/Export Unificado (azul) */
-        .btn-import-export {
-            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-            position: relative;
-        }
-        
-        .btn-import-export:hover {
-            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-        }
-        
-        /* Seta dropdown */
-        .btn-import-export .dropdown-arrow {
-            margin-left: 8px;
-            font-size: 10px;
-            transition: transform 0.2s;
-        }
-        
-        /* Dropdown Import/Export */
-        .import-export-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .import-export-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 52px;
-            background: white;
-            min-width: 240px;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            z-index: 1000;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .import-export-dropdown.active .import-export-dropdown-content {
-            display: block;
-            animation: dropdownSlide 0.2s ease;
-        }
-        
-        .import-export-dropdown.active .dropdown-arrow {
-            transform: rotate(180deg);
-        }
-        
-        @keyframes dropdownSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .import-export-dropdown-content button {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 14px 18px;
-            background: white;
-            border: none;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-size: 14px;
-            color: #374151;
-            font-weight: 600;
-            text-align: left;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .import-export-dropdown-content button:last-child {
-            border-bottom: none;
-        }
-        
-        .import-export-dropdown-content button:hover {
-            background-color: #f9fafb;
-        }
-        
-        .import-export-dropdown-content button i {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-        }
-        
-        /* Botão destrutivo (vermelho) */
-        .btn-danger {
-            color: #dc2626 !important;
-        }
-        
-        .btn-danger:hover {
-            background-color: #fef2f2 !important;
-        }
-        
-        /* Botão PDF (laranja) */
-        .btn-pdf {
-            color: #ea580c !important;
-        }
-        
-        .btn-pdf:hover {
-            background-color: #fff7ed !important;
-        }
-        
-        /* Separador no dropdown */
-        .dropdown-separator {
-            height: 1px;
-            background: #e5e7eb;
-            margin: 4px 0;
-        }
-        
-        /* Tailwind-like utilities inline */
+        .leaflet-control-attribution { font-size: 10px; }
+        .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .action-buttons-container { display: flex; gap: 8px; align-items: center; }
+        .btn-modern { display: inline-flex; align-items: center; justify-content: center; padding: 12px 20px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-modern i { margin-right: 8px; width: 18px; height: 18px; }
+        .btn-dashboard { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
+        .btn-dashboard:hover { background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3); }
+        .btn-history { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+        .btn-history:hover { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3); }
+        .btn-import-export { background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); position: relative; }
+        .btn-import-export:hover { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3); }
+        .btn-import-export .dropdown-arrow { margin-left: 8px; font-size: 10px; transition: transform 0.2s; }
+        .import-export-dropdown { position: relative; display: inline-block; }
+        .import-export-dropdown-content { display: none; position: absolute; right: 0; top: 52px; background: white; min-width: 240px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; border: 1px solid #e5e7eb; }
+        .import-export-dropdown.active .import-export-dropdown-content { display: block; animation: dropdownSlide 0.2s ease; }
+        .import-export-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
+        @keyframes dropdownSlide { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .import-export-dropdown-content button { display: flex; align-items: center; width: 100%; padding: 14px 18px; background: white; border: none; cursor: pointer; transition: all 0.15s; font-size: 14px; color: #374151; font-weight: 600; text-align: left; border-bottom: 1px solid #f3f4f6; }
+        .import-export-dropdown-content button:last-child { border-bottom: none; }
+        .import-export-dropdown-content button:hover { background-color: #f9fafb; }
+        .import-export-dropdown-content button i { margin-right: 12px; width: 18px; height: 18px; }
+        .btn-danger { color: #dc2626 !important; }
+        .btn-danger:hover { background-color: #fef2f2 !important; }
+        .btn-pdf { color: #ea580c !important; }
+        .btn-pdf:hover { background-color: #fff7ed !important; }
+        .dropdown-separator { height: 1px; background: #e5e7eb; margin: 4px 0; }
         .mx-auto { margin-left: auto; margin-right: auto; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
@@ -205,7 +57,6 @@
         .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
         .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
         .py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
-        
         .text-xs { font-size: 0.75rem; }
         .text-sm { font-size: 0.875rem; }
         .text-lg { font-size: 1.125rem; }
@@ -213,7 +64,6 @@
         .font-medium { font-weight: 500; }
         .font-bold { font-weight: 700; }
         .uppercase { text-transform: uppercase; }
-        
         .text-left { text-align: left; }
         .text-gray-500 { color: #6b7280; }
         .text-gray-600 { color: #4b5563; }
@@ -221,7 +71,6 @@
         .text-red-600 { color: #dc2626; }
         .text-green-600 { color: #16a34a; }
         .text-white { color: white; }
-        
         .bg-gray-50 { background-color: #f9fafb; }
         .bg-white { background-color: white; }
         .bg-gray-600 { background-color: #4b5563; }
@@ -231,17 +80,13 @@
         .bg-purple-600 { background-color: #9333ea; }
         .bg-red-600 { background-color: #dc2626; }
         .bg-orange-600 { background-color: #ea580c; }
-        
         .rounded-md { border-radius: 0.375rem; }
         .rounded-lg { border-radius: 0.5rem; }
-        
         .border { border-width: 1px; }
         .border-b { border-bottom-width: 1px; }
         .divide-y > * + * { border-top-width: 1px; }
         .divide-gray-200 > * + * { border-color: #e5e7eb; }
-        
         .shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
-        
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
         .items-center { align-items: center; }
@@ -249,37 +94,28 @@
         .gap-4 { gap: 1rem; }
         .gap-2 { gap: 0.5rem; }
         .space-x-2 > * + * { margin-left: 0.5rem; }
-        
         .hidden { display: none; }
         .fixed { position: fixed; }
         .relative { position: relative; }
         .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
         .top-20 { top: 5rem; }
         .z-50 { z-index: 50; }
-        
         .w-full { width: 100%; }
         .max-w-md { max-width: 28rem; }
         .min-w-full { min-width: 100%; }
-        
         .mb-4 { margin-bottom: 1rem; }
         .mb-6 { margin-bottom: 1.5rem; }
         .mr-2 { margin-right: 0.5rem; }
-        
         .overflow-hidden { overflow: hidden; }
         .overflow-x-auto { overflow-x: auto; }
         .whitespace-nowrap { white-space: nowrap; }
-        
         .hover\:bg-gray-300:hover { background-color: #d1d5db; }
         .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
         .hover\:bg-green-700:hover { background-color: #15803d; }
         .hover\:bg-purple-700:hover { background-color: #7e22ce; }
         .hover\:bg-red-700:hover { background-color: #b91c1c; }
         .hover\:bg-orange-700:hover { background-color: #c2410c; }
-        
-        @media (min-width: 640px) {
-            .sm\:flex-row { flex-direction: row; }
-            .sm\:items-center { align-items: center; }
-        }
+        @media (min-width: 640px) { .sm\:flex-row { flex-direction: row; } .sm\:items-center { align-items: center; } }
     </style>
 </head>
 
@@ -293,47 +129,20 @@
             <div class="lg:col-span-1 space-y-6">
                 <custom-filter-panel></custom-filter-panel>
 
+                <!-- ✅ CORRIGIDO: Sidebar dinâmica agora -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold mb-4">Initial Companies</h2>
                     <div class="space-y-3">
-                        <div class="flex items-center p-2 hover:bg-gray-50 rounded">
-                            <div class="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
-                            <div>
-                                <span class="font-medium">CDO - Vale do Paraíba</span>
-                                <div class="text-sm text-gray-500">5 clients</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center p-2 hover:bg-gray-50 rounded">
-                            <div class="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
-                            <div>
-                                <span class="font-medium">SUPPORT - ABC</span>
-                                <div class="text-sm text-gray-500">3 clients</div>
-                            </div>
-                        </div>
+                        <!-- Será preenchido por sidebar-stats.js -->
                     </div>
                 </div>
 
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold mb-4">Quick Stats</h2>
                     <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Active Clients</span>
-                                <span class="text-sm font-bold text-green-600">12</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: 80%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Occupied Municipalities</span>
-                                <span class="text-sm font-bold text-blue-600">8</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: 40%"></div>
-                            </div>
-                        </div>
+                        <!-- Será preenchido por sidebar-stats.js -->
+                        <div></div>
+                        <div></div>
                     </div>
                 </div>
             </div>
@@ -349,19 +158,16 @@
                         
                         <!-- ✨ BOTÕES -->
                         <div class="action-buttons-container">
-                            <!-- Dashboard -->
                             <button id="open-dashboard" class="btn-modern btn-dashboard">
                                 <i data-feather="bar-chart-2"></i>
                                 Dashboard
                             </button>
                             
-                            <!-- 🆕 Histórico -->
                             <button id="open-history" class="btn-modern btn-history">
                                 <i data-feather="clock"></i>
                                 Histórico
                             </button>
                             
-                            <!-- Importar/Exportar UNIFICADO -->
                             <div class="import-export-dropdown">
                                 <button id="import-export-toggle" class="btn-modern btn-import-export">
                                     <i data-feather="upload"></i>
@@ -369,15 +175,11 @@
                                     <span class="dropdown-arrow">▼</span>
                                 </button>
                                 <div class="import-export-dropdown-content">
-                                    <!-- IMPORTAR -->
                                     <button id="import-csv">
                                         <i data-feather="upload"></i>
                                         Importar CSV
                                     </button>
-                                    
                                     <div class="dropdown-separator"></div>
-                                    
-                                    <!-- EXPORTAR -->
                                     <button id="export-csv">
                                         <i data-feather="download"></i>
                                         Exportar CSV
@@ -390,10 +192,7 @@
                                         <i data-feather="file-text"></i>
                                         Exportar Dashboard PDF
                                     </button>
-                                    
                                     <div class="dropdown-separator"></div>
-                                    
-                                    <!-- LIMPAR -->
                                     <button id="clear-data" class="btn-danger">
                                         <i data-feather="trash-2"></i>
                                         Limpar Todos os Dados
@@ -444,14 +243,11 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="clients-table" class="bg-white divide-y divide-gray-200">
-                                <!-- JS -->
-                            </tbody>
+                            <tbody id="clients-table" class="bg-white divide-y divide-gray-200"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -460,9 +256,7 @@
         <div class="relative top-20 mx-auto p-5 w-full max-w-md bg-white rounded-md shadow-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium" id="modal-title">New Client</h3>
-                <button id="close-modal">
-                    <i data-feather="x"></i>
-                </button>
+                <button id="close-modal"><i data-feather="x"></i></button>
             </div>
             <form id="client-form" class="space-y-4">
                 <input type="hidden" id="client-id">
@@ -473,16 +267,16 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="data/clients.js"></script>
-    <script src="components/navbar.js"></script>
-    <script src="components/filter-panel.js"></script>
-    <script src="components/map-controls.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/reports-and-history.js"></script>
-    <script src="js/activity-logger.js"></script>
-    <!-- ✅ VERSÃO 2.6 - Chart.js já carregado no head -->
-    <script src="js/main.js?v=20260113-6"></script>
+    <!-- ✅ Scripts COM VERSÃO PARA CACHE BUSTING -->
+    <script src="data/clients.js?v=2026011301"></script>
+    <script src="components/navbar.js?v=2026011301"></script>
+    <script src="components/filter-panel.js?v=2026011301"></script>
+    <script src="components/map-controls.js?v=2026011301"></script>
+    <script src="js/sidebar-stats.js?v=2026011301"></script>
+    <script src="js/dashboard.js?v=2026011301"></script>
+    <script src="js/reports-and-history.js?v=2026011301"></script>
+    <script src="js/activity-logger.js?v=2026011301"></script>
+    <script src="js/main.js?v=2026011301"></script>
 
     <script>
         feather.replace();
@@ -503,19 +297,14 @@
                 return;
             }
             
-            // Toggle dropdown
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 dropdown.classList.toggle('active');
                 feather.replace();
             });
             
-            // Fecha ao clicar fora
-            document.addEventListener('click', () => {
-                dropdown.classList.remove('active');
-            });
+            document.addEventListener('click', () => dropdown.classList.remove('active'));
             
-            // 🔅 DASHBOARD
             openDashboard.addEventListener('click', () => {
                 if (window.dashboard && typeof window.dashboard.showDashboard === 'function') {
                     window.dashboard.showDashboard();
@@ -524,7 +313,6 @@
                 }
             });
             
-            // Importar CSV
             importCSV.addEventListener('click', () => {
                 dropdown.classList.remove('active');
                 if (window.app && typeof window.app.showImportModal === 'function') {
@@ -534,7 +322,6 @@
                 }
             });
             
-            // Exportar CSV
             exportCSV.addEventListener('click', () => {
                 dropdown.classList.remove('active');
                 if (window.app && typeof window.app.exportCSV === 'function') {
@@ -544,7 +331,6 @@
                 }
             });
             
-            // Exportar JSON
             exportJSON.addEventListener('click', () => {
                 dropdown.classList.remove('active');
                 if (window.app && typeof window.app.exportJSON === 'function') {
@@ -554,7 +340,6 @@
                 }
             });
             
-            // 🆕 Exportar PDF
             exportPDF.addEventListener('click', () => {
                 dropdown.classList.remove('active');
                 if (window.reportsAndHistory && typeof window.reportsAndHistory.exportDashboardToPDF === 'function') {
@@ -564,7 +349,6 @@
                 }
             });
             
-            // Limpar Dados
             clearData.addEventListener('click', () => {
                 dropdown.classList.remove('active');
                 if (window.app && typeof window.app.clearAllData === 'function') {
@@ -574,7 +358,6 @@
                 }
             });
             
-            // 🆕 Histórico
             openHistory.addEventListener('click', () => {
                 if (window.reportsAndHistory && typeof window.reportsAndHistory.showActivityLog === 'function') {
                     window.reportsAndHistory.showActivityLog();
@@ -583,29 +366,33 @@
                 }
             });
             
-            console.log('✨ Botões configurados (Dashboard + Histórico + Import/Export + PDF)!');
+            console.log('✨ Botões configurados!');
         }
         
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('✅ DOM carregado - GeoClient SP v2.6');
+            console.log('✅ DOM carregado - GeoClient SP v2.8');
             
             setTimeout(() => {
                 if (window.app) {
-                    // Inicializa Dashboard
                     window.dashboard = new Dashboard(window.app);
                     
-                    // Inicializa ReportsAndHistory
                     if (typeof ReportsAndHistory !== 'undefined') {
                         window.reportsAndHistory = new ReportsAndHistory(window.app);
                     }
                     
+                    // ✅ NOVO: Inicializa SidebarStats
+                    if (typeof SidebarStats !== 'undefined') {
+                        window.sidebarStats = new SidebarStats(window.app);
+                        window.sidebarStats.init();
+                    }
+                    
                     setupUnifiedButtons();
-                    console.log('✨ GeoClient SP Premium v2.6 - BUG FIX COMPLETO!');
+                    console.log('✨ GeoClient SP Premium v2.8 - ALL BUGS FIXED!');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado!');
                 }
-            }, 600);
+            }, 700);
         });
     </script>
 </body>
