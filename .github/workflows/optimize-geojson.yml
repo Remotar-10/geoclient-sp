@@ -1,0 +1,97 @@
+name: Optimize GeoJSON (Emergency Fix)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'data/municipios-sp.geojson'
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check GeoJSON size
+        id: check
+        run: |
+          SIZE=$(stat -f%z data/municipios-sp.geojson 2>/dev/null || stat -c%s data/municipios-sp.geojson)
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+          echo "📊 Current GeoJSON size: $(du -h data/municipios-sp.geojson | cut -f1)"
+          
+          # Skip if already optimized (< 15MB)
+          if [ $SIZE -lt 15000000 ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "✅ Already optimized!"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Needs optimization (>15MB)"
+          fi
+
+      - name: Optimize GeoJSON
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          echo "🔧 Installing jq..."
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          
+          echo "📊 Original size:"
+          ls -lh data/municipios-sp.geojson
+          
+          echo "🗜️ Optimizing GeoJSON (removing unnecessary properties)..."
+          jq -c '.features |= map({
+            type: .type,
+            properties: {
+              name: (.properties.name // .properties.NAME // .properties.NOME // .properties.NM_MUNI // .properties.NM_MUNICIPIO // .properties.nm_municipio // .properties.NM_MUN // "Unknown")
+            },
+            geometry: .geometry
+          })' data/municipios-sp.geojson > /tmp/optimized.geojson
+          
+          echo "✅ Optimized size:"
+          ls -lh /tmp/optimized.geojson
+          
+          # Replace original
+          mv /tmp/optimized.geojson data/municipios-sp.geojson
+          
+          echo "📦 Final size:"
+          ls -lh data/municipios-sp.geojson
+          du -h data/municipios-sp.geojson
+
+      - name: Commit optimized GeoJSON
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          
+          git add data/municipios-sp.geojson
+          
+          if git diff --staged --quiet; then
+            echo "⚠️ No changes to commit"
+          else
+            git commit -m "🗜️ Auto-optimize: Reduce municipios-sp.geojson size
+            
+            - Remove unnecessary properties
+            - Keep only: name + geometry
+            - Reduce from 26.5MB to ~8MB
+            - Fix GitHub Pages deployment timeout"
+            
+            git push
+            echo "✅ Optimized GeoJSON committed!"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## 📊 GeoJSON Optimization Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Current size:** $(du -h data/municipios-sp.geojson | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          SIZE=$(stat -f%z data/municipios-sp.geojson 2>/dev/null || stat -c%s data/municipios-sp.geojson)
+          if [ $SIZE -lt 15000000 ]; then
+            echo "✅ **Status:** Optimized and ready for deployment" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Status:** Still needs optimization" >> $GITHUB_STEP_SUMMARY
+          fi
