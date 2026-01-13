@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- 📊 Chart.js - para gráficos do Dashboard -->
+    <!-- 📊 Chart.js - CARREGADO UMA VEZ AQUI -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- 📄 PDF Libraries -->
@@ -481,7 +481,8 @@
     <script src="js/dashboard.js"></script>
     <script src="js/reports-and-history.js"></script>
     <script src="js/activity-logger.js"></script>
-    <script src="js/main.js?v=20260113-3"></script>
+    <!-- ✅ VERSÃO 2.6 - Chart.js já carregado no head -->
+    <script src="js/main.js?v=20260113-6"></script>
 
     <script>
         feather.replace();
@@ -586,7 +587,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('✅ DOM carregado');
+            console.log('✅ DOM carregado - GeoClient SP v2.6');
             
             setTimeout(() => {
                 if (window.app) {
@@ -594,10 +595,12 @@
                     window.dashboard = new Dashboard(window.app);
                     
                     // Inicializa ReportsAndHistory
-                    window.reportsAndHistory = new ReportsAndHistory(window.app);
+                    if (typeof ReportsAndHistory !== 'undefined') {
+                        window.reportsAndHistory = new ReportsAndHistory(window.app);
+                    }
                     
                     setupUnifiedButtons();
-                    console.log('✨ GeoClient SP Premium v2.5 - Dashboard Completo + PDF + Histórico + Gráficos Ativados!');
+                    console.log('✨ GeoClient SP Premium v2.6 - BUG FIX COMPLETO!');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado!');
