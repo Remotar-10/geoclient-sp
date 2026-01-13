@@ -1,5 +1,5 @@
-// 📊 GeoClient SP - Dashboard Professional
-// v1.0 - Dashboard Completo com Gráficos Chart.js
+// 📊 GeoClient SP - Dashboard Professional v2.0
+// ✅ COMPATÍVEL COM MAIN.JS V2.6
 
 class Dashboard {
     constructor(app) {
@@ -17,12 +17,10 @@ class Dashboard {
         this.renderDashboard();
         this.modal.style.display = 'block';
         
-        // Renderiza gráficos após o modal estar visível
         setTimeout(() => {
             this.renderCharts();
         }, 100);
         
-        // Log de atividade
         if (window.reportsAndHistory) {
             window.reportsAndHistory.addActivity('dashboard_opened', 'Dashboard aberto', {});
         }
@@ -33,7 +31,6 @@ class Dashboard {
             this.modal.style.display = 'none';
         }
         
-        // Destroi charts ao fechar
         Object.values(this.charts).forEach(chart => {
             if (chart) chart.destroy();
         });
@@ -41,11 +38,11 @@ class Dashboard {
     }
 
     createDashboardModal() {
-        const existingModal = document.getElementById('dashboard-modal');
+        const existingModal = document.getElementById('dashboard-modal-professional');
         if (existingModal) existingModal.remove();
         
         this.modal = document.createElement('div');
-        this.modal.id = 'dashboard-modal';
+        this.modal.id = 'dashboard-modal-professional';
         this.modal.style.cssText = `
             position: fixed;
             top: 0;
@@ -69,39 +66,35 @@ class Dashboard {
     }
 
     getStats() {
+        // ✅ BUG FIX: Acessa propriedades corretas do app
         const cities = this.app.occupiedCities || {};
         const clients = this.app.clients || [];
         
-        // Total de cidades
         const totalCities = Object.keys(cities).length;
-        
-        // Total de clientes
         const totalClients = clients.length;
         
-        // Clientes por empresa
         const clientsByCompany = {};
         clients.forEach(client => {
             const company = client.company || 'Sem Empresa';
             clientsByCompany[company] = (clientsByCompany[company] || 0) + 1;
         });
         
-        // Clientes por segmento
         const clientsBySegment = {};
         clients.forEach(client => {
             const segment = client.segment || 'Sem Segmento';
             clientsBySegment[segment] = (clientsBySegment[segment] || 0) + 1;
         });
         
-        // Clientes ativos vs inativos
         const activeClients = clients.filter(c => c.status === 'active').length;
         const inactiveClients = clients.filter(c => c.status === 'inactive').length;
         
-        // Cidades por empresa
         const citiesByCompany = {};
         Object.entries(cities).forEach(([city, companies]) => {
-            companies.forEach(company => {
-                citiesByCompany[company] = (citiesByCompany[company] || 0) + 1;
-            });
+            if (Array.isArray(companies)) {
+                companies.forEach(company => {
+                    citiesByCompany[company] = (citiesByCompany[company] || 0) + 1;
+                });
+            }
         });
         
         return {
@@ -158,7 +151,6 @@ class Dashboard {
                 <div style="padding: 40px;">
                     <!-- CARDS DE ESTATÍSTICAS -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 40px;">
-                        <!-- Total de Cidades -->
                         <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 28px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                 <div style="font-size: 14px; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Cidades Ocupadas</div>
@@ -168,7 +160,6 @@ class Dashboard {
                             <div style="font-size: 13px; opacity: 0.85;">Municípios com presença</div>
                         </div>
                         
-                        <!-- Total de Clientes -->
                         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 28px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                 <div style="font-size: 14px; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Total de Clientes</div>
@@ -178,7 +169,6 @@ class Dashboard {
                             <div style="font-size: 13px; opacity: 0.85;">Clientes cadastrados</div>
                         </div>
                         
-                        <!-- Clientes Ativos -->
                         <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 28px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                 <div style="font-size: 14px; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Clientes Ativos</div>
@@ -188,7 +178,6 @@ class Dashboard {
                             <div style="font-size: 13px; opacity: 0.85;">${stats.totalClients > 0 ? Math.round((stats.activeClients / stats.totalClients) * 100) : 0}% do total</div>
                         </div>
                         
-                        <!-- Clientes Inativos -->
                         <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 28px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                 <div style="font-size: 14px; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Clientes Inativos</div>
@@ -201,24 +190,29 @@ class Dashboard {
                     
                     <!-- GRÁFICOS -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 32px; margin-bottom: 32px;">
-                        <!-- Gráfico de Pizza - Clientes por Empresa -->
                         <div style="background: #f9fafb; padding: 28px; border-radius: 16px; border: 2px solid #e5e7eb;">
                             <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">📊 Clientes por Empresa</h3>
                             <div style="position: relative; height: 300px;">
-                                <canvas id="chart-clients-by-company"></canvas>
+                                ${Object.keys(stats.clientsByCompany).length > 0 ? 
+                                    '<canvas id="chart-clients-by-company"></canvas>' : 
+                                    '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">Nenhum dado disponível</div>'
+                                }
                             </div>
                         </div>
                         
-                        <!-- Gráfico de Barras - Clientes por Segmento -->
                         <div style="background: #f9fafb; padding: 28px; border-radius: 16px; border: 2px solid #e5e7eb;">
                             <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">📈 Clientes por Segmento</h3>
                             <div style="position: relative; height: 300px;">
-                                <canvas id="chart-clients-by-segment"></canvas>
+                                ${Object.keys(stats.clientsBySegment).length > 0 ? 
+                                    '<canvas id="chart-clients-by-segment"></canvas>' : 
+                                    '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">Nenhum dado disponível</div>'
+                                }
                             </div>
                         </div>
                     </div>
                     
-                    <!-- TABELA DE EMPRESAS -->
+                    <!-- TABELA -->
+                    ${Object.keys(stats.clientsByCompany).length > 0 ? `
                     <div style="background: #f9fafb; padding: 28px; border-radius: 16px; border: 2px solid #e5e7eb; margin-bottom: 32px;">
                         <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🏢 Distribuição por Empresa</h3>
                         <div style="overflow-x: auto;">
@@ -261,8 +255,9 @@ class Dashboard {
                             </table>
                         </div>
                     </div>
+                    ` : ''}
                     
-                    <!-- BOTÕES DE AÇÃO -->
+                    <!-- BOTÕES -->
                     <div style="display: flex; gap: 16px; justify-content: center;">
                         <button onclick="window.dashboard.refreshDashboard()" style="
                             padding: 14px 28px;
@@ -275,8 +270,8 @@ class Dashboard {
                             cursor: pointer;
                             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
                             transition: all 0.2s;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(59, 130, 246, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)';">
-                            🔄 Atualizar Dashboard
+                        " onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
+                            🔄 Atualizar
                         </button>
                         
                         <button onclick="if(window.reportsAndHistory) window.reportsAndHistory.exportDashboardToPDF();" style="
@@ -290,7 +285,7 @@ class Dashboard {
                             cursor: pointer;
                             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
                             transition: all 0.2s;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(245, 158, 11, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(245, 158, 11, 0.3)';">
+                        " onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
                             📄 Exportar PDF
                         </button>
                         
@@ -318,24 +313,21 @@ class Dashboard {
     renderCharts() {
         const stats = this.getStats();
         
-        // Verifica se Chart.js está disponível
         if (typeof Chart === 'undefined') {
-            console.warn('⚠️ Chart.js não carregado. Carregue Chart.js para visualizar gráficos.');
+            console.warn('⚠️ Chart.js não carregado');
             return;
         }
         
-        // Destrói charts anteriores
         Object.values(this.charts).forEach(chart => {
             if (chart) chart.destroy();
         });
         
-        // Cores modernas para os gráficos
         const colors = [
             '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', 
             '#ef4444', '#ec4899', '#06b6d4', '#84cc16'
         ];
         
-        // ===== GRÁFICO 1: Pizza - Clientes por Empresa =====
+        // GRÁFICO 1: Pizza - Clientes por Empresa
         const chartClientsCompany = document.getElementById('chart-clients-by-company');
         if (chartClientsCompany && Object.keys(stats.clientsByCompany).length > 0) {
             const ctx1 = chartClientsCompany.getContext('2d');
@@ -367,15 +359,13 @@ class Dashboard {
                             padding: 12,
                             titleFont: { size: 14, weight: '700' },
                             bodyFont: { size: 13 },
-                            borderColor: '#d1d5db',
-                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
                                     const label = context.label || '';
                                     const value = context.parsed;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} clientes (${percentage}%)`;
+                                    return `${label}: ${value} (${percentage}%)`;
                                 }
                             }
                         }
@@ -384,7 +374,7 @@ class Dashboard {
             });
         }
         
-        // ===== GRÁFICO 2: Barras - Clientes por Segmento =====
+        // GRÁFICO 2: Barras - Clientes por Segmento
         const chartClientsSegment = document.getElementById('chart-clients-by-segment');
         if (chartClientsSegment && Object.keys(stats.clientsBySegment).length > 0) {
             const ctx2 = chartClientsSegment.getContext('2d');
@@ -396,8 +386,7 @@ class Dashboard {
                         label: 'Clientes',
                         data: Object.values(stats.clientsBySegment),
                         backgroundColor: colors[0],
-                        borderRadius: 8,
-                        borderSkipped: false
+                        borderRadius: 8
                     }]
                 },
                 options: {
@@ -407,31 +396,17 @@ class Dashboard {
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: '#1f2937',
-                            padding: 12,
-                            titleFont: { size: 14, weight: '700' },
-                            bodyFont: { size: 13 },
-                            borderColor: '#d1d5db',
-                            borderWidth: 1
+                            padding: 12
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                font: { size: 12, weight: '600' },
-                                color: '#6b7280'
-                            },
-                            grid: {
-                                color: '#f3f4f6',
-                                drawBorder: false
-                            }
+                            ticks: { stepSize: 1, font: { size: 12, weight: '600' }, color: '#6b7280' },
+                            grid: { color: '#f3f4f6', drawBorder: false }
                         },
                         x: {
-                            ticks: {
-                                font: { size: 12, weight: '600' },
-                                color: '#374151'
-                            },
+                            ticks: { font: { size: 12, weight: '600' }, color: '#374151' },
                             grid: { display: false }
                         }
                     }
@@ -442,9 +417,7 @@ class Dashboard {
 
     refreshDashboard() {
         this.renderDashboard();
-        setTimeout(() => {
-            this.renderCharts();
-        }, 100);
+        setTimeout(() => this.renderCharts(), 100);
         
         if (this.app.showToast) {
             this.app.showToast('✅ Dashboard atualizado!', 'success');
@@ -452,6 +425,5 @@ class Dashboard {
     }
 }
 
-// ✅ EXPÕE GLOBALMENTE
 window.Dashboard = Dashboard;
-console.log('✅ Dashboard class loaded');
+console.log('✅ Dashboard v2.0 loaded (compatible with main.js v2.6)');
