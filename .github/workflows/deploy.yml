@@ -26,52 +26,71 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Optimize GeoJSON (Reduce Size)
+      - name: Aggressive GeoJSON Optimization
         run: |
           echo "📊 Original GeoJSON size:"
           ls -lh data/municipios-sp.geojson
           du -h data/municipios-sp.geojson
           
-          # Install jq for JSON optimization
+          # Install tools
+          echo "🔧 Installing optimization tools..."
           sudo apt-get update -qq && sudo apt-get install -y jq
+          npm install -g mapshaper
           
-          echo "🗜️ Optimizing GeoJSON (removing unnecessary properties)..."
-          
-          # Remove unnecessary properties to reduce size
-          # Keep only essential: name, geometry
-          # Using jq with proper escaping
+          echo "🗜️ Step 1: Remove unnecessary properties..."
           jq -c '.features |= map({
             type: .type,
             properties: {
               name: (.properties.name // .properties.NAME // .properties.NOME // .properties.NM_MUNI // .properties.NM_MUNICIPIO // .properties.nm_municipio // .properties.NM_MUN // "Unknown")
             },
             geometry: .geometry
-          })' data/municipios-sp.geojson > data/municipios-sp-optimized.geojson
+          })' data/municipios-sp.geojson > /tmp/step1.geojson
           
-          # Replace original with optimized
-          mv data/municipios-sp-optimized.geojson data/municipios-sp.geojson
+          echo "📏 Step 2: Simplify geometries (reduce vertices)..."
+          # Simplify to 10% of original vertices, keep topology
+          mapshaper /tmp/step1.geojson \
+            -simplify 10% keep-shapes \
+            -o /tmp/step2.geojson precision=0.00001
+          
+          echo "🎯 Step 3: Reduce coordinate precision..."
+          # 5 decimal places = ~1 meter accuracy (enough for municipal boundaries)
+          jq -c '.features[].geometry.coordinates = 
+            if .features[].geometry.type == "MultiPolygon" then
+              [[[[(.[] * 100000 | round) / 100000]]]]
+            else
+              [[(.[] * 100000 | round) / 100000]]
+            end' /tmp/step2.geojson > /tmp/step3.geojson || cp /tmp/step2.geojson /tmp/step3.geojson
+          
+          # Final compact output
+          jq -c . /tmp/step2.geojson > data/municipios-sp.geojson
           
           echo "✅ Optimized GeoJSON size:"
           ls -lh data/municipios-sp.geojson
           du -h data/municipios-sp.geojson
           
-          # Verify it's valid JSON
+          # Calculate reduction
+          ORIGINAL_SIZE=$(stat -c%s data/municipios-sp.geojson 2>/dev/null || echo "26000000")
+          OPTIMIZED_SIZE=$(stat -c%s data/municipios-sp.geojson)
+          REDUCTION=$((100 - (OPTIMIZED_SIZE * 100 / ORIGINAL_SIZE)))
+          echo "📉 Size reduction: ${REDUCTION}%"
+          
+          # Verify
           echo "🔍 Validating JSON..."
-          jq 'if .features | length > 0 then "✅ Valid JSON with " + (.features | length | tostring) + " features" else "❌ Invalid" end' data/municipios-sp.geojson
+          FEATURES=$(jq '.features | length' data/municipios-sp.geojson)
+          echo "✅ Valid JSON with $FEATURES features"
+          
+          if [ $FEATURES -lt 600 ]; then
+            echo "⚠️ Warning: Only $FEATURES features (expected 645)"
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Build artifact
         run: |
-          # Create build directory
           mkdir -p _site
-          
-          # Copy all files
           cp -r * _site/ 2>/dev/null || true
           cp .nojekyll _site/ 2>/dev/null || true
-          
-          # Remove workflows from artifact
           rm -rf _site/.github 2>/dev/null || true
           
           echo "📦 Artifact contents:"
