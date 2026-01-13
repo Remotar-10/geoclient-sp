@@ -1,0 +1,19 @@
+# GeoJSON files - compress and optimize
+*.geojson text eol=lf
+*.json text eol=lf
+
+# JavaScript files
+*.js text eol=lf
+
+# CSS files
+*.css text eol=lf
+
+# HTML files
+*.html text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# Large GeoJSON - consider Git LFS if > 50MB
+# (Currently 26.5MB is OK, but adding for future)
+data/*.geojson filter=lfs diff=lfs merge=lfs -text
