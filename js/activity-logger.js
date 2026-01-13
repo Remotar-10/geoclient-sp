@@ -1,194 +1,145 @@
-// 📝 ACTIVITY LOGGER - Sistema de Logging Automático
-// Intercepta e registra todas as ações do usuário sem modificar main.js
+// 📝 GeoClient SP - Activity Logger
+// v1.0 - Sistema de logging automático de atividades
 
 class ActivityLogger {
     constructor() {
-        this.activities = [];
-        this.maxActivities = 100; // Máximo de atividades no histórico
-        this.loadActivities();
-        console.log('📝 ActivityLogger inicializado');
+        this.enabled = true;
+        this.debugMode = false;
+        console.log('✅ ActivityLogger initialized');
     }
 
-    loadActivities() {
-        try {
-            const saved = localStorage.getItem('geoclient-activities');
-            if (saved) {
-                this.activities = JSON.parse(saved);
-                console.log(`📝 ${this.activities.length} atividades carregadas`);
-            }
-        } catch (error) {
-            console.error('❌ Erro ao carregar atividades:', error);
-            this.activities = [];
-        }
+    // Habilita/desabilita logging
+    setEnabled(enabled) {
+        this.enabled = enabled;
+        console.log(`📝 ActivityLogger ${enabled ? 'habilitado' : 'desabilitado'}`);
     }
 
-    saveActivities() {
-        try {
-            localStorage.setItem('geoclient-activities', JSON.stringify(this.activities));
-        } catch (error) {
-            console.error('❌ Erro ao salvar atividades:', error);
-        }
+    // Modo debug (logs mais verbosos)
+    setDebugMode(debug) {
+        this.debugMode = debug;
+        console.log(`🐛 Debug mode ${debug ? 'ON' : 'OFF'}`);
     }
 
-    log(action, details = {}) {
-        const activity = {
-            id: Date.now() + Math.random(),
-            timestamp: new Date().toISOString(),
-            action: action,
-            details: details,
-            user: 'Sistema' // Pode ser expandido para multi-usuários
+    // Log genérico
+    log(type, message, details = {}) {
+        if (!this.enabled) return;
+
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            type,
+            message,
+            details
         };
 
-        this.activities.unshift(activity);
-        
-        // Limita o histórico
-        if (this.activities.length > this.maxActivities) {
-            this.activities = this.activities.slice(0, this.maxActivities);
+        // Console
+        if (this.debugMode) {
+            console.log(`[${timestamp}] ${type.toUpperCase()}: ${message}`, details);
         }
 
-        this.saveActivities();
-        console.log(`📝 [${action}]`, details);
+        // Envia para ReportsAndHistory se disponível
+        if (window.reportsAndHistory && typeof window.reportsAndHistory.addActivity === 'function') {
+            window.reportsAndHistory.addActivity(type, message, details);
+        }
+
+        return logEntry;
     }
 
-    getActivities(limit = null) {
-        return limit ? this.activities.slice(0, limit) : this.activities;
-    }
-
-    clearActivities() {
-        this.activities = [];
-        this.saveActivities();
-        console.log('🗑️ Histórico de atividades limpo');
-    }
-
-    // Métodos de conveniência
-    logCityMarked(cityName, companies) {
-        this.log('Cidade Marcada', { city: cityName, companies: companies });
-    }
-
-    logCityUnmarked(cityName) {
-        this.log('Cidade Desmarcada', { city: cityName });
+    // Logs específicos por tipo de atividade
+    logCityMarked(cityName) {
+        return this.log('city_marked', `Cidade ${cityName} marcada`, { city: cityName });
     }
 
     logCompanyAdded(cityName, company) {
-        this.log('Empresa Adicionada', { city: cityName, company: company });
+        return this.log('company_added', `Empresa ${company} adicionada em ${cityName}`, { city: cityName, company });
+    }
+
+    logCompanyRemoved(cityName, company) {
+        return this.log('company_removed', `Empresa ${company} removida de ${cityName}`, { city: cityName, company });
+    }
+
+    logCityRemoved(cityName) {
+        return this.log('delete', `Cidade ${cityName} desmarcada`, { city: cityName });
     }
 
     logClientAdded(clientName, municipality) {
-        this.log('Cliente Adicionado', { client: clientName, municipality: municipality });
+        return this.log('client_added', `Cliente ${clientName} adicionado em ${municipality}`, { client: clientName, municipality });
     }
 
     logClientUpdated(clientName) {
-        this.log('Cliente Atualizado', { client: clientName });
+        return this.log('client_updated', `Cliente ${clientName} atualizado`, { client: clientName });
     }
 
     logClientDeleted(clientName) {
-        this.log('Cliente Deletado', { client: clientName });
+        return this.log('delete', `Cliente ${clientName} deletado`, { client: clientName });
     }
 
-    logImport(type, itemCount) {
-        this.log('Importação', { type: type, itemCount: itemCount });
+    logExport(format, itemCount) {
+        return this.log('export', `Dados exportados em ${format.toUpperCase()}`, { format, count: itemCount });
     }
 
-    logExport(type, itemCount) {
-        this.log('Exportação', { type: type, itemCount: itemCount });
+    logImport(format, itemCount) {
+        return this.log('import', `Dados importados de ${format.toUpperCase()}`, { format, count: itemCount });
     }
 
-    logFilterApplied(filters) {
-        this.log('Filtros Aplicados', { filters: filters });
+    logFilterApplied(filterType, filterValue) {
+        return this.log('filter_applied', `Filtro aplicado: ${filterType} = ${filterValue}`, { filterType, filterValue });
     }
 
     logDashboardOpened() {
-        this.log('Dashboard Aberto', {});
+        return this.log('dashboard_opened', 'Dashboard aberto');
     }
 
     logDataCleared() {
-        this.log('Dados Limpos', {});
+        return this.log('data_cleared', 'Todos os dados foram limpos');
+    }
+
+    logError(errorMessage, errorDetails = {}) {
+        return this.log('error', `Erro: ${errorMessage}`, errorDetails);
+    }
+
+    // Utilitário: Formatação de tempo
+    formatDuration(startTime, endTime = Date.now()) {
+        const duration = endTime - startTime;
+        if (duration < 1000) return `${duration}ms`;
+        if (duration < 60000) return `${(duration / 1000).toFixed(1)}s`;
+        return `${(duration / 60000).toFixed(1)}min`;
+    }
+
+    // Utilitário: Performance tracking
+    startTimer(label) {
+        const timer = {
+            label,
+            startTime: Date.now(),
+            end: function() {
+                const duration = Date.now() - this.startTime;
+                if (window.activityLogger && window.activityLogger.debugMode) {
+                    console.log(`⏱️ [${label}] ${window.activityLogger.formatDuration(this.startTime)}`);
+                }
+                return duration;
+            }
+        };
+        return timer;
     }
 }
 
-// Inicializa globalmente
+// ✅ Cria instância global
 window.activityLogger = new ActivityLogger();
 
-// 🎣 HOOKS - Intercepta funções do app automaticamente
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        if (!window.app) {
-            console.warn('⚠️ window.app não encontrado, hooks não aplicados');
-            return;
+// ✅ Auto-integra com app quando disponível
+if (typeof window !== 'undefined') {
+    const checkAppInterval = setInterval(() => {
+        if (window.app && window.reportsAndHistory) {
+            console.log('✅ ActivityLogger integrado com app e ReportsAndHistory');
+            clearInterval(checkAppInterval);
         }
+    }, 100);
+    
+    // Para de tentar após 5 segundos
+    setTimeout(() => clearInterval(checkAppInterval), 5000);
+}
 
-        const app = window.app;
-        const logger = window.activityLogger;
+console.log('✅ ActivityLogger loaded and ready');
 
-        // Hook: Marcar cidade
-        const originalMarkAndShowDropdown = app.markAndShowDropdown;
-        app.markAndShowDropdown = function(name, layer) {
-            logger.logCityMarked(name, []);
-            return originalMarkAndShowDropdown.call(this, name, layer);
-        };
-
-        // Hook: Remover cidade
-        const originalRemoveCity = app.removeCity;
-        app.removeCity = function(name) {
-            logger.logCityUnmarked(name);
-            return originalRemoveCity.call(this, name);
-        };
-
-        // Hook: Adicionar empresa
-        const originalAddCompanyToCity = app.addCompanyToCity;
-        app.addCompanyToCity = function(cityName, company) {
-            logger.logCompanyAdded(cityName, company);
-            return originalAddCompanyToCity.call(this, cityName, company);
-        };
-
-        // Hook: Importar CSV
-        const originalParseAndImportCSV = app.parseAndImportCSV;
-        app.parseAndImportCSV = function(csvContent, mode) {
-            const result = originalParseAndImportCSV.call(this, csvContent, mode);
-            const cityCount = Object.keys(app.markedCities).length;
-            logger.logImport('CSV', cityCount);
-            return result;
-        };
-
-        // Hook: Exportar CSV
-        const originalExportCSV = app.exportCSV;
-        app.exportCSV = function(filtered = false) {
-            const cityCount = Object.keys(app.markedCities).length;
-            logger.logExport('CSV', cityCount);
-            return originalExportCSV.call(this, filtered);
-        };
-
-        // Hook: Exportar JSON
-        const originalExportJSON = app.exportJSON;
-        app.exportJSON = function() {
-            const cityCount = Object.keys(app.markedCities).length;
-            logger.logExport('JSON', cityCount);
-            return originalExportJSON.call(this);
-        };
-
-        // Hook: Limpar dados
-        const originalClearAllData = app.clearAllData;
-        app.clearAllData = function() {
-            logger.logDataCleared();
-            return originalClearAllData.call(this);
-        };
-
-        // Hook: Abrir dashboard
-        const originalShowDashboard = app.showDashboard;
-        app.showDashboard = function() {
-            logger.logDashboardOpened();
-            return originalShowDashboard.call(this);
-        };
-
-        // Hook: Aplicar filtros
-        const originalApplyFiltersToMap = app.applyFiltersToMap;
-        app.applyFiltersToMap = function() {
-            logger.logFilterApplied(app.currentFilters);
-            return originalApplyFiltersToMap.call(this);
-        };
-
-        console.log('✅ ActivityLogger hooks aplicados com sucesso!');
-    }, 800);
-});
-
-console.log('📝 activity-logger.js carregado');
+// ✅ EXPÕE GLOBALMENTE
+window.ActivityLogger = ActivityLogger;
