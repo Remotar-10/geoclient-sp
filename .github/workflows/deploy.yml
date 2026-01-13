@@ -30,16 +30,20 @@ jobs:
         run: |
           echo "📊 Original GeoJSON size:"
           ls -lh data/municipios-sp.geojson
+          du -h data/municipios-sp.geojson
           
           # Install jq for JSON optimization
-          sudo apt-get update && sudo apt-get install -y jq
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          
+          echo "🗜️ Optimizing GeoJSON (removing unnecessary properties)..."
           
           # Remove unnecessary properties to reduce size
           # Keep only essential: name, geometry
-          jq '.features |= map({
+          # Using jq with proper escaping
+          jq -c '.features |= map({
             type: .type,
             properties: {
-              name: .properties.name // .properties.NAME // .properties.NOME // .properties.NM_MUNI
+              name: (.properties.name // .properties.NAME // .properties.NOME // .properties.NM_MUNI // .properties.NM_MUNICIPIO // .properties.nm_municipio // .properties.NM_MUN // "Unknown")
             },
             geometry: .geometry
           })' data/municipios-sp.geojson > data/municipios-sp-optimized.geojson
@@ -49,6 +53,11 @@ jobs:
           
           echo "✅ Optimized GeoJSON size:"
           ls -lh data/municipios-sp.geojson
+          du -h data/municipios-sp.geojson
+          
+          # Verify it's valid JSON
+          echo "🔍 Validating JSON..."
+          jq 'if .features | length > 0 then "✅ Valid JSON with " + (.features | length | tostring) + " features" else "❌ Invalid" end' data/municipios-sp.geojson
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -58,13 +67,17 @@ jobs:
           # Create build directory
           mkdir -p _site
           
-          # Copy all files except .git
+          # Copy all files
           cp -r * _site/ 2>/dev/null || true
           cp .nojekyll _site/ 2>/dev/null || true
           
+          # Remove workflows from artifact
+          rm -rf _site/.github 2>/dev/null || true
+          
           echo "📦 Artifact contents:"
           du -sh _site
-          du -sh _site/data
+          echo "📄 GeoJSON in artifact:"
+          du -sh _site/data/municipios-sp.geojson
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
