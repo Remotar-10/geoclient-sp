@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+    <!-- 📊 Chart.js - para gráficos do Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- 📄 PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -475,9 +478,10 @@
     <script src="components/navbar.js"></script>
     <script src="components/filter-panel.js"></script>
     <script src="components/map-controls.js"></script>
+    <script src="js/dashboard.js"></script>
     <script src="js/reports-and-history.js"></script>
     <script src="js/activity-logger.js"></script>
-    <script src="js/main.js?v=20260113-2"></script>
+    <script src="js/main.js?v=20260113-3"></script>
 
     <script>
         feather.replace();
@@ -491,8 +495,9 @@
             const exportPDF = document.getElementById('export-pdf');
             const clearData = document.getElementById('clear-data');
             const openHistory = document.getElementById('open-history');
+            const openDashboard = document.getElementById('open-dashboard');
             
-            if (!dropdown || !toggle || !importCSV || !exportCSV || !exportJSON || !exportPDF || !clearData || !openHistory) {
+            if (!dropdown || !toggle || !importCSV || !exportCSV || !exportJSON || !exportPDF || !clearData || !openHistory || !openDashboard) {
                 console.error('❌ Botões não encontrados!');
                 return;
             }
@@ -507,6 +512,15 @@
             // Fecha ao clicar fora
             document.addEventListener('click', () => {
                 dropdown.classList.remove('active');
+            });
+            
+            // 🔅 DASHBOARD
+            openDashboard.addEventListener('click', () => {
+                if (window.dashboard && typeof window.dashboard.showDashboard === 'function') {
+                    window.dashboard.showDashboard();
+                } else {
+                    console.error('❌ dashboard.showDashboard() não encontrado!');
+                }
             });
             
             // Importar CSV
@@ -576,11 +590,14 @@
             
             setTimeout(() => {
                 if (window.app) {
+                    // Inicializa Dashboard
+                    window.dashboard = new Dashboard(window.app);
+                    
                     // Inicializa ReportsAndHistory
                     window.reportsAndHistory = new ReportsAndHistory(window.app);
                     
                     setupUnifiedButtons();
-                    console.log('✨ GeoClient SP Premium v2.4 - PDF + Histórico + Logging Automático Ativados!');
+                    console.log('✨ GeoClient SP Premium v2.5 - Dashboard Completo + PDF + Histórico + Gráficos Ativados!');
                     feather.replace();
                 } else {
                     console.error('❌ window.app não encontrado!');
