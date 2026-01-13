@@ -1,5 +1,6 @@
 // 📄🔍 GeoClient SP - PDF Reports & Activity Log
-// v1.0 - Sistema de Relatórios PDF + Histórico de Atividades
+// v1.1 - Sistema de Relatórios PDF + Histórico de Atividades
+// 🔴 BUG FIX: Corrected dashboard modal ID
 
 class ReportsAndHistory {
     constructor(app) {
@@ -35,16 +36,15 @@ class ReportsAndHistory {
     addActivity(type, description, details = {}) {
         const activity = {
             id: Date.now(),
-            type, // 'city_marked', 'company_added', 'export', 'import', 'delete', etc
+            type,
             description,
             details,
             timestamp: new Date().toISOString(),
-            user: 'Usuário' // TODO: quando tiver autenticação
+            user: 'Usuário'
         };
         
-        this.activityLog.unshift(activity); // Adiciona no início
+        this.activityLog.unshift(activity);
         
-        // Limita a 500 atividades
         if (this.activityLog.length > 500) {
             this.activityLog = this.activityLog.slice(0, 500);
         }
@@ -152,7 +152,6 @@ class ReportsAndHistory {
                 </div>
                 
                 <div style="padding: 32px;">
-                    <!-- FILTROS -->
                     <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
                         <button onclick="window.reportsAndHistory.renderActivityLog('all')" style="
                             padding: 8px 16px;
@@ -206,7 +205,6 @@ class ReportsAndHistory {
                         ">🗑️ Limpar</button>
                     </div>
                     
-                    <!-- TIMELINE -->
                     <div style="max-height: 500px; overflow-y: auto;">
         `;
         
@@ -219,7 +217,7 @@ class ReportsAndHistory {
                 </div>
             `;
         } else {
-            filtered.forEach((activity, index) => {
+            filtered.forEach((activity) => {
                 const date = new Date(activity.timestamp);
                 const timeAgo = this.getTimeAgo(date);
                 const icon = typeIcons[activity.type] || '📝';
@@ -323,7 +321,6 @@ class ReportsAndHistory {
     // 📄 ==================== PDF EXPORT ====================
     
     async exportDashboardToPDF() {
-        // Verifica se as bibliotecas estão carregadas
         if (typeof jspdf === 'undefined' || typeof html2canvas === 'undefined') {
             alert('❌ Erro: Bibliotecas PDF não carregadas. Recarregue a página.');
             return;
@@ -331,27 +328,29 @@ class ReportsAndHistory {
         
         try {
             const { jsPDF } = jspdf;
-            
-            // Mostra loading
             const loadingToast = this.showLoadingToast('📄 Gerando PDF...');
             
-            // Captura o dashboard
-            const dashboardElement = document.getElementById('dashboard-modal');
+            // 🔴 BUG FIX: Busca ID correto do dashboard
+            let dashboardElement = document.getElementById('dashboard-modal-professional');
+            
+            // Fallback para ID antigo (compatibilidade)
+            if (!dashboardElement) {
+                dashboardElement = document.getElementById('dashboard-modal');
+            }
+            
             if (!dashboardElement || dashboardElement.style.display === 'none') {
                 alert('⚠️ Abra o dashboard primeiro para exportar!');
                 loadingToast.remove();
                 return;
             }
             
-            // Captura apenas o conteúdo interno (sem fundo escuro)
             const dashboardContent = dashboardElement.querySelector('div > div');
             if (!dashboardContent) {
-                alert('❌ Erro ao capturar dashboard');
+                alert('❌ Erro: Estrutura do dashboard não encontrada');
                 loadingToast.remove();
                 return;
             }
             
-            // Renderiza como imagem
             const canvas = await html2canvas(dashboardContent, {
                 scale: 2,
                 useCORS: true,
@@ -361,7 +360,6 @@ class ReportsAndHistory {
             
             const imgData = canvas.toDataURL('image/png');
             
-            // Cria PDF
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -370,13 +368,12 @@ class ReportsAndHistory {
             
             const pageWidth = pdf.internal.pageSize.getWidth();
             const pageHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pageWidth - 20; // 10mm margem de cada lado
+            const imgWidth = pageWidth - 20;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             let heightLeft = imgHeight;
             let position = 10;
             
-            // Adiciona a imagem (com paginação se necessário)
             pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
             
@@ -387,7 +384,6 @@ class ReportsAndHistory {
                 heightLeft -= pageHeight;
             }
             
-            // Adiciona rodapé
             const totalPages = pdf.internal.pages.length - 1;
             for (let i = 1; i <= totalPages; i++) {
                 pdf.setPage(i);
@@ -401,7 +397,6 @@ class ReportsAndHistory {
                 );
             }
             
-            // Salva o PDF
             const filename = `dashboard_geoclient_${new Date().toISOString().split('T')[0]}.pdf`;
             pdf.save(filename);
             
@@ -450,6 +445,5 @@ class ReportsAndHistory {
     }
 }
 
-// ✅ EXPÕE GLOBALMENTE
 window.ReportsAndHistory = ReportsAndHistory;
-console.log('✅ ReportsAndHistory class loaded');
+console.log('✅ ReportsAndHistory v1.1 loaded - PDF Export Fixed');
