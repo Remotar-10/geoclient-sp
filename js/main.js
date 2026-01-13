@@ -140,408 +140,6 @@ class GeoClientApp {
         }, 3000);
     }
     
-    // 📥 ==================== IMPORT/EXPORT COMPLETO ====================
-    
-    showImportModal() {
-        const modal = document.createElement('div');
-        modal.id = 'import-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10004;
-        `;
-        
-        modal.innerHTML = `
-            <div style="
-                background: white;
-                border-radius: 16px;
-                padding: 32px;
-                max-width: 700px;
-                width: 90%;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-                max-height: 90vh;
-                overflow-y: auto;
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h2 style="margin: 0; font-size: 24px; font-weight: 700; color: #1f2937;">📥 Importar Dados Completos</h2>
-                    <button onclick="this.closest('#import-modal').remove();" style="
-                        background: none;
-                        border: none;
-                        font-size: 28px;
-                        color: #9ca3af;
-                        cursor: pointer;
-                        line-height: 1;
-                    ">×</button>
-                </div>
-                
-                <div id="drop-zone" style="
-                    border: 3px dashed #d1d5db;
-                    border-radius: 12px;
-                    padding: 48px 24px;
-                    text-align: center;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    background: #f9fafb;
-                    margin-bottom: 24px;
-                "
-                onmouseover="this.style.borderColor='#3b82f6'; this.style.background='#eff6ff';"
-                onmouseout="this.style.borderColor='#d1d5db'; this.style.background='#f9fafb';">
-                    <div style="font-size: 48px; margin-bottom: 12px;">📂</div>
-                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 8px;">Arraste o arquivo aqui</div>
-                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">Suporta: CSV ou JSON</div>
-                    <input type="file" id="csv-file-input" accept=".csv,.json" style="display: none;">
-                    <button onclick="document.getElementById('csv-file-input').click();" style="
-                        background: #3b82f6;
-                        color: white;
-                        border: none;
-                        padding: 10px 24px;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        font-size: 14px;
-                    ">Selecionar Arquivo</button>
-                </div>
-                
-                <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                    <div style="font-weight: 600; color: #15803d; margin-bottom: 8px;">📋 Formato CSV esperado:</div>
-                    <code style="display: block; background: white; padding: 12px; border-radius: 6px; font-size: 12px; color: #374151; border: 1px solid #d1f4dd; overflow-x: auto;">
-Tipo,Nome,Cidade,Empresas,Status,Segmento,Contato,Telefone<br>
-cidade,"São Paulo","São Paulo","CDO | WAUX","com_empresa","","",""<br>
-cliente,"Empresa ABC","Campinas","CDO","ativo","Lubrificantes","contato@abc.com","(19) 99999-9999"
-                    </code>
-                    <div style="margin-top: 12px; font-size: 13px; color: #15803d;">
-                        ✅ <b>Tipos aceitos:</b> "cidade" ou "cliente"<br>
-                        ✅ <b>JSON:</b> Formato exportado automaticamente
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="radio" name="import-mode" value="merge" checked>
-                        <span style="font-weight: 600; color: #374151;">🔄 Mesclar com dados existentes</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 8px;">
-                        <input type="radio" name="import-mode" value="replace">
-                        <span style="font-weight: 600; color: #374151;">♻️ Substituir todos os dados</span>
-                    </label>
-                </div>
-                
-                <div style="display: flex; gap: 12px;">
-                    <button onclick="this.closest('#import-modal').remove();" style="
-                        flex: 1;
-                        background: #f3f4f6;
-                        border: 1px solid #e5e7eb;
-                        padding: 12px;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        color: #6b7280;
-                    ">Cancelar</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        const dropZone = modal.querySelector('#drop-zone');
-        const fileInput = modal.querySelector('#csv-file-input');
-        
-        dropZone.addEventListener('click', () => fileInput.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#3b82f6';
-            dropZone.style.background = '#eff6ff';
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = '#d1d5db';
-            dropZone.style.background = '#f9fafb';
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#d1d5db';
-            dropZone.style.background = '#f9fafb';
-            
-            const file = e.dataTransfer.files[0];
-            if (file) this.handleFileImport(file, modal);
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) this.handleFileImport(file, modal);
-        });
-    }
-    
-    handleFileImport(file, modal) {
-        const ext = file.name.split('.').pop().toLowerCase();
-        
-        if (!['csv', 'json'].includes(ext)) {
-            this.showToast('❌ Apenas arquivos CSV ou JSON são aceitos!', 'error');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const content = e.target.result;
-                const importMode = modal.querySelector('input[name="import-mode"]:checked').value;
-                
-                if (ext === 'json') {
-                    this.parseAndImportJSON(content, importMode);
-                } else {
-                    this.parseAndImportCSV(content, importMode);
-                }
-                
-                modal.remove();
-            } catch (error) {
-                console.error('❌ Erro ao importar:', error);
-                this.showToast('❌ Erro ao processar arquivo', 'error');
-            }
-        };
-        reader.readAsText(file, 'UTF-8');
-    }
-    
-    parseAndImportJSON(jsonContent, mode) {
-        try {
-            const data = JSON.parse(jsonContent);
-            
-            if (!data.cities && !data.clients) {
-                this.showToast('❌ Formato JSON inválido', 'error');
-                return;
-            }
-            
-            if (mode === 'replace') {
-                this.markedCities = data.cities || {};
-                this.currentClients = data.clients || [];
-            } else {
-                // Merge
-                if (data.cities) {
-                    Object.entries(data.cities).forEach(([city, info]) => {
-                        if (this.markedCities[city]) {
-                            const existingCompanies = this.markedCities[city].companies || [];
-                            const allCompanies = [...new Set([...existingCompanies, ...(info.companies || [])])];
-                            this.markedCities[city].companies = allCompanies;
-                        } else {
-                            this.markedCities[city] = info;
-                        }
-                    });
-                }
-                
-                if (data.clients) {
-                    const maxId = this.currentClients.length > 0 
-                        ? Math.max(...this.currentClients.map(c => c.id)) 
-                        : 0;
-                    
-                    data.clients.forEach((client, index) => {
-                        client.id = maxId + index + 1;
-                        this.currentClients.push(client);
-                    });
-                }
-            }
-            
-            this.saveToLocalStorage();
-            this.loadMunicipalitiesBoundaries();
-            this.renderClientTable();
-            this.renderMarkers();
-            
-            const cityCount = Object.keys(data.cities || {}).length;
-            const clientCount = (data.clients || []).length;
-            this.showToast(`✅ Importado: ${cityCount} cidades, ${clientCount} clientes`, 'success');
-            
-        } catch (error) {
-            console.error('❌ Erro ao importar JSON:', error);
-            this.showToast('❌ Erro ao processar JSON', 'error');
-        }
-    }
-    
-    parseAndImportCSV(csvContent, mode) {
-        const lines = csvContent.trim().split('\n');
-        if (lines.length < 2) {
-            this.showToast('❌ Arquivo CSV vazio ou inválido', 'error');
-            return;
-        }
-        
-        const header = lines[0].replace(/^\uFEFF/, '');
-        const newCities = {};
-        const newClients = [];
-        let imported = 0;
-        let errors = 0;
-        
-        for (let i = 1; i < lines.length; i++) {
-            try {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const matches = line.match(/"([^"]*)"|([^,]+)/g);
-                if (!matches || matches.length < 3) continue;
-                
-                const tipo = matches[0].replace(/"/g, '').trim().toLowerCase();
-                const nome = matches[1].replace(/"/g, '').trim();
-                const cidade = matches[2].replace(/"/g, '').trim();
-                
-                if (tipo === 'cidade') {
-                    const empresasStr = matches[3] ? matches[3].replace(/"/g, '').trim() : '';
-                    const empresas = empresasStr 
-                        ? empresasStr.split('|').map(e => e.trim()).filter(e => e)
-                        : [];
-                    
-                    newCities[cidade] = {
-                        companies: empresas,
-                        importedAt: new Date().toISOString()
-                    };
-                    imported++;
-                } else if (tipo === 'cliente') {
-                    const empresa = matches[3] ? matches[3].replace(/"/g, '').trim() : '';
-                    const status = matches[4] ? matches[4].replace(/"/g, '').trim() : 'ativo';
-                    const segmento = matches[5] ? matches[5].replace(/"/g, '').trim() : 'Geral';
-                    const contato = matches[6] ? matches[6].replace(/"/g, '').trim() : '';
-                    const telefone = matches[7] ? matches[7].replace(/"/g, '').trim() : '';
-                    
-                    const coords = this.getCityCoordinates(cidade);
-                    
-                    newClients.push({
-                        name: nome,
-                        municipality: cidade,
-                        company: empresa,
-                        status: status,
-                        segment: segmento,
-                        contact: contato,
-                        phone: telefone,
-                        lat: coords.lat,
-                        lng: coords.lng,
-                        Funcionário: 'N/A'
-                    });
-                    imported++;
-                }
-            } catch (error) {
-                console.error(`❌ Erro na linha ${i}:`, error);
-                errors++;
-            }
-        }
-        
-        if (imported === 0) {
-            this.showToast('❌ Nenhum dado válido encontrado no CSV', 'error');
-            return;
-        }
-        
-        if (mode === 'replace') {
-            this.markedCities = newCities;
-            this.currentClients = newClients.map((c, i) => ({ id: i + 1, ...c }));
-        } else {
-            // Merge cidades
-            Object.entries(newCities).forEach(([cidade, data]) => {
-                if (this.markedCities[cidade]) {
-                    const existingCompanies = this.markedCities[cidade].companies || [];
-                    const allCompanies = [...new Set([...existingCompanies, ...data.companies])];
-                    this.markedCities[cidade].companies = allCompanies;
-                } else {
-                    this.markedCities[cidade] = data;
-                }
-            });
-            
-            // Merge clientes
-            const maxId = this.currentClients.length > 0 
-                ? Math.max(...this.currentClients.map(c => c.id)) 
-                : 0;
-            
-            newClients.forEach((client, index) => {
-                client.id = maxId + index + 1;
-                this.currentClients.push(client);
-            });
-        }
-        
-        this.saveToLocalStorage();
-        this.loadMunicipalitiesBoundaries();
-        this.renderClientTable();
-        this.renderMarkers();
-        
-        const msg = mode === 'replace' 
-            ? `✅ ${imported} itens importados (substituindo dados anteriores)`
-            : `✅ ${imported} itens mesclados aos dados existentes`;
-        
-        this.showToast(msg, 'success');
-        
-        if (errors > 0) {
-            this.showToast(`⚠️ ${errors} linha(s) com erro foram ignoradas`, 'warning');
-        }
-    }
-    
-    // 📤 ==================== EXPORTAR COMPLETO ====================
-    
-    exportCSV(filtered = false) {
-        let citiesToExport = this.markedCities;
-        let clientsToExport = this.currentClients;
-        
-        if (filtered && this.filtersAppliedToMap) {
-            citiesToExport = this.getFilteredCities();
-        }
-        
-        if (Object.keys(citiesToExport).length === 0 && clientsToExport.length === 0) {
-            alert('⚠️ Nenhum dado para exportar!');
-            return;
-        }
-        
-        let csv = 'Tipo,Nome,Cidade,Empresas,Status,Segmento,Contato,Telefone\n';
-        
-        // Exporta cidades
-        Object.entries(citiesToExport).forEach(([city, info]) => {
-            const empresas = info.companies.join(' | ');
-            const status = info.companies.length > 0 ? 'com_empresa' : 'aguardando';
-            csv += `"cidade","","${city}","${empresas}","${status}","","",""\n`;
-        });
-        
-        // Exporta clientes
-        clientsToExport.forEach(client => {
-            csv += `"cliente","${client.name}","${client.municipality}","${client.company}","${client.status}","${client.segment}","${client.contact}","${client.phone}"\n`;
-        });
-        
-        const BOM = '\uFEFF';
-        const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const suffix = filtered ? '_filtered' : '';
-        a.download = `geoclient_completo${suffix}_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        
-        console.log('📥 CSV completo exportado');
-        this.showToast('📥 CSV completo exportado com sucesso!', 'success');
-    }
-    
-    exportJSON() {
-        if (Object.keys(this.markedCities).length === 0 && this.currentClients.length === 0) {
-            alert('⚠️ Nenhum dado para exportar!');
-            return;
-        }
-        
-        const data = {
-            cities: this.markedCities,
-            clients: this.currentClients,
-            exportedAt: new Date().toISOString(),
-            version: '2.3'
-        };
-        
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `geoclient_completo_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        
-        console.log('📥 JSON completo exportado');
-        this.showToast('📥 JSON completo exportado com sucesso!', 'success');
-    }
-    
     getCityCoordinates(cityName) {
         const MUNICIPALITIES = {
             'São Paulo': { lat: -23.5505, lng: -46.6333 },
@@ -553,128 +151,544 @@ cliente,"Empresa ABC","Campinas","CDO","ativo","Lubrificantes","contato@abc.com"
         };
         return MUNICIPALITIES[cityName] || { lat: -23.5, lng: -46.6 };
     }
-    
-    // 🔍 ==================== BUSCA DE CLIENTES NA TABELA ====================
-    
-    setupClientSearch() {
-        const searchInput = document.createElement('div');
-        searchInput.innerHTML = `
-            <div style="margin-bottom: 16px;">
-                <input 
-                    type="text" 
-                    id="client-table-search" 
-                    placeholder="🔍 Buscar cliente, cidade, empresa..."
-                    style="
-                        width: 100%;
-                        padding: 12px 16px;
-                        border: 2px solid #e5e7eb;
-                        border-radius: 8px;
-                        font-size: 14px;
-                        transition: all 0.2s;
-                    "
-                />
+
+    // ==================== INIT ====================
+
+    init() {
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.3...');
+        
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            console.error('❌ Elemento #map não encontrado!');
+            return;
+        }
+        
+        console.log('✅ Elemento #map encontrado');
+        
+        setTimeout(() => {
+            this.initMap();
+            this.setupEventListeners();
+            this.createContextMenu();
+            this.createTooltip();
+            this.createCompanyDropdown();
+            this.createDashboardModal();
+            this.createHomeButton();
+            this.setupClientSearch();
+            this.renderClientTable();
+            this.renderMarkers();
+            console.log('✅ GeoClient SP iniciado!');
+            console.log('🔍 1 CLIQUE = Zoom 3x (SEM marcar)');
+            console.log('🔍 2 CLIQUES = Marca cidade + dropdown');
+            console.log('🖱️ BOTÃO DIREITO = Remover marcação');
+            console.log('💾 LOCALSTORAGE = Salva automaticamente');
+        }, 100);
+    }
+
+    initMap() {
+        console.log('🗺️ Criando mapa Leaflet...');
+        
+        try {
+            this.map = L.map('map', {
+                center: this.initialView.center,
+                zoom: this.initialView.zoom,
+                zoomControl: true,
+                attributionControl: true,
+                minZoom: 6,
+                maxZoom: 12,
+                doubleClickZoom: false,
+                tap: false
+            });
+            
+            console.log('✅ Mapa criado');
+            
+            this.map.off('dblclick');
+            this.map.on('dblclick', (e) => {
+                L.DomEvent.stopPropagation(e);
+                L.DomEvent.preventDefault(e);
+                return false;
+            });
+            
+            const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20,
+                minZoom: 6
+            });
+            
+            tileLayer.addTo(this.map);
+            console.log('✅ Tiles CartoDB adicionados');
+            
+            setTimeout(() => {
+                this.map.invalidateSize();
+            }, 250);
+            
+            this.loadMunicipalitiesBoundaries();
+            
+        } catch (error) {
+            console.error('❌ Erro ao criar mapa:', error);
+        }
+    }
+
+    loadMunicipalitiesBoundaries() {
+        console.log('📍 Carregando municípios...');
+        
+        fetch('data/municipios-sp.geojson')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(municipalitiesData => {
+                console.log(`✅ GeoJSON carregado: ${municipalitiesData.features.length} municípios`);
+                
+                this.geoJsonLayer = L.geoJSON(municipalitiesData, {
+                    style: (feature) => {
+                        const name = this.getMunicipalityName(feature);
+                        const cityData = this.markedCities[name];
+                        
+                        if (cityData && cityData.companies.length > 0) {
+                            const color = this.getCompanyColor(cityData.companies[0]);
+                            return {
+                                fillColor: color,
+                                weight: 2,
+                                opacity: 1,
+                                color: '#374151',
+                                fillOpacity: 0.7
+                            };
+                        } 
+                        else if (cityData) {
+                            return {
+                                fillColor: '#9ca3af',
+                                weight: 2,
+                                opacity: 1,
+                                color: '#4b5563',
+                                fillOpacity: 0.6
+                            };
+                        } 
+                        else {
+                            return {
+                                fillColor: '#d1d5db',
+                                weight: 1.5,
+                                opacity: 1,
+                                color: '#6b7280',
+                                fillOpacity: 0.2
+                            };
+                        }
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const name = this.getMunicipalityName(feature);
+                        this.cityLayers[name] = layer;
+                        
+                        layer.on('mouseover', () => {
+                            const cityData = this.markedCities[name];
+                            if (!cityData) {
+                                layer.setStyle({ weight: 3, fillOpacity: 0.3 });
+                            } else {
+                                layer.setStyle({ weight: 4, fillOpacity: 0.85 });
+                            }
+                            this.showTooltip(name);
+                        });
+                        
+                        layer.on('mouseout', () => {
+                            this.geoJsonLayer.resetStyle(layer);
+                            this.hideTooltip();
+                        });
+
+                        layer.off('dblclick');
+                        layer.on('dblclick', (e) => {
+                            L.DomEvent.stop(e);
+                            return false;
+                        });
+
+                        layer.on('contextmenu', (e) => {
+                            L.DomEvent.stop(e);
+                            this.showContextMenu(e.originalEvent, name);
+                        });
+
+                        layer.on('click', (e) => {
+                            L.DomEvent.stop(e);
+                            this.handleCityClick(name, layer, e);
+                        });
+                    }
+                }).addTo(this.map);
+
+                console.log(`✅ ${municipalitiesData.features.length} municípios carregados!`);
+            })
+            .catch(error => {
+                console.error('❌ Erro ao carregar municípios:', error);
+            });
+    }
+
+    getMunicipalityName(feature) {
+        const properties = feature.properties || {};
+        return properties.name 
+            || properties.NAME 
+            || properties.NOME 
+            || properties.NM_MUNI 
+            || properties.NM_MUNICIPIO
+            || properties.nm_municipio
+            || properties.NM_MUN
+            || 'Município Desconhecido';
+    }
+
+    handleCityClick(name, layer, event) {
+        this.clickCount++;
+        clearTimeout(this.clickTimer);
+        
+        this.clickTimer = setTimeout(() => {
+            const clicks = this.clickCount;
+            this.clickCount = 0;
+            
+            if (clicks === 1) {
+                this.zoomToCity(name, event);
+            } else if (clicks >= 2) {
+                this.markAndShowDropdown(name, layer);
+            }
+        }, this.clickTimeout);
+    }
+
+    zoomToCity(name, event) {
+        const latlng = event.latlng;
+        const currentZoom = this.map.getZoom();
+        const newZoom = Math.min(currentZoom + 3, 12);
+        
+        this.map.flyTo(latlng, newZoom, {
+            duration: 0.8,
+            easeLinearity: 0.25
+        });
+        
+        console.log(`🔍 1º CLIQUE: Zoom 3x em ${name}`);
+    }
+
+    markAndShowDropdown(name, layer) {
+        if (!this.markedCities[name]) {
+            this.markedCities[name] = { companies: [] };
+            
+            layer.setStyle({
+                fillColor: '#9ca3af',
+                weight: 2,
+                opacity: 1,
+                color: '#4b5563',
+                fillOpacity: 0.6
+            });
+            
+            this.saveToLocalStorage();
+            console.log(`🟤 2º CLIQUE: ${name} marcado`);
+        }
+        
+        this.showCompanyDropdown(name);
+    }
+
+    removeCity(name) {
+        const layer = this.cityLayers[name];
+        if (!layer) return;
+        
+        if (this.markedCities[name]) {
+            delete this.markedCities[name];
+            
+            layer.setStyle({
+                fillColor: '#d1d5db',
+                weight: 1.5,
+                opacity: 1,
+                color: '#6b7280',
+                fillOpacity: 0.2
+            });
+            
+            this.saveToLocalStorage();
+            console.log(`🗑️ Removido: ${name}`);
+        }
+    }
+
+    getCompanyColor(company) {
+        const colors = {
+            'CDO': '#ef4444',
+            'SUPORTE': '#3b82f6',
+            'WAUX': '#10b981',
+            'MONTEBELLO': '#f59e0b',
+            'HIRATA': '#8b5cf6'
+        };
+        return colors[company] || '#6b7280';
+    }
+
+    addCompanyToCity(cityName, company) {
+        const city = this.markedCities[cityName];
+        if (!city) return;
+        
+        city.companies.push(company);
+        this.saveToLocalStorage();
+        
+        const oldLayer = this.geoJsonLayer;
+        if (oldLayer) {
+            this.map.removeLayer(oldLayer);
+        }
+        
+        this.loadMunicipalitiesBoundaries();
+    }
+
+    createContextMenu() {
+        const existingMenu = document.getElementById('city-context-menu');
+        if (existingMenu) existingMenu.remove();
+        
+        this.contextMenu = document.createElement('div');
+        this.contextMenu.id = 'city-context-menu';
+        this.contextMenu.style.cssText = `
+            position: fixed;
+            display: none;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            padding: 8px;
+            z-index: 10000;
+            min-width: 200px;
+        `;
+        document.body.appendChild(this.contextMenu);
+        
+        document.addEventListener('click', () => {
+            this.contextMenu.style.display = 'none';
+        });
+    }
+
+    showContextMenu(event, cityName) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const cityData = this.markedCities[cityName];
+        if (!cityData) return;
+        
+        let menuContent = `
+            <div onclick="if(confirm('Remover marcação de ${cityName}?')) { window.app.removeCity('${cityName}'); window.app.contextMenu.style.display='none'; }"
+                 style="padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600;">
+                🗑️ Remover Marcação
             </div>
         `;
         
-        const tableContainer = document.querySelector('.bg-white.rounded-lg.shadow.p-6');
-        if (tableContainer) {
-            const title = tableContainer.querySelector('h2');
-            if (title) {
-                title.parentNode.insertBefore(searchInput, title.nextSibling);
-            }
+        this.contextMenu.innerHTML = menuContent;
+        this.contextMenu.style.display = 'block';
+        this.contextMenu.style.left = event.pageX + 'px';
+        this.contextMenu.style.top = event.pageY + 'px';
+    }
+
+    createTooltip() {
+        const existingTooltip = document.getElementById('city-tooltip');
+        if (existingTooltip) existingTooltip.remove();
+        
+        this.tooltip = document.createElement('div');
+        this.tooltip.id = 'city-tooltip';
+        this.tooltip.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            padding: 16px;
+            z-index: 9999;
+            min-width: 280px;
+            max-width: 350px;
+            border: 2px solid #e5e7eb;
+        `;
+        document.body.appendChild(this.tooltip);
+    }
+
+    showTooltip(cityName) {
+        const cityData = this.markedCities[cityName];
+        let content = '';
+        
+        if (!cityData) {
+            content = `<div><b>${cityName}</b><br><small style="color: #9ca3af;">⚪ Disponível</small></div>`;
+        } else if (cityData.companies.length === 0) {
+            content = `<div><b>${cityName}</b><br><small style="color: #f59e0b;">⏳ Aguardando empresa</small></div>`;
+        } else {
+            const color = this.getCompanyColor(cityData.companies[0]);
+            content = `<div style="border-bottom: 2px solid ${color}; padding-bottom: 8px; margin-bottom: 8px;"><b style="color: ${color};">${cityName}</b></div>`;
+            cityData.companies.forEach(company => {
+                const companyColor = this.getCompanyColor(company);
+                content += `<div style="background: ${companyColor}; color: white; padding: 6px 10px; margin: 4px 0; border-radius: 6px; font-weight: 600;">${company}</div>`;
+            });
         }
         
-        const input = document.getElementById('client-table-search');
-        if (input) {
-            input.addEventListener('input', (e) => {
-                this.currentFilters.clientSearch = e.target.value;
-                this.renderClientTable();
-            });
-            
-            input.addEventListener('focus', () => {
-                input.style.borderColor = '#3b82f6';
-                input.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-            });
-            
-            input.addEventListener('blur', () => {
-                input.style.borderColor = '#e5e7eb';
-                input.style.boxShadow = 'none';
-            });
+        this.tooltip.innerHTML = content;
+        this.tooltip.style.display = 'block';
+    }
+
+    hideTooltip() {
+        this.tooltip.style.display = 'none';
+    }
+
+    createCompanyDropdown() {
+        const existingDropdown = document.getElementById('company-dropdown');
+        if (existingDropdown) existingDropdown.remove();
+        
+        this.companyDropdown = document.createElement('div');
+        this.companyDropdown.id = 'company-dropdown';
+        this.companyDropdown.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            padding: 24px;
+            z-index: 10001;
+            min-width: 380px;
+        `;
+        document.body.appendChild(this.companyDropdown);
+    }
+
+    showCompanyDropdown(cityName) {
+        const cityData = this.markedCities[cityName];
+        if (!cityData) return;
+        
+        this.currentCityName = cityName;
+        const availableCompanies = this.availableCompanies.filter(c => !cityData.companies.includes(c));
+        
+        let content = `<h3 style="margin: 0 0 16px 0;">${cityName}</h3>`;
+        
+        availableCompanies.forEach(company => {
+            const color = this.getCompanyColor(company);
+            content += `
+                <div onclick="window.app.selectCompany('${company}');"
+                     style="background: ${color}; color: white; padding: 12px; margin: 8px 0; cursor: pointer; border-radius: 6px; font-weight: 600;">
+                    ${company}
+                </div>
+            `;
+        });
+        
+        content += `<button onclick="window.app.hideCompanyDropdown();" style="margin-top: 12px; padding: 10px; width: 100%;">Cancelar</button>`;
+        
+        this.companyDropdown.innerHTML = content;
+        this.companyDropdown.style.display = 'block';
+    }
+
+    selectCompany(company) {
+        if (!this.currentCityName) return;
+        
+        this.addCompanyToCity(this.currentCityName, company);
+        this.hideCompanyDropdown();
+    }
+
+    hideCompanyDropdown() {
+        this.companyDropdown.style.display = 'none';
+        this.currentCityName = null;
+    }
+
+    createDashboardModal() {
+        const existingModal = document.getElementById('dashboard-modal');
+        if (existingModal) existingModal.remove();
+        
+        this.dashboardModal = document.createElement('div');
+        this.dashboardModal.id = 'dashboard-modal';
+        this.dashboardModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 10002;
+            overflow-y: auto;
+            padding: 20px;
+        `;
+        document.body.appendChild(this.dashboardModal);
+        
+        this.dashboardModal.addEventListener('click', (e) => {
+            if (e.target === this.dashboardModal) {
+                this.hideDashboard();
+            }
+        });
+    }
+
+    showDashboard() {
+        const totalMarked = Object.keys(this.markedCities).length;
+        const content = `
+            <div style="max-width: 1200px; margin: 40px auto; background: white; border-radius: 16px; padding: 32px;">
+                <h2>📊 Dashboard</h2>
+                <p>Total de cidades: ${totalMarked}</p>
+                <button onclick="window.app.hideDashboard();">Fechar</button>
+            </div>
+        `;
+        
+        this.dashboardModal.innerHTML = content;
+        this.dashboardModal.style.display = 'block';
+    }
+
+    hideDashboard() {
+        this.dashboardModal.style.display = 'none';
+    }
+
+    createHomeButton() {
+        const existingButton = document.getElementById('home-button');
+        if (existingButton) existingButton.remove();
+        
+        this.homeButton = document.createElement('button');
+        this.homeButton.innerHTML = '🏠';
+        this.homeButton.title = 'Voltar à visualização inicial';
+        this.homeButton.style.cssText = `
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            font-size: 18px;
+            cursor: pointer;
+        `;
+        
+        this.homeButton.addEventListener('click', () => {
+            this.map.flyTo(this.initialView.center, this.initialView.zoom, { duration: 1 });
+        });
+        
+        const mapElement = document.getElementById('map');
+        if (mapElement) {
+            mapElement.appendChild(this.homeButton);
         }
     }
-    
-    filterClients() {
-        const search = this.currentFilters.clientSearch.toLowerCase().trim();
-        if (!search) return this.currentClients;
-        
-        return this.currentClients.filter(client => {
-            return (
-                client.name.toLowerCase().includes(search) ||
-                client.municipality.toLowerCase().includes(search) ||
-                client.company.toLowerCase().includes(search) ||
-                client.segment.toLowerCase().includes(search) ||
-                client.status.toLowerCase().includes(search)
-            );
-        });
+
+    setupClientSearch() {
+        console.log('🔍 Cliente search setup (stub)');
     }
-    
-    // 📊 ==================== DASHBOARD COM GRÁFICOS ====================
-    
-    destroyCharts() {
-        Object.values(this.charts).forEach(chart => {
-            if (chart && typeof chart.destroy === 'function') {
-                chart.destroy();
-            }
-        });
-        this.charts = {};
+
+    renderClientTable() {
+        console.log('📋 Renderizando tabela de clientes...');
     }
-    
-    createCompanyChart(canvasId, data) {
-        const ctx = document.getElementById(canvasId);
-        if (!ctx) return null;
-        
-        return new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    data: data.values,
-                    backgroundColor: data.colors,
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: { size: 12, weight: 'bold' }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.parsed || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percent = ((value / total) * 100).toFixed(1);
-                                return `${label}: ${value} (${percent}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
+
+    renderMarkers() {
+        console.log('📍 Renderizando marcadores...');
     }
-    
-    // ==================== RESTO DO CÓDIGO (continua igual) ====================
-    
-    // ... (todas as outras funções permanecem idênticas)
-};
+
+    setupEventListeners() {
+        const dashboardBtn = document.getElementById('open-dashboard');
+        if (dashboardBtn) {
+            dashboardBtn.addEventListener('click', () => this.showDashboard());
+        }
+    }
+
+    exportCSV() {
+        console.log('📤 Exportando CSV...');
+        this.showToast('Funcionalidade em desenvolvimento', 'info');
+    }
+
+    exportJSON() {
+        console.log('📤 Exportando JSON...');
+        this.showToast('Funcionalidade em desenvolvimento', 'info');
+    }
+
+    parseAndImportCSV(content, mode) {
+        console.log('📥 Importando CSV...');
+        this.showToast('Funcionalidade em desenvolvimento', 'info');
+    }
+
+    showImportModal() {
+        console.log('📂 Mostrando modal de importação...');
+        this.showToast('Funcionalidade em desenvolvimento', 'info');
+    }
+}
 
 // ✅ Expor globalmente
 let app;
