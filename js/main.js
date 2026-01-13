@@ -1,6 +1,6 @@
-// GeoClient SP - VERSÃO PREMIUM v2.8 - FIX #3: NAVBAR SEARCH INTEGRATED
+// GeoClient SP - VERSÃO PREMIUM v2.9 - FIX #4: ACTIVITY LOG INTEGRATED
 // Sistema de cliques: 1=zoom | 2=marca + dropdown | Botão direito=remover
-// ✅ TODOS OS BUGS CORRIGIDOS + BUSCA NA NAVBAR
+// ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 
 class GeoClientApp {
     constructor() {
@@ -47,6 +47,14 @@ class GeoClientApp {
         this.loadFromLocalStorage();
     }
 
+    // 📝 ==================== ACTIVITY LOGGER HELPER ====================
+    
+    logActivity(method, ...args) {
+        if (window.activityLogger && typeof window.activityLogger[method] === 'function') {
+            window.activityLogger[method](...args);
+        }
+    }
+
     // 💾 ==================== LOCALSTORAGE ====================
     
     loadFromLocalStorage() {
@@ -66,6 +74,7 @@ class GeoClientApp {
             }
         } catch (error) {
             console.error('❌ Erro ao carregar localStorage:', error);
+            this.logActivity('logError', 'Erro ao carregar localStorage', { error: error.message });
         }
     }
     
@@ -77,6 +86,7 @@ class GeoClientApp {
             console.log('💾 Dados salvos');
         } catch (error) {
             console.error('❌ Erro ao salvar:', error);
+            this.logActivity('logError', 'Erro ao salvar no localStorage', { error: error.message });
         }
     }
     
@@ -105,6 +115,9 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
         this.showToast('🗑️ Dados limpos!', 'success');
+        
+        // 📝 LOG
+        this.logActivity('logDataCleared');
     }
     
     showToast(message, type = 'success') {
@@ -159,7 +172,7 @@ class GeoClientApp {
     // ==================== INIT ====================
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.8...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -174,11 +187,11 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.createHomeButton();
-            this.setupSearchListeners(); // ✅ FIX #3: Busca na navbar
+            this.setupSearchListeners();
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.8 iniciado!');
+            console.log('✅ GeoClient SP v2.9 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom | 2 CLIQUES = Marca cidade');
         }, 100);
     }
@@ -215,6 +228,7 @@ class GeoClientApp {
             
         } catch (error) {
             console.error('❌ Erro ao criar mapa:', error);
+            this.logActivity('logError', 'Erro ao criar mapa', { error: error.message });
         }
     }
 
@@ -299,6 +313,7 @@ class GeoClientApp {
             .catch(error => {
                 console.error('❌ Erro ao carregar municípios:', error);
                 this.showToast('❌ Erro ao carregar mapa', 'error');
+                this.logActivity('logError', 'Erro ao carregar municípios', { error: error.message });
             });
     }
 
@@ -349,6 +364,9 @@ class GeoClientApp {
                 fillOpacity: 0.6
             });
             this.saveToLocalStorage();
+            
+            // 📝 LOG
+            this.logActivity('logCityMarked', name);
         }
         this.showCompanyDropdown(name);
     }
@@ -367,6 +385,9 @@ class GeoClientApp {
         });
         this.saveToLocalStorage();
         this.showToast(`🗑️ ${name} removido`, 'info');
+        
+        // 📝 LOG
+        this.logActivity('logCityRemoved', name);
     }
 
     getCompanyColor(company) {
@@ -388,6 +409,9 @@ class GeoClientApp {
         this.saveToLocalStorage();
         this.loadMunicipalitiesBoundaries();
         this.showToast(`✅ ${company} adicionado a ${cityName}`, 'success');
+        
+        // 📝 LOG
+        this.logActivity('logCompanyAdded', cityName, company);
     }
 
     createContextMenu() {
@@ -872,6 +896,9 @@ class GeoClientApp {
         link.click();
         
         this.showToast('📥 CSV exportado!', 'success');
+        
+        // 📝 LOG
+        this.logActivity('logExport', 'csv', this.clients.length);
     }
 
     // ✅ IMPLEMENTADO: exportJSON
@@ -891,6 +918,9 @@ class GeoClientApp {
         link.click();
         
         this.showToast('📥 JSON exportado!', 'success');
+        
+        // 📝 LOG
+        this.logActivity('logExport', 'json', this.clients.length);
     }
 
     // ✅ IMPLEMENTADO: showImportModal
@@ -941,12 +971,14 @@ class GeoClientApp {
         reader.onload = (e) => {
             try {
                 const content = e.target.result;
+                let importedCount = 0;
                 
                 if (file.name.endsWith('.json')) {
                     const data = JSON.parse(content);
                     if (data.clients) {
                         this.clients = data.clients;
                         this.currentClients = this.clients;
+                        importedCount = data.clients.length;
                     }
                     if (data.markedCities) {
                         this.markedCities = data.markedCities;
@@ -966,6 +998,7 @@ class GeoClientApp {
                         };
                     });
                     this.currentClients = this.clients;
+                    importedCount = this.clients.length;
                 }
                 
                 this.saveToLocalStorage();
@@ -975,9 +1008,14 @@ class GeoClientApp {
                 
                 document.getElementById('import-modal').remove();
                 this.showToast('✅ Dados importados!', 'success');
+                
+                // 📝 LOG
+                const format = file.name.endsWith('.json') ? 'json' : 'csv';
+                this.logActivity('logImport', format, importedCount);
             } catch (error) {
                 console.error('Erro ao importar:', error);
                 this.showToast('❌ Erro ao importar arquivo', 'error');
+                this.logActivity('logError', 'Erro ao importar arquivo', { error: error.message });
             }
         };
         
@@ -991,6 +1029,9 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
         this.showToast(`✅ Cliente ${clientData.name} adicionado!`, 'success');
+        
+        // 📝 LOG
+        this.logActivity('logClientAdded', clientData.name, clientData.municipality);
     }
 
     editClient(clientId) {
@@ -1002,12 +1043,18 @@ class GeoClientApp {
     deleteClient(clientId) {
         if (!confirm('Deletar este cliente?')) return;
         
+        const client = this.clients.find(c => c.id === clientId);
+        const clientName = client ? client.name : 'Cliente';
+        
         this.clients = this.clients.filter(c => c.id !== clientId);
         this.currentClients = this.clients;
         this.saveToLocalStorage();
         this.renderClientTable();
         this.renderMarkers();
         this.showToast('🗑️ Cliente deletado', 'success');
+        
+        // 📝 LOG
+        this.logActivity('logClientDeleted', clientName);
     }
 }
 
@@ -1018,5 +1065,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.8 - GIT LFS FIX!');
+    console.log('✨ GeoClient SP Premium v2.9 - ACTIVITY LOG INTEGRATED!');
 });
