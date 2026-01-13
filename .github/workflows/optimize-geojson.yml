@@ -19,14 +19,14 @@ jobs:
       - name: Check GeoJSON size
         id: check
         run: |
-          SIZE=$(stat -f%z data/municipios-sp.geojson 2>/dev/null || stat -c%s data/municipios-sp.geojson)
+          SIZE=$(stat -c%s data/municipios-sp.geojson 2>/dev/null || stat -f%z data/municipios-sp.geojson 2>/dev/null)
           echo "size=$SIZE" >> $GITHUB_OUTPUT
           echo "📊 Current GeoJSON size: $(du -h data/municipios-sp.geojson | cut -f1)"
           
           # Skip if already optimized (< 15MB)
           if [ $SIZE -lt 15000000 ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "✅ Already optimized!"
+            echo "✅ Already optimized (< 15MB)!"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
             echo "⚠️ Needs optimization (>15MB)"
@@ -42,6 +42,8 @@ jobs:
           ls -lh data/municipios-sp.geojson
           
           echo "🗜️ Optimizing GeoJSON (removing unnecessary properties)..."
+          
+          # Optimize with proper jq syntax
           jq -c '.features |= map({
             type: .type,
             properties: {
@@ -49,6 +51,16 @@ jobs:
             },
             geometry: .geometry
           })' data/municipios-sp.geojson > /tmp/optimized.geojson
+          
+          # Validate
+          echo "🔍 Validating optimized JSON..."
+          FEATURES=$(jq '.features | length' /tmp/optimized.geojson)
+          echo "✅ Valid JSON with $FEATURES features"
+          
+          if [ $FEATURES -lt 600 ]; then
+            echo "❌ Error: Too few features ($FEATURES). Expected ~645"
+            exit 1
+          fi
           
           echo "✅ Optimized size:"
           ls -lh /tmp/optimized.geojson
@@ -89,7 +101,7 @@ jobs:
           echo "**Current size:** $(du -h data/municipios-sp.geojson | cut -f1)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          SIZE=$(stat -f%z data/municipios-sp.geojson 2>/dev/null || stat -c%s data/municipios-sp.geojson)
+          SIZE=$(stat -c%s data/municipios-sp.geojson 2>/dev/null || stat -f%z data/municipios-sp.geojson 2>/dev/null)
           if [ $SIZE -lt 15000000 ]; then
             echo "✅ **Status:** Optimized and ready for deployment" >> $GITHUB_STEP_SUMMARY
           else
