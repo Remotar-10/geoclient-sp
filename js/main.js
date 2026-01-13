@@ -1,7 +1,7 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.2 - FIX #7 FINAL: NATIVE SELECT DROPDOWN
-// Sistema de cliques: 1=zoom APENAS | 2=marca + dropdown nativo | Botão direito=remover
+// GeoClient SP - VERSÃO PREMIUM v2.9.3 - FIX #8: MARK ONLY AFTER COMPANY SELECTION
+// Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
-// ✅ FIX: Dropdown agora é <select> nativo
+// ✅ FIX #8: Cidade só é marcada DEPOIS de selecionar empresa
 
 class GeoClientApp {
     constructor() {
@@ -27,6 +27,7 @@ class GeoClientApp {
         this.companyDropdown = null;
         this.isDropdownOpen = false;
         this.currentCityName = null;
+        this.currentCityLayer = null; // ✅ NOVO: Armazena layer temporário
         this.lastClickPosition = { x: 0, y: 0 };
         this.homeButton = null;
         this.searchBox = null;
@@ -173,7 +174,7 @@ class GeoClientApp {
     // ==================== INIT ====================
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.2...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.3...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -192,8 +193,8 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.2 iniciado!');
-            console.log('🔍 1 CLIQUE = Zoom APENAS | 2 CLIQUES = Marca cidade + dropdown');
+            console.log('✅ GeoClient SP v2.9.3 iniciado!');
+            console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom + dropdown (NÃO marca até selecionar empresa)');
         }, 100);
     }
 
@@ -234,7 +235,6 @@ class GeoClientApp {
     }
 
     loadMunicipalitiesBoundaries() {
-        // ✅ FIX: Use media.githubusercontent.com for Git LFS files
         const geojsonUrl = 'https://media.githubusercontent.com/media/Remotar-10/geoclient-sp/main/data/municipios-sp.geojson';
         
         fetch(geojsonUrl)
@@ -243,7 +243,6 @@ class GeoClientApp {
                 return response.json();
             })
             .then(municipalitiesData => {
-                // Remove layer antigo se existir
                 if (this.geoJsonLayer) {
                     this.map.removeLayer(this.geoJsonLayer);
                 }
@@ -260,14 +259,6 @@ class GeoClientApp {
                                 opacity: 1,
                                 color: '#374151',
                                 fillOpacity: 0.7
-                            };
-                        } else if (cityData) {
-                            return {
-                                fillColor: '#9ca3af',
-                                weight: 2,
-                                opacity: 1,
-                                color: '#4b5563',
-                                fillOpacity: 0.6
                             };
                         } else {
                             return {
@@ -325,9 +316,8 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
-    // ✅ FIX #7: Click behavior corrected - 1 click = zoom only, 2 clicks = mark + dropdown
+    // ✅ FIX #8: Novo comportamento de cliques
     handleCityClick(name, layer, event) {
-        // Salva posição do clique para dropdown
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
             y: event.originalEvent.clientY
@@ -341,43 +331,41 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
-                // ✅ 1 CLIQUE = APENAS ZOOM (não marca)
-                this.zoomToCity(name, event);
+                // ✅ 1 CLIQUE = ZOOM 1.5x
+                this.zoomToCity(name, event, 1.5);
             } else if (clicks >= 2) {
-                // ✅ 2 CLIQUES = MARCA + DROPDOWN
-                this.markAndShowDropdown(name, layer);
+                // ✅ 2 CLIQUES = ZOOM 1.5x + DROPDOWN (NÃO MARCA)
+                this.zoomAndShowDropdown(name, layer, event);
             }
         }, this.clickTimeout);
     }
 
-    zoomToCity(name, event) {
+    zoomToCity(name, event, zoomMultiplier = 1.5) {
         const latlng = event.latlng;
         const currentZoom = this.map.getZoom();
-        const newZoom = Math.min(currentZoom + 3, 12);
+        const newZoom = Math.min(currentZoom + zoomMultiplier, 12);
         this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
-        console.log(`🔍 Zoom em ${name}`);
+        console.log(`🔍 Zoom ${zoomMultiplier}x em ${name}`);
     }
 
-    markAndShowDropdown(name, layer) {
-        // ✅ Marca cidade apenas no 2º clique
-        if (!this.markedCities[name]) {
-            this.markedCities[name] = { companies: [] };
-            layer.setStyle({
-                fillColor: '#9ca3af',
-                weight: 2,
-                opacity: 1,
-                color: '#4b5563',
-                fillOpacity: 0.6
-            });
-            this.saveToLocalStorage();
-            console.log(`✅ Cidade ${name} marcada`);
-            
-            // 📝 LOG
-            this.logActivity('logCityMarked', name);
-        }
+    // ✅ NOVO: Zoom primeiro, depois dropdown (NÃO marca cidade)
+    zoomAndShowDropdown(name, layer, event) {
+        const latlng = event.latlng;
+        const currentZoom = this.map.getZoom();
+        const newZoom = Math.min(currentZoom + 1.5, 12);
         
-        // ✅ Mostra dropdown <select> nativo
-        this.showCompanyDropdown(name);
+        // Armazena layer temporário para marcar depois
+        this.currentCityName = name;
+        this.currentCityLayer = layer;
+        
+        // ✅ Primeiro: Zoom
+        this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
+        console.log(`🔍 Zoom 1.5x em ${name}`);
+        
+        // ✅ Depois do zoom: Mostra dropdown (cidade NÃO é marcada ainda)
+        setTimeout(() => {
+            this.showCompanyDropdown(name);
+        }, 850); // Aguarda animação do zoom
     }
 
     removeCity(name) {
@@ -410,14 +398,31 @@ class GeoClientApp {
         return colors[company] || '#6b7280';
     }
 
+    // ✅ MODIFICADO: Marca cidade SÓ quando empresa é adicionada
     addCompanyToCity(cityName, company) {
-        const city = this.markedCities[cityName];
-        if (!city) return;
+        // ✅ CRIA cidade no markedCities se não existir
+        if (!this.markedCities[cityName]) {
+            this.markedCities[cityName] = { companies: [] };
+        }
         
+        const city = this.markedCities[cityName];
         city.companies.push(company);
+        
+        // ✅ Atualiza cor da cidade no mapa
+        const layer = this.cityLayers[cityName];
+        if (layer) {
+            layer.setStyle({
+                fillColor: this.getCompanyColor(company),
+                weight: 2,
+                opacity: 1,
+                color: '#374151',
+                fillOpacity: 0.7
+            });
+        }
+        
         this.saveToLocalStorage();
-        this.loadMunicipalitiesBoundaries();
         this.showToast(`✅ ${company} adicionado a ${cityName}`, 'success');
+        console.log(`✅ Cidade ${cityName} marcada com ${company}`);
         
         // 📝 LOG
         this.logActivity('logCompanyAdded', cityName, company);
@@ -491,10 +496,8 @@ class GeoClientApp {
         const cityData = this.markedCities[cityName];
         let content = '';
         
-        if (!cityData) {
+        if (!cityData || !cityData.companies || cityData.companies.length === 0) {
             content = `<div><b>${cityName}</b><br><small style="color: #9ca3af;">⚪ Disponível</small></div>`;
-        } else if (!cityData.companies || cityData.companies.length === 0) {
-            content = `<div><b>${cityName}</b><br><small style="color: #f59e0b;">⏳ Aguardando empresa</small></div>`;
         } else {
             const color = this.getCompanyColor(cityData.companies[0]);
             content = `<div style="border-bottom: 2px solid ${color}; padding-bottom: 8px; margin-bottom: 8px;"><b style="color: ${color};">${cityName}</b></div>`;
@@ -512,7 +515,6 @@ class GeoClientApp {
         this.tooltip.style.display = 'none';
     }
 
-    // ✅ NOVO: Dropdown com <select> nativo
     createCompanyDropdown() {
         const existingDropdown = document.getElementById('company-dropdown');
         if (existingDropdown) existingDropdown.remove();
@@ -542,8 +544,8 @@ class GeoClientApp {
     }
 
     showCompanyDropdown(cityName) {
-        const cityData = this.markedCities[cityName];
-        if (!cityData) return;
+        // ✅ MODIFICADO: Aceita cidades não marcadas
+        const cityData = this.markedCities[cityName] || { companies: [] };
         
         this.currentCityName = cityName;
         const availableCompanies = this.availableCompanies.filter(c => 
@@ -560,7 +562,6 @@ class GeoClientApp {
         if (availableCompanies.length === 0) {
             content += `<p style="text-align: center; color: #9ca3af; padding: 12px;">Todas as empresas já foram adicionadas</p>`;
         } else {
-            // ✅ NATIVE SELECT DROPDOWN
             content += `
                 <select id="company-select" 
                         style="
@@ -588,7 +589,7 @@ class GeoClientApp {
         }
         
         content += `
-            <button onclick="window.app.hideCompanyDropdown();" 
+            <button onclick="window.app.cancelDropdown();" 
                     style="
                         margin-top: 12px;
                         padding: 12px;
@@ -609,14 +610,12 @@ class GeoClientApp {
         
         this.companyDropdown.innerHTML = content;
         
-        // Posiciona próximo ao clique
         const dropdownWidth = 280;
         const dropdownHeight = 250;
         
         let left = this.lastClickPosition.x - (dropdownWidth / 2);
         let top = this.lastClickPosition.y + 20;
         
-        // Ajusta se sair da tela
         if (left < 10) left = 10;
         if (left + dropdownWidth > window.innerWidth - 10) {
             left = window.innerWidth - dropdownWidth - 10;
@@ -636,15 +635,16 @@ class GeoClientApp {
         this.hideCompanyDropdown();
     }
 
-    selectCompany(company) {
-        if (!this.currentCityName) return;
-        this.addCompanyToCity(this.currentCityName, company);
+    // ✅ NOVO: Cancelar dropdown (não marca cidade)
+    cancelDropdown() {
+        console.log(`❌ Cancelado: ${this.currentCityName} não foi marcada`);
         this.hideCompanyDropdown();
     }
 
     hideCompanyDropdown() {
         this.companyDropdown.style.display = 'none';
         this.currentCityName = null;
+        this.currentCityLayer = null;
     }
 
     createHomeButton() {
@@ -678,7 +678,6 @@ class GeoClientApp {
         }
     }
 
-    // ✅ FIX #3: NAVBAR SEARCH INTEGRATION
     setupSearchListeners() {
         setTimeout(() => {
             const input = document.getElementById('city-search-input');
@@ -738,8 +737,6 @@ class GeoClientApp {
             if (cityData && cityData.companies && cityData.companies.length > 0) {
                 const color = this.getCompanyColor(cityData.companies[0]);
                 statusBadge = `<span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${cityData.companies[0]}</span>`;
-            } else if (cityData) {
-                statusBadge = '<span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Aguardando</span>';
             }
             
             return `
@@ -763,11 +760,9 @@ class GeoClientApp {
         const bounds = layer.getBounds();
         this.map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
         
-        // Esconde resultados
         const results = document.getElementById('search-results');
         if (results) results.style.display = 'none';
         
-        // Limpa input
         const input = document.getElementById('city-search-input');
         if (input) input.value = '';
         
@@ -782,7 +777,6 @@ class GeoClientApp {
         resultsContainer.innerHTML = '';
     }
 
-    // ✅ IMPLEMENTADO: setupClientSearch
     setupClientSearch() {
         const searchInput = document.getElementById('client-search');
         if (searchInput) {
@@ -793,7 +787,6 @@ class GeoClientApp {
         }
     }
 
-    // ✅ IMPLEMENTADO: renderClientTable
     renderClientTable() {
         const tableBody = document.getElementById('clients-table');
         if (!tableBody) return;
@@ -833,9 +826,7 @@ class GeoClientApp {
         `).join('');
     }
 
-    // ✅ IMPLEMENTADO: renderMarkers
     renderMarkers() {
-        // Limpa marcadores existentes
         Object.values(this.markers).forEach(marker => {
             if (this.map && marker) {
                 this.map.removeLayer(marker);
@@ -843,7 +834,6 @@ class GeoClientApp {
         });
         this.markers = {};
         
-        // Adiciona novos marcadores
         this.clients.forEach(client => {
             if (!client.municipality) return;
             
@@ -886,12 +876,10 @@ class GeoClientApp {
         return MUNICIPALITIES[cityName] || null;
     }
 
-    // ✅ Event listeners - não cria modal (deixa para dashboard.js)
     setupEventListeners() {
         console.log('✅ Event listeners configurados');
     }
 
-    // ✅ IMPLEMENTADO: exportCSV
     exportCSV() {
         if (this.clients.length === 0) {
             this.showToast('❌ Nenhum cliente para exportar', 'warning');
@@ -914,12 +902,9 @@ class GeoClientApp {
         link.click();
         
         this.showToast('📥 CSV exportado!', 'success');
-        
-        // 📝 LOG
         this.logActivity('logExport', 'csv', this.clients.length);
     }
 
-    // ✅ IMPLEMENTADO: exportJSON
     exportJSON() {
         const data = {
             exportDate: new Date().toISOString(),
@@ -936,12 +921,9 @@ class GeoClientApp {
         link.click();
         
         this.showToast('📥 JSON exportado!', 'success');
-        
-        // 📝 LOG
         this.logActivity('logExport', 'json', this.clients.length);
     }
 
-    // ✅ IMPLEMENTADO: showImportModal
     showImportModal() {
         const modal = document.createElement('div');
         modal.id = 'import-modal';
@@ -1027,7 +1009,6 @@ class GeoClientApp {
                 document.getElementById('import-modal').remove();
                 this.showToast('✅ Dados importados!', 'success');
                 
-                // 📝 LOG
                 const format = file.name.endsWith('.json') ? 'json' : 'csv';
                 this.logActivity('logImport', format, importedCount);
             } catch (error) {
@@ -1047,8 +1028,6 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
         this.showToast(`✅ Cliente ${clientData.name} adicionado!`, 'success');
-        
-        // 📝 LOG
         this.logActivity('logClientAdded', clientData.name, clientData.municipality);
     }
 
@@ -1070,18 +1049,15 @@ class GeoClientApp {
         this.renderClientTable();
         this.renderMarkers();
         this.showToast('🗑️ Cliente deletado', 'success');
-        
-        // 📝 LOG
         this.logActivity('logClientDeleted', clientName);
     }
 }
 
-// ✅ Inicialização
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM Carregado!');
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.2 - FIX #7 FINAL: NATIVE <SELECT> DROPDOWN!');
+    console.log('✨ GeoClient SP Premium v2.9.3 - FIX #8: MARCA CIDADE SÓ APÓS SELECIONAR EMPRESA!');
 });
