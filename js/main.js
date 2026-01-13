@@ -219,7 +219,10 @@ class GeoClientApp {
     }
 
     loadMunicipalitiesBoundaries() {
-        fetch('data/municipios-sp.geojson')
+        // ✅ FIX: Use media.githubusercontent.com for Git LFS files
+        const geojsonUrl = 'https://media.githubusercontent.com/media/Remotar-10/geoclient-sp/main/data/municipios-sp.geojson';
+        
+        fetch(geojsonUrl)
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return response.json();
@@ -1015,5 +1018,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.8 - FIX #3 COMPLETE!');
+    console.log('✨ GeoClient SP Premium v2.8 - GIT LFS FIX!');
 });
