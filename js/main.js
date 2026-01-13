@@ -1,7 +1,7 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.4 - FIX #9: 2 CLICKS = DROPDOWN ONLY (NO ZOOM)
-// Sistema de cliques: 1=zoom 1.5x | 2=dropdown APENAS (NÃO zoom, NÃO marca) | Seleciona empresa=marca com cor
+// GeoClient SP - VERSÃO PREMIUM v2.9.5 - FIX #10: 2 CLICKS = ZOOM FIRST, THEN DROPDOWN
+// Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
-// ✅ FIX #9: 2 cliques NÃO dá zoom, apenas abre dropdown
+// ✅ FIX #10: 2 cliques = zoom 1.5x PRIMEIRO, aguarda animação, DEPOIS abre dropdown
 
 class GeoClientApp {
     constructor() {
@@ -169,7 +169,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.4...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.5...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -188,8 +188,8 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.4 iniciado!');
-            console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Dropdown APENAS (SEM zoom)');
+            console.log('✅ GeoClient SP v2.9.5 iniciado!');
+            console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
 
@@ -311,7 +311,7 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
-    // ✅ FIX #9: 1 clique = zoom 1.5x | 2 cliques = dropdown APENAS (SEM zoom)
+    // ✅ FIX #10: 1 clique = zoom 1.5x | 2 cliques = zoom 1.5x + AGUARDA + dropdown
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
@@ -329,8 +329,8 @@ class GeoClientApp {
                 // ✅ 1 CLIQUE = ZOOM 1.5x APENAS
                 this.zoomToCity(name, event, 1.5);
             } else if (clicks >= 2) {
-                // ✅ 2 CLIQUES = DROPDOWN APENAS (SEM ZOOM, NÃO MARCA)
-                this.showDropdownOnly(name, layer);
+                // ✅ 2 CLIQUES = ZOOM 1.5x PRIMEIRO + AGUARDA + DROPDOWN
+                this.zoomThenShowDropdown(name, layer, event);
             }
         }, this.clickTimeout);
     }
@@ -343,14 +343,26 @@ class GeoClientApp {
         console.log(`🔍 Zoom ${zoomMultiplier}x em ${name}`);
     }
 
-    // ✅ NOVO: Apenas dropdown (SEM zoom, NÃO marca cidade)
-    showDropdownOnly(name, layer) {
+    // ✅ NOVO: Zoom PRIMEIRO, aguarda animação terminar, DEPOIS abre dropdown
+    zoomThenShowDropdown(name, layer, event) {
+        const latlng = event.latlng;
+        const currentZoom = this.map.getZoom();
+        const newZoom = Math.min(currentZoom + 1.5, 12);
+        
+        // Armazena para usar depois
         this.currentCityName = name;
         this.currentCityLayer = layer;
         
-        // ✅ Abre dropdown imediatamente (SEM zoom)
-        this.showCompanyDropdown(name);
-        console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada)`);
+        // ✅ PASSO 1: Zoom 1.5x
+        this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
+        console.log(`🔍 Zoom 1.5x em ${name}`);
+        
+        // ✅ PASSO 2: AGUARDA zoom terminar (850ms)
+        setTimeout(() => {
+            // ✅ PASSO 3: DEPOIS abre dropdown (NÃO marca)
+            this.showCompanyDropdown(name);
+            console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada)`);
+        }, 850);
     }
 
     removeCity(name) {
@@ -1034,5 +1046,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.4 - FIX #9: 2 CLIQUES = DROPDOWN APENAS (SEM ZOOM)!');
+    console.log('✨ GeoClient SP Premium v2.9.5 - FIX #10: 2 CLIQUES = ZOOM PRIMEIRO + AGUARDA + DROPDOWN!');
 });
