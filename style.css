@@ -90,6 +90,16 @@ custom-navbar {
     z-index: 700;
 }
 
+/* ✅ REMOVE COMPLETAMENTE OS BOTÕES +/- DE ZOOM DO LEAFLET */
+.leaflet-control-zoom,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 /* Cards ultra compactos */
 .card,
 .bg-white {
