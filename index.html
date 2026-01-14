@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011308">
+    <link rel="stylesheet" href="style.css?v=2026011408">
 
     <style>
         .leaflet-control-attribution { font-size: 10px; }
@@ -54,6 +54,8 @@
         .btn-danger:hover { background-color: #fef2f2 !important; }
         .btn-pdf { color: #ea580c !important; }
         .btn-pdf:hover { background-color: #fff7ed !important; }
+        .btn-backup { color: #10b981 !important; }
+        .btn-backup:hover { background-color: #f0fdf4 !important; }
         .dropdown-separator { height: 1px; background: #e5e7eb; margin: 4px 0; }
         .mx-auto { margin-left: auto; margin-right: auto; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
@@ -178,6 +180,11 @@
                                     <span class="dropdown-arrow">▼</span>
                                 </button>
                                 <div class="import-export-dropdown-content">
+                                    <button id="backup-settings" class="btn-backup">
+                                        <i data-feather="hard-drive"></i>
+                                        Backup Automático
+                                    </button>
+                                    <div class="dropdown-separator"></div>
                                     <button id="import-csv">
                                         <i data-feather="upload"></i>
                                         Importar CSV
@@ -298,17 +305,19 @@
         </div>
     </div>
 
-    <!-- Scripts - v2026011308 NO-CACHE FORCED -->
+    <!-- Scripts - v2026011408 NO-CACHE FORCED -->
     <!-- ✅ ORDEM CORRIGIDA: activity-logger ANTES de dashboard/reports -->
-    <script src="data/clients.js?v=2026011308"></script>
-    <script src="components/navbar.js?v=2026011308"></script>
-    <script src="components/filter-panel.js?v=2026011308"></script>
-    <script src="components/map-controls.js?v=2026011308"></script>
-    <script src="js/activity-logger.js?v=2026011308"></script>
-    <script src="js/sidebar-stats.js?v=2026011308"></script>
-    <script src="js/dashboard.js?v=2026011308"></script>
-    <script src="js/reports-and-history.js?v=2026011308"></script>
-    <script src="js/main.js?v=2026011308"></script>
+    <script src="data/clients.js?v=2026011408"></script>
+    <script src="components/navbar.js?v=2026011408"></script>
+    <script src="components/filter-panel.js?v=2026011408"></script>
+    <script src="components/map-controls.js?v=2026011408"></script>
+    <script src="js/activity-logger.js?v=2026011408"></script>
+    <script src="js/sidebar-stats.js?v=2026011408"></script>
+    <script src="js/dashboard.js?v=2026011408"></script>
+    <script src="js/reports-and-history.js?v=2026011408"></script>
+    <script src="js/main.js?v=2026011408"></script>
+    <!-- 💾 AUTO-BACKUP SYSTEM -->
+    <script src="js/auto-backup.js?v=2026011408"></script>
 
     <script>
         feather.replace();
@@ -353,7 +362,7 @@
             setupClientModal();
             feather.replace();
             
-            console.log('⚠️🚨 GeoClient SP v2.9.1 - NO-CACHE v08! 🚨⚠️');
+            console.log('🚀 GeoClient SP v2.9.6 - Backup System Active! 💾');
         }
         
         function setupClientModal() {
@@ -423,6 +432,7 @@
             const clearData = document.getElementById('clear-data');
             const openHistory = document.getElementById('open-history');
             const openDashboard = document.getElementById('open-dashboard');
+            const backupSettings = document.getElementById('backup-settings');
             
             if (!dropdown || !toggle) {
                 console.error('❌ Dropdown não encontrado!');
@@ -443,6 +453,17 @@
                         window.dashboard.showDashboard();
                     } else {
                         console.error('❌ dashboard.showDashboard() não disponível');
+                    }
+                });
+            }
+            
+            if (backupSettings) {
+                backupSettings.addEventListener('click', () => {
+                    dropdown.classList.remove('active');
+                    if (window.autoBackup?.showBackupSettings) {
+                        window.autoBackup.showBackupSettings();
+                    } else {
+                        console.error('❌ autoBackup.showBackupSettings() não disponível');
                     }
                 });
             }
@@ -488,7 +509,7 @@
                 });
             }
             
-            console.log('✅ Botões configurados');
+            console.log('✅ Botões configurados (incluindo Backup)');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
