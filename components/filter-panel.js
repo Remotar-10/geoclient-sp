@@ -122,7 +122,7 @@ class CustomFilterPanel extends HTMLElement {
             </div>
 
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4">Quick Stats</h2>
+                <h2 class="text-xl font-bold mb-4">Resumo</h2>
                 <div class="space-y-4">
                     <div>
                         <div class="flex justify-between mb-1">
