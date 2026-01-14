@@ -1,7 +1,7 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.5 - FIX #10: 2 CLICKS = ZOOM FIRST, THEN DROPDOWN
+// GeoClient SP - VERSÃO PREMIUM v2.9.6 - Botão Home via map-controls.js
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
-// ✅ FIX #10: 2 cliques = zoom 1.5x PRIMEIRO, aguarda animação, DEPOIS abre dropdown
+// ✅ Botão Home agora é gerenciado por map-controls.js
 
 class GeoClientApp {
     constructor() {
@@ -29,7 +29,6 @@ class GeoClientApp {
         this.currentCityName = null;
         this.currentCityLayer = null;
         this.lastClickPosition = { x: 0, y: 0 };
-        this.homeButton = null;
         this.searchBox = null;
         this.filtersAppliedToMap = false;
         this.charts = {};
@@ -169,7 +168,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.5...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.6...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -183,12 +182,12 @@ class GeoClientApp {
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
-            this.createHomeButton();
+            this.initMapControls(); // ✅ Usa map-controls.js ao invés de createHomeButton()
             this.setupSearchListeners();
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.5 iniciado!');
+            console.log('✅ GeoClient SP v2.9.6 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -226,6 +225,17 @@ class GeoClientApp {
         } catch (error) {
             console.error('❌ Erro ao criar mapa:', error);
             this.logActivity('logError', 'Erro ao criar mapa', { error: error.message });
+        }
+    }
+
+    // ✅ NOVO: Inicializa map-controls.js ao invés de criar botão manualmente
+    initMapControls() {
+        const mapControls = document.querySelector('custom-map-controls');
+        if (mapControls && typeof mapControls.init === 'function') {
+            mapControls.init(this.map);
+            console.log('✅ Map controls inicializados via componente');
+        } else {
+            console.warn('⚠️ Componente custom-map-controls não encontrado');
         }
     }
 
@@ -634,37 +644,6 @@ class GeoClientApp {
         this.currentCityLayer = null;
     }
 
-    createHomeButton() {
-        const existingButton = document.getElementById('home-button');
-        if (existingButton) existingButton.remove();
-        
-        this.homeButton = document.createElement('button');
-        this.homeButton.innerHTML = '🏠';
-        this.homeButton.title = 'Voltar à visualização inicial';
-        this.homeButton.style.cssText = `
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 4px;
-            width: 34px;
-            height: 34px;
-            font-size: 18px;
-            cursor: pointer;
-        `;
-        
-        this.homeButton.addEventListener('click', () => {
-            this.map.flyTo(this.initialView.center, this.initialView.zoom, { duration: 1 });
-        });
-        
-        const mapElement = document.getElementById('map');
-        if (mapElement) {
-            mapElement.appendChild(this.homeButton);
-        }
-    }
-
     setupSearchListeners() {
         setTimeout(() => {
             const input = document.getElementById('city-search-input');
@@ -1046,5 +1025,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.5 - FIX #10: 2 CLIQUES = ZOOM PRIMEIRO + AGUARDA + DROPDOWN!');
+    console.log('✨ GeoClient SP Premium v2.9.6 - Botão Home via map-controls.js!');
 });
