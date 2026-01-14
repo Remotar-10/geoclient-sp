@@ -26,37 +26,102 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011408">
+    <link rel="stylesheet" href="style.css?v=2026011414">
 
     <style>
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        
+        /* Unified Menu Button */
         .action-buttons-container { display: flex; gap: 8px; align-items: center; }
         .btn-modern { display: inline-flex; align-items: center; justify-content: center; padding: 12px 20px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-modern i { margin-right: 8px; width: 18px; height: 18px; }
-        .btn-dashboard { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
-        .btn-dashboard:hover { background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3); }
-        .btn-history { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
-        .btn-history:hover { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3); }
-        .btn-import-export { background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); position: relative; }
-        .btn-import-export:hover { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3); }
-        .btn-import-export .dropdown-arrow { margin-left: 8px; font-size: 10px; transition: transform 0.2s; }
-        .import-export-dropdown { position: relative; display: inline-block; }
-        .import-export-dropdown-content { display: none; position: absolute; right: 0; top: 52px; background: white; min-width: 240px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; border: 1px solid #e5e7eb; }
-        .import-export-dropdown.active .import-export-dropdown-content { display: block; animation: dropdownSlide 0.2s ease; }
-        .import-export-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
-        @keyframes dropdownSlide { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .import-export-dropdown-content button { display: flex; align-items: center; width: 100%; padding: 14px 18px; background: white; border: none; cursor: pointer; transition: all 0.15s; font-size: 14px; color: #374151; font-weight: 600; text-align: left; border-bottom: 1px solid #f3f4f6; }
-        .import-export-dropdown-content button:last-child { border-bottom: none; }
-        .import-export-dropdown-content button:hover { background-color: #f9fafb; }
-        .import-export-dropdown-content button i { margin-right: 12px; width: 18px; height: 18px; }
-        .btn-danger { color: #dc2626 !important; }
-        .btn-danger:hover { background-color: #fef2f2 !important; }
-        .btn-pdf { color: #ea580c !important; }
-        .btn-pdf:hover { background-color: #fff7ed !important; }
-        .btn-backup { color: #10b981 !important; }
-        .btn-backup:hover { background-color: #f0fdf4 !important; }
-        .dropdown-separator { height: 1px; background: #e5e7eb; margin: 4px 0; }
+        
+        /* Main Menu Button - Gradient roxo/azul */
+        .btn-main-menu { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); position: relative; }
+        .btn-main-menu:hover { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+        .btn-main-menu .dropdown-arrow { margin-left: 8px; font-size: 10px; transition: transform 0.2s; }
+        
+        /* Menu Dropdown */
+        .main-menu-dropdown { position: relative; display: inline-block; }
+        .main-menu-dropdown-content { 
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            top: 52px; 
+            background: white; 
+            min-width: 280px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+            z-index: 1000; 
+            overflow: hidden; 
+            border: 1px solid #e5e7eb;
+        }
+        .main-menu-dropdown.active .main-menu-dropdown-content { display: block; animation: dropdownSlide 0.2s ease; }
+        .main-menu-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
+        
+        @keyframes dropdownSlide { 
+            from { opacity: 0; transform: translateY(-10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Menu Items */
+        .main-menu-dropdown-content button { 
+            display: flex; 
+            align-items: center; 
+            width: 100%; 
+            padding: 14px 20px; 
+            background: white; 
+            border: none; 
+            cursor: pointer; 
+            transition: all 0.15s; 
+            font-size: 14px; 
+            color: #374151; 
+            font-weight: 600; 
+            text-align: left; 
+            border-bottom: 1px solid #f3f4f6; 
+        }
+        .main-menu-dropdown-content button:last-child { border-bottom: none; }
+        .main-menu-dropdown-content button:hover { background-color: #f9fafb; }
+        .main-menu-dropdown-content button i { margin-right: 12px; width: 18px; height: 18px; }
+        
+        /* Menu Section Headers */
+        .menu-section-header {
+            padding: 10px 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        /* Color variants for menu items */
+        .btn-menu-dashboard { color: #9333ea !important; }
+        .btn-menu-dashboard:hover { background-color: #faf5ff !important; }
+        
+        .btn-menu-history { color: #6366f1 !important; }
+        .btn-menu-history:hover { background-color: #f0f1ff !important; }
+        
+        .btn-menu-backup { color: #10b981 !important; }
+        .btn-menu-backup:hover { background-color: #f0fdf4 !important; }
+        
+        .btn-menu-import { color: #3b82f6 !important; }
+        .btn-menu-import:hover { background-color: #eff6ff !important; }
+        
+        .btn-menu-export { color: #0891b2 !important; }
+        .btn-menu-export:hover { background-color: #ecfeff !important; }
+        
+        .btn-menu-pdf { color: #ea580c !important; }
+        .btn-menu-pdf:hover { background-color: #fff7ed !important; }
+        
+        .btn-menu-danger { color: #dc2626 !important; }
+        .btn-menu-danger:hover { background-color: #fef2f2 !important; }
+        
+        .dropdown-separator { height: 1px; background: #e5e7eb; margin: 0; }
+        
+        /* Utility classes */
         .mx-auto { margin-left: auto; margin-right: auto; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
@@ -163,47 +228,68 @@
                         </div>
                         
                         <div class="action-buttons-container">
-                            <button id="open-dashboard" class="btn-modern btn-dashboard">
-                                <i data-feather="bar-chart-2"></i>
-                                Dashboard
-                            </button>
-                            
-                            <button id="open-history" class="btn-modern btn-history">
-                                <i data-feather="clock"></i>
-                                Histórico
-                            </button>
-                            
-                            <div class="import-export-dropdown">
-                                <button id="import-export-toggle" class="btn-modern btn-import-export">
-                                    <i data-feather="upload"></i>
-                                    Importar / Exportar
+                            <!-- 🎉 UNIFIED MENU - All actions in one place -->
+                            <div class="main-menu-dropdown">
+                                <button id="main-menu-toggle" class="btn-modern btn-main-menu">
+                                    <i data-feather="menu"></i>
+                                    Menu
                                     <span class="dropdown-arrow">▼</span>
                                 </button>
-                                <div class="import-export-dropdown-content">
-                                    <button id="backup-settings" class="btn-backup">
+                                <div class="main-menu-dropdown-content">
+                                    <!-- Visualização -->
+                                    <div class="menu-section-header">📊 Visualização</div>
+                                    <button id="menu-dashboard" class="btn-menu-dashboard">
+                                        <i data-feather="bar-chart-2"></i>
+                                        Dashboard
+                                    </button>
+                                    <button id="menu-history" class="btn-menu-history">
+                                        <i data-feather="clock"></i>
+                                        Histórico de Atividades
+                                    </button>
+                                    
+                                    <div class="dropdown-separator"></div>
+                                    
+                                    <!-- Backup -->
+                                    <div class="menu-section-header">💾 Backup</div>
+                                    <button id="menu-backup" class="btn-menu-backup">
                                         <i data-feather="hard-drive"></i>
                                         Backup Automático
                                     </button>
+                                    
                                     <div class="dropdown-separator"></div>
-                                    <button id="import-csv">
+                                    
+                                    <!-- Importar -->
+                                    <div class="menu-section-header">📥 Importar</div>
+                                    <button id="menu-import-csv" class="btn-menu-import">
                                         <i data-feather="upload"></i>
                                         Importar CSV
                                     </button>
+                                    <button id="menu-import-json" class="btn-menu-import">
+                                        <i data-feather="upload"></i>
+                                        Importar JSON
+                                    </button>
+                                    
                                     <div class="dropdown-separator"></div>
-                                    <button id="export-csv">
+                                    
+                                    <!-- Exportar -->
+                                    <div class="menu-section-header">📤 Exportar</div>
+                                    <button id="menu-export-csv" class="btn-menu-export">
                                         <i data-feather="download"></i>
                                         Exportar CSV
                                     </button>
-                                    <button id="export-json">
+                                    <button id="menu-export-json" class="btn-menu-export">
                                         <i data-feather="code"></i>
                                         Exportar JSON
                                     </button>
-                                    <button id="export-pdf" class="btn-pdf">
+                                    <button id="menu-export-pdf" class="btn-menu-pdf">
                                         <i data-feather="file-text"></i>
                                         Exportar Dashboard PDF
                                     </button>
+                                    
                                     <div class="dropdown-separator"></div>
-                                    <button id="clear-data" class="btn-danger">
+                                    
+                                    <!-- Perigo -->
+                                    <button id="menu-clear-data" class="btn-menu-danger">
                                         <i data-feather="trash-2"></i>
                                         Limpar Todos os Dados
                                     </button>
@@ -305,19 +391,19 @@
         </div>
     </div>
 
-    <!-- Scripts - v2026011408 NO-CACHE FORCED -->
+    <!-- Scripts - v2026011414 NO-CACHE FORCED -->
     <!-- ✅ ORDEM CORRIGIDA: activity-logger ANTES de dashboard/reports -->
-    <script src="data/clients.js?v=2026011408"></script>
-    <script src="components/navbar.js?v=2026011408"></script>
-    <script src="components/filter-panel.js?v=2026011408"></script>
-    <script src="components/map-controls.js?v=2026011408"></script>
-    <script src="js/activity-logger.js?v=2026011408"></script>
-    <script src="js/sidebar-stats.js?v=2026011408"></script>
-    <script src="js/dashboard.js?v=2026011408"></script>
-    <script src="js/reports-and-history.js?v=2026011408"></script>
-    <script src="js/main.js?v=2026011408"></script>
+    <script src="data/clients.js?v=2026011414"></script>
+    <script src="components/navbar.js?v=2026011414"></script>
+    <script src="components/filter-panel.js?v=2026011414"></script>
+    <script src="components/map-controls.js?v=2026011414"></script>
+    <script src="js/activity-logger.js?v=2026011414"></script>
+    <script src="js/sidebar-stats.js?v=2026011414"></script>
+    <script src="js/dashboard.js?v=2026011414"></script>
+    <script src="js/reports-and-history.js?v=2026011414"></script>
+    <script src="js/main.js?v=2026011414"></script>
     <!-- 💾 AUTO-BACKUP SYSTEM -->
-    <script src="js/auto-backup.js?v=2026011408"></script>
+    <script src="js/auto-backup.js?v=2026011414"></script>
 
     <script>
         feather.replace();
@@ -358,11 +444,11 @@
                 console.log('✅ SidebarStats inicializado');
             }
             
-            setupUnifiedButtons();
+            setupUnifiedMenu();
             setupClientModal();
             feather.replace();
             
-            console.log('🚀 GeoClient SP v2.9.6 - Backup System Active! 💾');
+            console.log('🎉 GeoClient SP v2.9.7 - Unified Menu! 🎉');
         }
         
         function setupClientModal() {
@@ -422,94 +508,55 @@
             console.log('✅ Modal de cliente configurado');
         }
         
-        function setupUnifiedButtons() {
-            const dropdown = document.querySelector('.import-export-dropdown');
-            const toggle = document.getElementById('import-export-toggle');
-            const importCSV = document.getElementById('import-csv');
-            const exportCSV = document.getElementById('export-csv');
-            const exportJSON = document.getElementById('export-json');
-            const exportPDF = document.getElementById('export-pdf');
-            const clearData = document.getElementById('clear-data');
-            const openHistory = document.getElementById('open-history');
-            const openDashboard = document.getElementById('open-dashboard');
-            const backupSettings = document.getElementById('backup-settings');
+        function setupUnifiedMenu() {
+            const dropdown = document.querySelector('.main-menu-dropdown');
+            const toggle = document.getElementById('main-menu-toggle');
             
             if (!dropdown || !toggle) {
-                console.error('❌ Dropdown não encontrado!');
+                console.error('❌ Menu dropdown não encontrado!');
                 return;
             }
             
+            // Toggle menu
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 dropdown.classList.toggle('active');
                 feather.replace();
             });
             
+            // Close menu when clicking outside
             document.addEventListener('click', () => dropdown.classList.remove('active'));
             
-            if (openDashboard) {
-                openDashboard.addEventListener('click', () => {
-                    if (window.dashboard?.showDashboard) {
-                        window.dashboard.showDashboard();
-                    } else {
-                        console.error('❌ dashboard.showDashboard() não disponível');
-                    }
-                });
-            }
+            // Prevent menu close when clicking inside dropdown
+            dropdown.querySelector('.main-menu-dropdown-content')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
             
-            if (backupSettings) {
-                backupSettings.addEventListener('click', () => {
-                    dropdown.classList.remove('active');
-                    if (window.autoBackup?.showBackupSettings) {
-                        window.autoBackup.showBackupSettings();
-                    } else {
-                        console.error('❌ autoBackup.showBackupSettings() não disponível');
-                    }
-                });
-            }
+            // Menu actions
+            const menuActions = {
+                'menu-dashboard': () => window.dashboard?.showDashboard?.(),
+                'menu-history': () => window.reportsAndHistory?.showActivityLog?.(),
+                'menu-backup': () => window.autoBackup?.showBackupSettings?.(),
+                'menu-import-csv': () => window.app?.showImportModal?.(),
+                'menu-import-json': () => window.app?.showImportModal?.(),
+                'menu-export-csv': () => window.app?.exportCSV?.(),
+                'menu-export-json': () => window.app?.exportJSON?.(),
+                'menu-export-pdf': () => window.reportsAndHistory?.exportDashboardToPDF?.(),
+                'menu-clear-data': () => window.app?.clearAllData?.()
+            };
             
-            if (importCSV) {
-                importCSV.addEventListener('click', () => {
-                    dropdown.classList.remove('active');
-                    window.app?.showImportModal?.();
-                });
-            }
+            // Attach listeners to all menu items
+            Object.entries(menuActions).forEach(([id, action]) => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        dropdown.classList.remove('active');
+                        action();
+                    });
+                }
+            });
             
-            if (exportCSV) {
-                exportCSV.addEventListener('click', () => {
-                    dropdown.classList.remove('active');
-                    window.app?.exportCSV?.();
-                });
-            }
-            
-            if (exportJSON) {
-                exportJSON.addEventListener('click', () => {
-                    dropdown.classList.remove('active');
-                    window.app?.exportJSON?.();
-                });
-            }
-            
-            if (exportPDF) {
-                exportPDF.addEventListener('click', () => {
-                    dropdown.classList.remove('active');
-                    window.reportsAndHistory?.exportDashboardToPDF?.();
-                });
-            }
-            
-            if (clearData) {
-                clearData.addEventListener('click', () => {
-                    dropdown.classList.remove('active');
-                    window.app?.clearAllData?.();
-                });
-            }
-            
-            if (openHistory) {
-                openHistory.addEventListener('click', () => {
-                    window.reportsAndHistory?.showActivityLog?.();
-                });
-            }
-            
-            console.log('✅ Botões configurados (incluindo Backup)');
+            console.log('✅ Menu unificado configurado com sucesso!');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
