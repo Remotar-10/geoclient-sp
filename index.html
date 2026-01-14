@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011427">
+    <link rel="stylesheet" href="style.css?v=2026011427&t=1736896500">
 
     <style>
         .leaflet-control-attribution { font-size: 10px; }
@@ -398,19 +398,17 @@
         </div>
     </div>
 
-    <!-- Scripts - v2026011427 - CACHE BUST FORÇADO -->
-    <!-- ✅ ORDEM CORRIGIDA: activity-logger ANTES de dashboard/reports -->
-    <script src="data/clients.js?v=2026011427"></script>
-    <script src="components/navbar.js?v=2026011427"></script>
-    <script src="components/filter-panel.js?v=2026011427"></script>
-    <script src="components/map-controls.js?v=2026011427"></script>
-    <script src="js/activity-logger.js?v=2026011427"></script>
-    <script src="js/sidebar-stats.js?v=2026011427"></script>
-    <script src="js/dashboard.js?v=2026011427"></script>
-    <script src="js/reports-and-history.js?v=2026011427"></script>
-    <script src="js/main.js?v=2026011427"></script>
-    <!-- 💾 AUTO-BACKUP SYSTEM -->
-    <script src="js/auto-backup.js?v=2026011427"></script>
+    <!-- Scripts - TIMESTAMP UNICO PARA FORÇAR RELOAD -->
+    <script src="data/clients.js?v=2026011427&t=1736896500"></script>
+    <script src="components/navbar.js?v=2026011427&t=1736896500"></script>
+    <script src="components/filter-panel.js?v=2026011427&t=1736896500"></script>
+    <script src="components/map-controls.js?v=2026011427&t=1736896500"></script>
+    <script src="js/activity-logger.js?v=2026011427&t=1736896500"></script>
+    <script src="js/sidebar-stats.js?v=2026011427&t=1736896500"></script>
+    <script src="js/dashboard.js?v=2026011427&t=1736896500"></script>
+    <script src="js/reports-and-history.js?v=2026011427&t=1736896500"></script>
+    <script src="js/main.js?v=2026011427&t=1736896500"></script>
+    <script src="js/auto-backup.js?v=2026011427&t=1736896500"></script>
 
     <script>
         feather.replace();
@@ -454,7 +452,6 @@
             setupUnifiedMenu();
             setupClientModal();
             
-            // ✅ Remove legenda de marcadores criada dinamicamente
             setTimeout(() => {
                 const legendElements = document.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution)');
                 legendElements.forEach(el => el.remove());
@@ -462,8 +459,7 @@
             }, 1000);
             
             feather.replace();
-            
-            console.log('🎉 GeoClient SP v2.9.15 - Cache bust forçado! 🇧🇷');
+            console.log('🎉 GeoClient SP v2.9.16 - Timestamp único! 🔥');
         }
         
         function setupClientModal() {
@@ -532,22 +528,18 @@
                 return;
             }
             
-            // Toggle menu
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 dropdown.classList.toggle('active');
                 feather.replace();
             });
             
-            // Close menu when clicking outside
             document.addEventListener('click', () => dropdown.classList.remove('active'));
             
-            // Prevent menu close when clicking inside dropdown
             dropdown.querySelector('.main-menu-dropdown-content')?.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
             
-            // Menu actions
             const menuActions = {
                 'menu-dashboard': () => window.dashboard?.showDashboard?.(),
                 'menu-history': () => window.reportsAndHistory?.showActivityLog?.(),
@@ -560,7 +552,6 @@
                 'menu-clear-data': () => window.app?.clearAllData?.()
             };
             
-            // Attach listeners to all menu items
             Object.entries(menuActions).forEach(([id, action]) => {
                 const button = document.getElementById(id);
                 if (button) {
