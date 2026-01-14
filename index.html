@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011420">
+    <link rel="stylesheet" href="style.css?v=2026011421">
 
     <style>
         .leaflet-control-attribution { font-size: 10px; }
@@ -198,24 +198,9 @@
     <div class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <!-- Sidebar -->
+            <!-- Sidebar - LIMPA! Apenas Filtros + Empresas -->
             <div class="lg:col-span-1 space-y-6">
                 <custom-filter-panel></custom-filter-panel>
-
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-bold mb-4">Initial Companies</h2>
-                    <div class="space-y-3">
-                        <!-- Será preenchido por sidebar-stats.js -->
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-bold mb-4">Quick Stats</h2>
-                    <div class="space-y-4">
-                        <div></div>
-                        <div></div>
-                    </div>
-                </div>
             </div>
 
             <!-- Main -->
@@ -395,19 +380,19 @@
         </div>
     </div>
 
-    <!-- Scripts - v2026011420 - MAP CONTROLS FIX! -->
+    <!-- Scripts - v2026011421 - SIDEBAR LIMPA! -->
     <!-- ✅ ORDEM CORRIGIDA: activity-logger ANTES de dashboard/reports -->
-    <script src="data/clients.js?v=2026011420"></script>
-    <script src="components/navbar.js?v=2026011420"></script>
-    <script src="components/filter-panel.js?v=2026011420"></script>
-    <script src="components/map-controls.js?v=2026011420"></script>
-    <script src="js/activity-logger.js?v=2026011420"></script>
-    <script src="js/sidebar-stats.js?v=2026011420"></script>
-    <script src="js/dashboard.js?v=2026011420"></script>
-    <script src="js/reports-and-history.js?v=2026011420"></script>
-    <script src="js/main.js?v=2026011420"></script>
+    <script src="data/clients.js?v=2026011421"></script>
+    <script src="components/navbar.js?v=2026011421"></script>
+    <script src="components/filter-panel.js?v=2026011421"></script>
+    <script src="components/map-controls.js?v=2026011421"></script>
+    <script src="js/activity-logger.js?v=2026011421"></script>
+    <script src="js/sidebar-stats.js?v=2026011421"></script>
+    <script src="js/dashboard.js?v=2026011421"></script>
+    <script src="js/reports-and-history.js?v=2026011421"></script>
+    <script src="js/main.js?v=2026011421"></script>
     <!-- 💾 AUTO-BACKUP SYSTEM -->
-    <script src="js/auto-backup.js?v=2026011420"></script>
+    <script src="js/auto-backup.js?v=2026011421"></script>
 
     <script>
         feather.replace();
@@ -452,7 +437,7 @@
             setupClientModal();
             feather.replace();
             
-            console.log('🎉 GeoClient SP v2.9.9 - MAP CONTROLS FIXED! 🎉');
+            console.log('🎉 GeoClient SP v3.0.0 - SIDEBAR LIMPA! 🎉');
         }
         
         function setupClientModal() {
