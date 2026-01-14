@@ -1,14 +1,16 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.10 - Botão Home via map-controls.js
+// GeoClient SP - VERSÃO PREMIUM v2.9.17 - FILTROS CORRIGIDOS
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
+// ✅ FILTROS FUNCIONANDO CORRETAMENTE
 
 class GeoClientApp {
     constructor() {
         this.map = null;
         this.currentFilters = { 
-            companies: [],
+            company: '',
+            segment: '',
             status: 'todos',
             searchQuery: '',
             clientSearch: ''
@@ -169,7 +171,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.10...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.17...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -180,17 +182,63 @@ class GeoClientApp {
         setTimeout(() => {
             this.initMap();
             this.setupEventListeners();
+            this.setupFilterListeners(); // ✅ NOVO: Configura listeners dos filtros
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
-            this.initMapControls(); // ✅ Usa map-controls.js ao invés de createHomeButton()
+            this.initMapControls();
             this.setupSearchListeners();
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.10 iniciado!');
+            console.log('✅ GeoClient SP v2.9.17 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
+    }
+
+    // ✅ NOVO: Configura listeners para eventos de filtro
+    setupFilterListeners() {
+        window.addEventListener('filtersChanged', (e) => {
+            const { company, segment, status } = e.detail;
+            this.currentFilters.company = company;
+            this.currentFilters.segment = segment;
+            this.currentFilters.status = status;
+            
+            console.log('🔍 Filtros aplicados:', this.currentFilters);
+            this.applyFilters();
+        });
+        
+        console.log('✅ Filter listeners configurados');
+    }
+
+    // ✅ NOVO: Aplica filtros aos clientes
+    applyFilters() {
+        this.currentClients = this.clients.filter(client => {
+            // Filtro por empresa
+            const matchesCompany = !this.currentFilters.company || 
+                client.company === this.currentFilters.company;
+            
+            // Filtro por segmento
+            const matchesSegment = !this.currentFilters.segment || 
+                client.segment === this.currentFilters.segment;
+            
+            // Filtro por status
+            const matchesStatus = this.currentFilters.status === 'todos' || 
+                (this.currentFilters.status === 'ativo' && client.status === 'active') ||
+                (this.currentFilters.status === 'inativo' && client.status === 'inactive');
+            
+            // Filtro por busca de texto
+            const matchesSearch = !this.currentFilters.clientSearch || 
+                client.name.toLowerCase().includes(this.currentFilters.clientSearch) ||
+                (client.municipality && client.municipality.toLowerCase().includes(this.currentFilters.clientSearch));
+            
+            return matchesCompany && matchesSegment && matchesStatus && matchesSearch;
+        });
+        
+        console.log(`📊 ${this.currentClients.length}/${this.clients.length} clientes após filtros`);
+        
+        this.renderClientTable();
+        this.renderMarkers();
     }
 
     initMap() {
@@ -198,7 +246,7 @@ class GeoClientApp {
             this.map = L.map('map', {
                 center: this.initialView.center,
                 zoom: this.initialView.zoom,
-                zoomControl: false, // ✅ REMOVIDO: Sem botões +/- do Leaflet
+                zoomControl: false,
                 attributionControl: true,
                 minZoom: 6,
                 maxZoom: 12,
@@ -229,7 +277,6 @@ class GeoClientApp {
         }
     }
 
-    // ✅ NOVO: Inicializa map-controls.js ao invés de criar botão manualmente
     initMapControls() {
         const mapControls = document.querySelector('custom-map-controls');
         if (mapControls && typeof mapControls.init === 'function') {
@@ -322,7 +369,6 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
-    // ✅ FIX #10: 1 clique = zoom 1.5x | 2 cliques = zoom 1.5x + AGUARDA + dropdown
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
@@ -337,10 +383,8 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
-                // ✅ 1 CLIQUE = ZOOM 1.5x APENAS
                 this.zoomToCity(name, event, 1.5);
             } else if (clicks >= 2) {
-                // ✅ 2 CLIQUES = ZOOM 1.5x PRIMEIRO + AGUARDA + DROPDOWN
                 this.zoomThenShowDropdown(name, layer, event);
             }
         }, this.clickTimeout);
@@ -354,23 +398,18 @@ class GeoClientApp {
         console.log(`🔍 Zoom ${zoomMultiplier}x em ${name}`);
     }
 
-    // ✅ NOVO: Zoom PRIMEIRO, aguarda animação terminar, DEPOIS abre dropdown
     zoomThenShowDropdown(name, layer, event) {
         const latlng = event.latlng;
         const currentZoom = this.map.getZoom();
         const newZoom = Math.min(currentZoom + 1.5, 12);
         
-        // Armazena para usar depois
         this.currentCityName = name;
         this.currentCityLayer = layer;
         
-        // ✅ PASSO 1: Zoom 1.5x
         this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
         console.log(`🔍 Zoom 1.5x em ${name}`);
         
-        // ✅ PASSO 2: AGUARDA zoom terminar (850ms)
         setTimeout(() => {
-            // ✅ PASSO 3: DEPOIS abre dropdown (NÃO marca)
             this.showCompanyDropdown(name);
             console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada)`);
         }, 850);
@@ -749,7 +788,7 @@ class GeoClientApp {
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.currentFilters.clientSearch = e.target.value.toLowerCase();
-                this.renderClientTable();
+                this.applyFilters(); // ✅ Usa applyFilters() unificado
             });
         }
     }
@@ -758,23 +797,13 @@ class GeoClientApp {
         const tableBody = document.getElementById('clients-table');
         if (!tableBody) return;
         
-        const filteredClients = this.clients.filter(client => {
-            const matchesSearch = !this.currentFilters.clientSearch || 
-                client.name.toLowerCase().includes(this.currentFilters.clientSearch) ||
-                (client.municipality && client.municipality.toLowerCase().includes(this.currentFilters.clientSearch));
-            
-            const matchesStatus = this.currentFilters.status === 'todos' || 
-                client.status === this.currentFilters.status;
-            
-            return matchesSearch && matchesStatus;
-        });
-        
-        if (filteredClients.length === 0) {
+        // ✅ Usa currentClients ao invés de clients para respeitar filtros
+        if (this.currentClients.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#9ca3af;">Nenhum cliente encontrado</td></tr>';
             return;
         }
         
-        tableBody.innerHTML = filteredClients.map(client => `
+        tableBody.innerHTML = this.currentClients.map(client => `
             <tr>
                 <td class="px-6 py-4">${client.name || '-'}</td>
                 <td class="px-6 py-4">${client.segment || '-'}</td>
@@ -801,7 +830,8 @@ class GeoClientApp {
         });
         this.markers = {};
         
-        this.clients.forEach(client => {
+        // ✅ Usa currentClients ao invés de clients para respeitar filtros
+        this.currentClients.forEach(client => {
             if (!client.municipality) return;
             
             const coords = this.getCityCoordinates(client.municipality);
@@ -969,8 +999,7 @@ class GeoClientApp {
                 }
                 
                 this.saveToLocalStorage();
-                this.renderClientTable();
-                this.renderMarkers();
+                this.applyFilters(); // ✅ Aplica filtros após importar
                 this.loadMunicipalitiesBoundaries();
                 
                 document.getElementById('import-modal').remove();
@@ -992,8 +1021,7 @@ class GeoClientApp {
         this.clients.push(clientData);
         this.currentClients = this.clients;
         this.saveToLocalStorage();
-        this.renderClientTable();
-        this.renderMarkers();
+        this.applyFilters(); // ✅ Aplica filtros após adicionar
         this.showToast(`✅ Cliente ${clientData.name} adicionado!`, 'success');
         this.logActivity('logClientAdded', clientData.name, clientData.municipality);
     }
@@ -1013,8 +1041,7 @@ class GeoClientApp {
         this.clients = this.clients.filter(c => c.id !== clientId);
         this.currentClients = this.clients;
         this.saveToLocalStorage();
-        this.renderClientTable();
-        this.renderMarkers();
+        this.applyFilters(); // ✅ Aplica filtros após deletar
         this.showToast('🗑️ Cliente deletado', 'success');
         this.logActivity('logClientDeleted', clientName);
     }
@@ -1026,5 +1053,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.10 - Sem botões +/- de zoom!');
+    console.log('✨ GeoClient SP Premium v2.9.17 - Filtros corrigidos!');
 });
