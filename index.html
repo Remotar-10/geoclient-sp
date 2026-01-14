@@ -26,11 +26,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011423">
+    <link rel="stylesheet" href="style.css?v=2026011424">
 
     <style>
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        
+        /* ✅ ESCONDE COMPLETAMENTE A LEGENDA DE MARCADORES (Cliente Ativo/Inativo) */
+        /* Esta legenda aparece no canto inferior direito */
+        .leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution) {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        
+        /* Alternativa: esconde qualquer legend box criada dinamicamente */
+        [class*="legend"],
+        [id*="legend"],
+        .map-legend,
+        .marker-legend {
+            display: none !important;
+            visibility: hidden !important;
+        }
         
         /* Unified Menu Button */
         .action-buttons-container { display: flex; gap: 8px; align-items: center; }
@@ -381,19 +398,19 @@
         </div>
     </div>
 
-    <!-- Scripts - v2026011423 - LEGENDA DE MARCADORES REMOVIDA -->
+    <!-- Scripts - v2026011424 - LEGENDA ESCONDIDA POR CSS FORÇADO -->
     <!-- ✅ ORDEM CORRIGIDA: activity-logger ANTES de dashboard/reports -->
-    <script src="data/clients.js?v=2026011423"></script>
-    <script src="components/navbar.js?v=2026011423"></script>
-    <script src="components/filter-panel.js?v=2026011423"></script>
-    <script src="components/map-controls.js?v=2026011423"></script>
-    <script src="js/activity-logger.js?v=2026011423"></script>
-    <script src="js/sidebar-stats.js?v=2026011423"></script>
-    <script src="js/dashboard.js?v=2026011423"></script>
-    <script src="js/reports-and-history.js?v=2026011423"></script>
-    <script src="js/main.js?v=2026011423"></script>
+    <script src="data/clients.js?v=2026011424"></script>
+    <script src="components/navbar.js?v=2026011424"></script>
+    <script src="components/filter-panel.js?v=2026011424"></script>
+    <script src="components/map-controls.js?v=2026011424"></script>
+    <script src="js/activity-logger.js?v=2026011424"></script>
+    <script src="js/sidebar-stats.js?v=2026011424"></script>
+    <script src="js/dashboard.js?v=2026011424"></script>
+    <script src="js/reports-and-history.js?v=2026011424"></script>
+    <script src="js/main.js?v=2026011424"></script>
     <!-- 💾 AUTO-BACKUP SYSTEM -->
-    <script src="js/auto-backup.js?v=2026011423"></script>
+    <script src="js/auto-backup.js?v=2026011424"></script>
 
     <script>
         feather.replace();
@@ -436,9 +453,17 @@
             
             setupUnifiedMenu();
             setupClientModal();
+            
+            // ✅ Remove legenda de marcadores criada dinamicamente
+            setTimeout(() => {
+                const legendElements = document.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution)');
+                legendElements.forEach(el => el.remove());
+                console.log('✅ Legenda de marcadores removida!');
+            }, 1000);
+            
             feather.replace();
             
-            console.log('🎉 GeoClient SP v2.9.11 - Legenda de marcadores removida! 🎉');
+            console.log('🎉 GeoClient SP v2.9.12 - Legenda escondida por CSS forçado! 🎉');
         }
         
         function setupClientModal() {
