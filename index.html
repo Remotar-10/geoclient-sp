@@ -459,10 +459,12 @@
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.16 - Timestamp único! 🔥');
+            console.log('🎉 GeoClient SP v2.9.18 - Debug de cliente adicionado! 🐛');
         }
         
         function setupClientModal() {
+            console.log('🔧 Configurando modal de cliente...');
+            
             const addClientBtn = document.getElementById('add-client');
             const modal = document.getElementById('client-modal');
             const closeModalBtn = document.getElementById('close-modal');
@@ -470,10 +472,15 @@
             
             if (!addClientBtn || !modal || !closeModalBtn || !form) {
                 console.error('❌ Elementos do modal de cliente não encontrados!');
+                console.error('addClientBtn:', addClientBtn);
+                console.error('modal:', modal);
+                console.error('closeModalBtn:', closeModalBtn);
+                console.error('form:', form);
                 return;
             }
             
             addClientBtn.addEventListener('click', () => {
+                console.log('👆 Botão "Novo Cliente" clicado');
                 document.getElementById('modal-title').textContent = 'Novo Cliente';
                 document.getElementById('client-id').value = '';
                 document.getElementById('client-name').value = '';
@@ -486,33 +493,65 @@
             });
             
             closeModalBtn.addEventListener('click', () => {
+                console.log('❌ Fechando modal');
                 modal.classList.add('hidden');
             });
             
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
+                    console.log('❌ Fechando modal (clique fora)');
                     modal.classList.add('hidden');
                 }
             });
             
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
+                console.log('📤 Formulário submetido!');
                 
-                const clientData = {
-                    id: Date.now(),
-                    name: document.getElementById('client-name').value,
-                    municipality: document.getElementById('client-municipality').value,
-                    company: document.getElementById('client-company').value,
-                    segment: document.getElementById('client-segment').value,
-                    status: document.getElementById('client-status').value
-                };
-                
-                if (window.app && typeof window.app.addClient === 'function') {
+                try {
+                    const clientData = {
+                        id: Date.now(),
+                        name: document.getElementById('client-name').value,
+                        municipality: document.getElementById('client-municipality').value,
+                        company: document.getElementById('client-company').value,
+                        segment: document.getElementById('client-segment').value,
+                        status: document.getElementById('client-status').value
+                    };
+                    
+                    console.log('📊 Dados do cliente:', clientData);
+                    
+                    // Validação
+                    if (!clientData.name || !clientData.municipality) {
+                        alert('⚠️ Preencha os campos obrigatórios: Nome e Município');
+                        return;
+                    }
+                    
+                    // Verifica se window.app existe
+                    if (!window.app) {
+                        console.error('❌ window.app não existe!');
+                        alert('❌ Erro: Sistema não carregado. Recarregue a página.');
+                        return;
+                    }
+                    
+                    // Verifica se addClient existe
+                    if (typeof window.app.addClient !== 'function') {
+                        console.error('❌ window.app.addClient não é uma função!');
+                        console.error('window.app:', window.app);
+                        alert('❌ Erro: Função addClient não encontrada. Recarregue a página.');
+                        return;
+                    }
+                    
+                    console.log('✅ Chamando window.app.addClient()...');
                     window.app.addClient(clientData);
+                    console.log('✅ window.app.addClient() executado!');
+                    
                     modal.classList.add('hidden');
-                } else {
-                    console.error('❌ app.addClient() não encontrado!');
-                    alert('❌ Erro ao adicionar cliente. Recarregue a página.');
+                    console.log('✅ Modal fechado após sucesso');
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao adicionar cliente:', error);
+                    console.error('Stack trace:', error.stack);
+                    alert(`❌ Erro ao adicionar cliente: ${error.message}`);
                 }
             });
             
