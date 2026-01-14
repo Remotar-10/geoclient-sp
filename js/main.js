@@ -1,7 +1,8 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.6 - Botão Home via map-controls.js
+// GeoClient SP - VERSÃO PREMIUM v2.9.10 - Botão Home via map-controls.js
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
+// ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 
 class GeoClientApp {
     constructor() {
@@ -168,7 +169,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.6...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.10...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -187,7 +188,7 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.6 iniciado!');
+            console.log('✅ GeoClient SP v2.9.10 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -197,7 +198,7 @@ class GeoClientApp {
             this.map = L.map('map', {
                 center: this.initialView.center,
                 zoom: this.initialView.zoom,
-                zoomControl: true,
+                zoomControl: false, // ✅ REMOVIDO: Sem botões +/- do Leaflet
                 attributionControl: true,
                 minZoom: 6,
                 maxZoom: 12,
@@ -1025,5 +1026,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.6 - Botão Home via map-controls.js!');
+    console.log('✨ GeoClient SP Premium v2.9.10 - Sem botões +/- de zoom!');
 });
