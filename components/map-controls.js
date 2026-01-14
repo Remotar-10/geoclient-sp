@@ -64,8 +64,8 @@ class CustomMapControls extends HTMLElement {
                 // Handler de click
                 container.querySelector('a').onclick = (e) => {
                     e.preventDefault();
-                    // Reset para a visão ideal de São Paulo - ZOOM 6.5 (meio termo perfeito)
-                    map.setView([-23.5505, -46.6333], 6.5, {
+                    // ✅ Reset para MESMA visão inicial do mapa: [-22.5, -49.2] zoom 7.2
+                    map.setView([-22.5, -49.2], 7.2, {
                         animate: true,
                         duration: 0.5
                     });
