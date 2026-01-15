@@ -1,4 +1,4 @@
-// Custom Filter Panel Component - v2.9.26 (Bug fix - LUBMULTI removida)
+// Custom Filter Panel Component - v2.9.27 (Layout melhorado - espaçamento)
 class CustomFilterPanel extends HTMLElement {
     constructor() {
         super();
@@ -60,15 +60,24 @@ class CustomFilterPanel extends HTMLElement {
         const totalClients = window.CLIENTS_DATA ? window.CLIENTS_DATA.length : 0;
 
         this.innerHTML = `
-            <!-- ✅ SEÇÃO: EMPRESAS (Estatísticas) -->
+            <!-- ✅ SEÇÃO: EMPRESAS (Estatísticas com melhor espaçamento) -->
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-xl font-bold mb-4">Empresas</h2>
-                <div class="space-y-3">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
                     ${this.allCompanies.map(company => `
-                        <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="${company}">
-                            <div class="w-4 h-4 rounded-full mr-3" style="background: ${this.getCompanyColor(company)};"></div>
-                            <div>
-                                <span class="font-medium text-sm">${company}</span>
+                        <div class="flex items-center hover:bg-gray-50 rounded cursor-pointer" 
+                             data-company="${company}"
+                             style="padding: 12px; transition: all 0.2s;">
+                            <div style="
+                                width: 20px;
+                                height: 20px;
+                                border-radius: 50%;
+                                background: ${this.getCompanyColor(company)};
+                                margin-right: 16px;
+                                flex-shrink: 0;
+                            "></div>
+                            <div style="flex: 1;">
+                                <span class="font-medium" style="font-size: 15px; display: block; margin-bottom: 2px;">${company}</span>
                                 <div class="text-xs text-gray-500">${companyCounts[company]} clientes</div>
                             </div>
                         </div>
