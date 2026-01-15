@@ -1,4 +1,4 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.22 - LUBMULTI ADICIONADO
+// GeoClient SP - VERSÃO PREMIUM v3.0.1 - LUBMULTI ADICIONADO
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
@@ -173,7 +173,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.22...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v3.0.1...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -193,7 +193,7 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.22 iniciado!');
+            console.log('✅ GeoClient SP v3.0.1 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -1058,5 +1058,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.22 - LUBMULTI adicionado!');
+    console.log('✨ GeoClient SP Premium v3.0.1 - LUBMULTI adicionado!');
 });
