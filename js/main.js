@@ -1,9 +1,10 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.17 - FILTROS CORRIGIDOS
+// GeoClient SP - VERSÃO PREMIUM v2.9.22 - LUBMULTI ADICIONADO
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 // ✅ FILTROS FUNCIONANDO CORRETAMENTE
+// ✨ LUBMULTI adicionado ao dropdown do mapa
 
 class GeoClientApp {
     constructor() {
@@ -36,7 +37,8 @@ class GeoClientApp {
         this.filtersAppliedToMap = false;
         this.charts = {};
         
-        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
+        // ✨ LUBMULTI ADICIONADO
+        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
         this.totalMunicipalitiesSP = 645;
         
         this.clickCount = 0;
@@ -171,7 +173,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.17...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.22...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -191,7 +193,7 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.17 iniciado!');
+            console.log('✅ GeoClient SP v2.9.22 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -438,7 +440,8 @@ class GeoClientApp {
             'SUPORTE': '#3b82f6',
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
-            'HIRATA': '#8b5cf6'
+            'HIRATA': '#8b5cf6',
+            'LUBMULTI': '#6b7280'
         };
         return colors[company] || '#6b7280';
     }
@@ -868,7 +871,9 @@ class GeoClientApp {
             'Ribeirão Preto': { lat: -21.1704, lng: -47.8103 },
             'Sorocaba': { lat: -23.5015, lng: -47.4526 },
             'Santos': { lat: -23.9608, lng: -46.3336 },
-            'Itapetininga': { lat: -23.5917, lng: -48.0530 }
+            'Itapetininga': { lat: -23.5917, lng: -48.0530 },
+            'Americana': { lat: -22.7390, lng: -47.3308 },
+            'Iguape': { lat: -24.7081, lng: -47.5550 }
         };
         return MUNICIPALITIES[cityName] || null;
     }
@@ -1053,5 +1058,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP Premium v2.9.17 - Filtros corrigidos!');
+    console.log('✨ GeoClient SP Premium v2.9.22 - LUBMULTI adicionado!');
 });
