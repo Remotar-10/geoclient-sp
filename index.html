@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=FORCE1736971000">
+    <link rel="stylesheet" href="style.css?v=FORCE1736972100">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,7 +50,7 @@
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         
-        /* ✅ SIDEBAR RETRÁTIL - Similar Google Maps */
+        /* ✅ SIDEBAR RETRÁTIL */
         .sidebar-toggle {
             position: fixed;
             top: 20px;
@@ -80,7 +80,6 @@
             color: #374151;
         }
         
-        /* Sidebar container */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -118,7 +117,6 @@
             left: 0;
         }
         
-        /* Sidebar header */
         .sidebar-header {
             padding: 24px 20px;
             border-bottom: 1px solid #e5e7eb;
@@ -157,57 +155,58 @@
             height: 20px;
         }
         
-        /* Sidebar content */
         .sidebar-content {
             flex: 1;
             padding: 0;
         }
         
-        /* Sidebar sections */
-        .sidebar-section {
+        /* 🎯 ACCORDION SECTIONS */
+        .accordion-section {
             border-bottom: 1px solid #e5e7eb;
         }
         
-        .sidebar-section-title {
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 16px 20px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            cursor: pointer;
+            background: white;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        
+        .accordion-header:hover {
             background: #f9fafb;
         }
         
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .sidebar-menu-item {
+        .accordion-title {
             display: flex;
             align-items: center;
-            padding: 14px 20px;
-            cursor: pointer;
-            transition: background 0.15s;
-            border: none;
-            background: white;
-            width: 100%;
-            text-align: left;
-            color: #374151;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
+            color: #374151;
         }
         
-        .sidebar-menu-item:hover {
-            background: #f3f4f6;
-        }
-        
-        .sidebar-menu-item i {
+        .accordion-icon {
             width: 20px;
             height: 20px;
-            margin-right: 12px;
             color: #6b7280;
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content.active {
+            max-height: 1000px;
         }
         
         /* Stats dentro da sidebar */
@@ -240,7 +239,40 @@
             margin-top: 4px;
         }
         
-        /* Company badges */
+        /* Menu items */
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border: none;
+            background: white;
+            width: 100%;
+            text-align: left;
+            color: #374151;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .sidebar-menu-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .sidebar-menu-item i {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #6b7280;
+        }
+        
+        /* Company items */
         .company-item {
             display: flex;
             align-items: center;
@@ -280,18 +312,6 @@
                 left: -280px;
             }
         }
-        
-        /* Utility classes */
-        .text-sm { font-size: 0.875rem; }
-        .text-xs { font-size: 0.75rem; }
-        .font-medium { font-weight: 500; }
-        .font-bold { font-weight: 700; }
-        .text-gray-500 { color: #6b7280; }
-        .text-gray-600 { color: #4b5563; }
-        .text-blue-600 { color: #2563eb; }
-        .text-green-600 { color: #16a34a; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
     </style>
 </head>
 
@@ -316,59 +336,84 @@
 
         <!-- Content -->
         <div class="sidebar-content">
-            <!-- 📊 ESTATÍSTICAS -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">📊 Estatísticas</div>
-                <div class="sidebar-stats" id="sidebar-stats">
-                    <div class="stat-card">
-                        <div class="stat-card-title">Total de Municípios</div>
-                        <div class="stat-card-value">645</div>
-                        <div class="stat-card-label">Estado de São Paulo</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-title">Com Empresa</div>
-                        <div class="stat-card-value" id="stat-with-company">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-title">Disponíveis</div>
-                        <div class="stat-card-value" id="stat-available">645</div>
+            <!-- 📊 ESTATÍSTICAS (Aberta por padrão) -->
+            <div class="accordion-section">
+                <div class="accordion-header active" data-section="stats">
+                    <span class="accordion-title">📊 Estatísticas</span>
+                    <i data-feather="chevron-down" class="accordion-icon"></i>
+                </div>
+                <div class="accordion-content active" id="content-stats">
+                    <div class="sidebar-stats">
+                        <div class="stat-card">
+                            <div class="stat-card-title">Total de Municípios</div>
+                            <div class="stat-card-value">645</div>
+                            <div class="stat-card-label">Estado de São Paulo</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Com Empresa</div>
+                            <div class="stat-card-value" id="stat-with-company">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title">Disponíveis</div>
+                            <div class="stat-card-value" id="stat-available">645</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- 🏢 EMPRESAS -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">🏢 Empresas</div>
-                <div id="companies-list"></div>
+            <div class="accordion-section">
+                <div class="accordion-header" data-section="companies">
+                    <span class="accordion-title">🏢 Empresas</span>
+                    <i data-feather="chevron-down" class="accordion-icon"></i>
+                </div>
+                <div class="accordion-content" id="content-companies">
+                    <div id="companies-list"></div>
+                </div>
             </div>
 
             <!-- 📍 NAVEGAÇÃO -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">📍 Navegação</div>
-                <ul class="sidebar-menu">
-                    <li><button class="sidebar-menu-item" id="menu-dashboard"><i data-feather="bar-chart-2"></i> Dashboard</button></li>
-                    <li><button class="sidebar-menu-item" id="menu-history"><i data-feather="clock"></i> Histórico</button></li>
-                </ul>
+            <div class="accordion-section">
+                <div class="accordion-header" data-section="navigation">
+                    <span class="accordion-title">📍 Navegação</span>
+                    <i data-feather="chevron-down" class="accordion-icon"></i>
+                </div>
+                <div class="accordion-content" id="content-navigation">
+                    <ul class="sidebar-menu">
+                        <li><button class="sidebar-menu-item" id="menu-dashboard"><i data-feather="bar-chart-2"></i> Dashboard</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-history"><i data-feather="clock"></i> Histórico</button></li>
+                    </ul>
+                </div>
             </div>
 
             <!-- 💾 DADOS -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">💾 Dados</div>
-                <ul class="sidebar-menu">
-                    <li><button class="sidebar-menu-item" id="menu-import"><i data-feather="upload"></i> Importar CSV/JSON</button></li>
-                    <li><button class="sidebar-menu-item" id="menu-export-csv"><i data-feather="download"></i> Exportar CSV</button></li>
-                    <li><button class="sidebar-menu-item" id="menu-export-json"><i data-feather="code"></i> Exportar JSON</button></li>
-                    <li><button class="sidebar-menu-item" id="menu-export-pdf"><i data-feather="file-text"></i> Exportar PDF</button></li>
-                    <li><button class="sidebar-menu-item" id="menu-backup"><i data-feather="hard-drive"></i> Backup Automático</button></li>
-                </ul>
+            <div class="accordion-section">
+                <div class="accordion-header" data-section="data">
+                    <span class="accordion-title">💾 Dados</span>
+                    <i data-feather="chevron-down" class="accordion-icon"></i>
+                </div>
+                <div class="accordion-content" id="content-data">
+                    <ul class="sidebar-menu">
+                        <li><button class="sidebar-menu-item" id="menu-import"><i data-feather="upload"></i> Importar CSV/JSON</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-export-csv"><i data-feather="download"></i> Exportar CSV</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-export-json"><i data-feather="code"></i> Exportar JSON</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-export-pdf"><i data-feather="file-text"></i> Exportar PDF</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-backup"><i data-feather="hard-drive"></i> Backup Automático</button></li>
+                    </ul>
+                </div>
             </div>
 
             <!-- ⚙️ AÇÕES -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">⚙️ Ações</div>
-                <ul class="sidebar-menu">
-                    <li><button class="sidebar-menu-item" id="menu-clear" style="color: #dc2626;"><i data-feather="trash-2"></i> Limpar Dados</button></li>
-                </ul>
+            <div class="accordion-section">
+                <div class="accordion-header" data-section="actions">
+                    <span class="accordion-title">⚙️ Ações</span>
+                    <i data-feather="chevron-down" class="accordion-icon"></i>
+                </div>
+                <div class="accordion-content" id="content-actions">
+                    <ul class="sidebar-menu">
+                        <li><button class="sidebar-menu-item" id="menu-clear" style="color: #dc2626;"><i data-feather="trash-2"></i> Limpar Dados</button></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </aside>
@@ -380,15 +425,15 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1736971000"></script>
-    <script src="components/navbar.js?v=FORCE1736971000"></script>
-    <script src="components/map-controls.js?v=FORCE1736971000"></script>
-    <script src="js/activity-logger.js?v=FORCE1736971000"></script>
-    <script src="js/sidebar-stats.js?v=FORCE1736971000"></script>
-    <script src="js/dashboard.js?v=FORCE1736971000"></script>
-    <script src="js/reports-and-history.js?v=FORCE1736971000"></script>
-    <script src="js/main.js?v=FORCE1736971000"></script>
-    <script src="js/auto-backup.js?v=FORCE1736971000"></script>
+    <script src="data/clients.js?v=FORCE1736972100"></script>
+    <script src="components/navbar.js?v=FORCE1736972100"></script>
+    <script src="components/map-controls.js?v=FORCE1736972100"></script>
+    <script src="js/activity-logger.js?v=FORCE1736972100"></script>
+    <script src="js/sidebar-stats.js?v=FORCE1736972100"></script>
+    <script src="js/dashboard.js?v=FORCE1736972100"></script>
+    <script src="js/reports-and-history.js?v=FORCE1736972100"></script>
+    <script src="js/main.js?v=FORCE1736972100"></script>
+    <script src="js/auto-backup.js?v=FORCE1736972100"></script>
 
     <script>
         feather.replace();
@@ -415,7 +460,33 @@
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
         
-        // Fecha ao clicar em item do menu
+        // 🎯 ACCORDION LOGIC
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const section = header.dataset.section;
+                const content = document.getElementById(`content-${section}`);
+                const isActive = header.classList.contains('active');
+                
+                // Fecha todas as outras seções
+                accordionHeaders.forEach(h => {
+                    h.classList.remove('active');
+                    const c = document.getElementById(`content-${h.dataset.section}`);
+                    c.classList.remove('active');
+                });
+                
+                // Abre a seção clicada (se não estava aberta)
+                if (!isActive) {
+                    header.classList.add('active');
+                    content.classList.add('active');
+                }
+                
+                feather.replace();
+            });
+        });
+        
+        // Fecha sidebar ao clicar em item do menu
         document.querySelectorAll('.sidebar-menu-item, .company-item').forEach(item => {
             item.addEventListener('click', closeSidebar);
         });
@@ -459,6 +530,7 @@
                     window.dispatchEvent(new CustomEvent('companyFilterChanged', {
                         detail: { company }
                     }));
+                    closeSidebar();
                 });
             });
         }
@@ -514,7 +586,7 @@
             }, 500);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v3.0.0 - Sidebar retrátil implementada! ✅');
+            console.log('🎉 GeoClient SP v3.1.0 - Acordeons implementados! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
