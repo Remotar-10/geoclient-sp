@@ -1,26 +1,20 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.21 - Código Limpo + Otimizado
+// GeoClient SP - VERSÃO PREMIUM v2.9.22 - Código Ultra Limpo
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 // ✅ LUBMULTI adicionado (6 empresas completas)
-// ✅ Código morto removido (filtros não utilizados)
+// ✅ Código morto removido (159 linhas limpas)
 
 class GeoClientApp {
     constructor() {
         this.map = null;
-        this.currentFilters = { 
-            status: 'todos',
-            clientSearch: ''
-        };
         
         // ✅ Propriedades compatíveis com dashboard.js
         this.clients = [];
-        this.currentClients = [];
         this.occupiedCities = {};
         this.markedCities = {};
         
-        this.markers = {};
         this.geoJsonLayer = null;
         this.cityLayers = {};
         this.contextMenu = null;
@@ -67,7 +61,6 @@ class GeoClientApp {
             const savedClients = localStorage.getItem('geoclient-clients');
             if (savedClients) {
                 this.clients = JSON.parse(savedClients);
-                this.currentClients = this.clients;
                 console.log(`💾 ${this.clients.length} clientes restaurados`);
             }
         } catch (error) {
@@ -105,12 +98,9 @@ class GeoClientApp {
         this.markedCities = {};
         this.occupiedCities = {};
         this.clients = [];
-        this.currentClients = [];
         localStorage.removeItem('geoclient-marked-cities');
         localStorage.removeItem('geoclient-clients');
         this.loadMunicipalitiesBoundaries();
-        this.renderClientTable();
-        this.renderMarkers();
         this.showToast('🗑️ Dados limpos!', 'success');
         this.logActivity('logDataCleared');
     }
@@ -165,7 +155,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.21...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.22...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -181,10 +171,7 @@ class GeoClientApp {
             this.createCompanyDropdown();
             this.initMapControls();
             this.setupSearchListeners();
-            this.setupClientSearch();
-            this.renderClientTable();
-            this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.21 iniciado!');
+            console.log('✅ GeoClient SP v2.9.22 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -732,105 +719,6 @@ class GeoClientApp {
         resultsContainer.innerHTML = '';
     }
 
-    setupClientSearch() {
-        const searchInput = document.getElementById('client-search');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.currentFilters.clientSearch = e.target.value.toLowerCase();
-                this.renderClientTable();
-            });
-        }
-    }
-
-    renderClientTable() {
-        const tableBody = document.getElementById('clients-table');
-        if (!tableBody) return;
-        
-        const filteredClients = this.clients.filter(client => {
-            const matchesSearch = !this.currentFilters.clientSearch || 
-                client.name.toLowerCase().includes(this.currentFilters.clientSearch) ||
-                (client.municipality && client.municipality.toLowerCase().includes(this.currentFilters.clientSearch));
-            
-            const matchesStatus = this.currentFilters.status === 'todos' || 
-                client.status === this.currentFilters.status;
-            
-            return matchesSearch && matchesStatus;
-        });
-        
-        if (filteredClients.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#9ca3af;">Nenhum cliente encontrado</td></tr>';
-            return;
-        }
-        
-        tableBody.innerHTML = filteredClients.map(client => `
-            <tr>
-                <td class="px-6 py-4">${client.name || '-'}</td>
-                <td class="px-6 py-4">${client.segment || '-'}</td>
-                <td class="px-6 py-4">${client.company || '-'}</td>
-                <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded text-xs ${
-                        client.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }">${client.status === 'active' ? 'Ativo' : 'Inativo'}</span>
-                </td>
-                <td class="px-6 py-4">${client.municipality || '-'}</td>
-                <td class="px-6 py-4">
-                    <button onclick="window.app.editClient(${client.id})" class="text-blue-600 hover:text-blue-800 mr-2">✏️</button>
-                    <button onclick="window.app.deleteClient(${client.id})" class="text-red-600 hover:text-red-800">🗑️</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    renderMarkers() {
-        Object.values(this.markers).forEach(marker => {
-            if (this.map && marker) {
-                this.map.removeLayer(marker);
-            }
-        });
-        this.markers = {};
-        
-        this.clients.forEach(client => {
-            if (!client.municipality) return;
-            
-            const coords = this.getCityCoordinates(client.municipality);
-            if (coords && this.map) {
-                const marker = L.circleMarker([coords.lat, coords.lng], {
-                    radius: 8,
-                    fillColor: client.status === 'active' ? '#10b981' : '#eab308',
-                    color: '#fff',
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.8
-                }).addTo(this.map);
-                
-                marker.bindPopup(`
-                    <b>${client.name}</b><br>
-                    <small>${client.municipality}</small><br>
-                    <small>${client.company || '-'} - ${client.segment || '-'}</small>
-                `);
-                
-                this.markers[client.id] = marker;
-            }
-        });
-    }
-
-    getCityCoordinates(cityName) {
-        const MUNICIPALITIES = {
-            'São Paulo': { lat: -23.5505, lng: -46.6333 },
-            'Guarulhos': { lat: -23.4538, lng: -46.5333 },
-            'Campinas': { lat: -22.9099, lng: -47.0626 },
-            'São Bernardo do Campo': { lat: -23.6914, lng: -46.5646 },
-            'Santo André': { lat: -23.6636, lng: -46.5341 },
-            'Osasco': { lat: -23.5329, lng: -46.7919 },
-            'São José dos Campos': { lat: -23.1791, lng: -45.8872 },
-            'Ribeirão Preto': { lat: -21.1704, lng: -47.8103 },
-            'Sorocaba': { lat: -23.5015, lng: -47.4526 },
-            'Santos': { lat: -23.9608, lng: -46.3336 },
-            'Itapetininga': { lat: -23.5917, lng: -48.0530 }
-        };
-        return MUNICIPALITIES[cityName] || null;
-    }
-
     setupEventListeners() {
         console.log('✅ Event listeners configurados');
     }
@@ -932,7 +820,6 @@ class GeoClientApp {
                     const data = JSON.parse(content);
                     if (data.clients) {
                         this.clients = data.clients;
-                        this.currentClients = this.clients;
                         importedCount = data.clients.length;
                     }
                     if (data.markedCities) {
@@ -952,13 +839,10 @@ class GeoClientApp {
                             status: values[5] || 'active'
                         };
                     });
-                    this.currentClients = this.clients;
                     importedCount = this.clients.length;
                 }
                 
                 this.saveToLocalStorage();
-                this.renderClientTable();
-                this.renderMarkers();
                 this.loadMunicipalitiesBoundaries();
                 
                 document.getElementById('import-modal').remove();
@@ -975,37 +859,6 @@ class GeoClientApp {
         
         reader.readAsText(file);
     }
-
-    addClient(clientData) {
-        this.clients.push(clientData);
-        this.currentClients = this.clients;
-        this.saveToLocalStorage();
-        this.renderClientTable();
-        this.renderMarkers();
-        this.showToast(`✅ Cliente ${clientData.name} adicionado!`, 'success');
-        this.logActivity('logClientAdded', clientData.name, clientData.municipality);
-    }
-
-    editClient(clientId) {
-        const client = this.clients.find(c => c.id === clientId);
-        if (!client) return;
-        this.showToast('🔧 Edição em desenvolvimento', 'info');
-    }
-
-    deleteClient(clientId) {
-        if (!confirm('Deletar este cliente?')) return;
-        
-        const client = this.clients.find(c => c.id === clientId);
-        const clientName = client ? client.name : 'Cliente';
-        
-        this.clients = this.clients.filter(c => c.id !== clientId);
-        this.currentClients = this.clients;
-        this.saveToLocalStorage();
-        this.renderClientTable();
-        this.renderMarkers();
-        this.showToast('🗑️ Cliente deletado', 'success');
-        this.logActivity('logClientDeleted', clientName);
-    }
 }
 
 let app;
@@ -1014,5 +867,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.21 - Código Limpo + Otimizado! ✅');
+    console.log('✨ GeoClient SP v2.9.22 - Ultra Limpo! ✅');
 });
