@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🚨 ANTI-CACHE META TAGS - Force browser to NEVER cache -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <!-- 🚨 ANTI-CACHE META TAGS REFORÇADOS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Expires" content="-1">
     
     <title>GeoClient SP - Domínio Territorial</title>
 
@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011626&t=1736968000">
+    <link rel="stylesheet" href="style.css?v=FORCE1736968519">
 
     <style>
         /* 🎨 CSS NATIVO PURO - Sem dependências externas */
@@ -394,17 +394,17 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="data/clients.js?v=2026011626&t=1736968000"></script>
-    <script src="components/navbar.js?v=2026011626&t=1736968000"></script>
-    <script src="components/filter-panel.js?v=2026011626&t=1736968000"></script>
-    <script src="components/map-controls.js?v=2026011626&t=1736968000"></script>
-    <script src="js/activity-logger.js?v=2026011626&t=1736968000"></script>
-    <script src="js/sidebar-stats.js?v=2026011626&t=1736968000"></script>
-    <script src="js/dashboard.js?v=2026011626&t=1736968000"></script>
-    <script src="js/reports-and-history.js?v=2026011626&t=1736968000"></script>
-    <script src="js/main.js?v=2026011626&t=1736968000"></script>
-    <script src="js/auto-backup.js?v=2026011626&t=1736968000"></script>
+    <!-- Scripts com FORÇA CACHE BUST -->
+    <script src="data/clients.js?v=FORCE1736968519"></script>
+    <script src="components/navbar.js?v=FORCE1736968519"></script>
+    <script src="components/filter-panel.js?v=FORCE1736968519"></script>
+    <script src="components/map-controls.js?v=FORCE1736968519"></script>
+    <script src="js/activity-logger.js?v=FORCE1736968519"></script>
+    <script src="js/sidebar-stats.js?v=FORCE1736968519"></script>
+    <script src="js/dashboard.js?v=FORCE1736968519"></script>
+    <script src="js/reports-and-history.js?v=FORCE1736968519"></script>
+    <script src="js/main.js?v=FORCE1736968519"></script>
+    <script src="js/auto-backup.js?v=FORCE1736968519"></script>
 
     <script>
         feather.replace();
@@ -461,7 +461,8 @@
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.23 - LUBMULTI fix aplicado! ✅');
+            console.log('🎉 GeoClient SP v2.9.24 - FORÇA CACHE BUST! ✅');
+            console.log('🔥 LUBMULTI deve aparecer AGORA no painel!');
         }
         
         function setupUnifiedMenu() {
