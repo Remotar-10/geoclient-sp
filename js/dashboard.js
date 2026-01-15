@@ -1,12 +1,13 @@
-// 📊 GeoClient SP - Dashboard Professional v2.0
-// ✅ COMPATÍVEL COM MAIN.JS V2.6
+// 📊 GeoClient SP - Dashboard Professional v2.1
+// ✅ COMPATÍVEL COM MAIN.JS V3.0.1
+// 🐛 FIX: Mostra todas as 6 empresas (incluindo LUBMULTI)
 
 class Dashboard {
     constructor(app) {
         this.app = app;
         this.modal = null;
         this.charts = {};
-        console.log('✅ Dashboard initialized');
+        console.log('✅ Dashboard v2.1 initialized');
     }
 
     showDashboard() {
@@ -21,8 +22,8 @@ class Dashboard {
             this.renderCharts();
         }, 100);
         
-        if (window.reportsAndHistory) {
-            window.reportsAndHistory.addActivity('dashboard_opened', 'Dashboard aberto', {});
+        if (window.activityLogger) {
+            window.activityLogger.logDashboardOpened();
         }
     }
 
@@ -66,17 +67,27 @@ class Dashboard {
     }
 
     getStats() {
-        // ✅ BUG FIX: Acessa propriedades corretas do app
         const cities = this.app.occupiedCities || {};
         const clients = this.app.clients || [];
         
         const totalCities = Object.keys(cities).length;
         const totalClients = clients.length;
         
+        // 🐛 FIX: Inicializa TODAS as 6 empresas com 0
+        const allCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
         const clientsByCompany = {};
+        allCompanies.forEach(company => {
+            clientsByCompany[company] = 0;
+        });
+        
+        // Conta clientes por empresa
         clients.forEach(client => {
             const company = client.company || 'Sem Empresa';
-            clientsByCompany[company] = (clientsByCompany[company] || 0) + 1;
+            if (clientsByCompany.hasOwnProperty(company)) {
+                clientsByCompany[company]++;
+            } else {
+                clientsByCompany[company] = 1;
+            }
         });
         
         const clientsBySegment = {};
@@ -88,11 +99,21 @@ class Dashboard {
         const activeClients = clients.filter(c => c.status === 'active').length;
         const inactiveClients = clients.filter(c => c.status === 'inactive').length;
         
+        // 🐛 FIX: Inicializa TODAS as 6 empresas com 0 cidades
         const citiesByCompany = {};
+        allCompanies.forEach(company => {
+            citiesByCompany[company] = 0;
+        });
+        
+        // Conta cidades por empresa
         Object.entries(cities).forEach(([city, companies]) => {
             if (Array.isArray(companies)) {
                 companies.forEach(company => {
-                    citiesByCompany[company] = (citiesByCompany[company] || 0) + 1;
+                    if (citiesByCompany.hasOwnProperty(company)) {
+                        citiesByCompany[company]++;
+                    } else {
+                        citiesByCompany[company] = 1;
+                    }
                 });
             }
         });
@@ -193,10 +214,7 @@ class Dashboard {
                         <div style="background: #f9fafb; padding: 28px; border-radius: 16px; border: 2px solid #e5e7eb;">
                             <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">📊 Clientes por Empresa</h3>
                             <div style="position: relative; height: 300px;">
-                                ${Object.keys(stats.clientsByCompany).length > 0 ? 
-                                    '<canvas id="chart-clients-by-company"></canvas>' : 
-                                    '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">Nenhum dado disponível</div>'
-                                }
+                                <canvas id="chart-clients-by-company"></canvas>
                             </div>
                         </div>
                         
@@ -205,16 +223,15 @@ class Dashboard {
                             <div style="position: relative; height: 300px;">
                                 ${Object.keys(stats.clientsBySegment).length > 0 ? 
                                     '<canvas id="chart-clients-by-segment"></canvas>' : 
-                                    '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">Nenhum dado disponível</div>'
+                                    '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">Nenhum cliente cadastrado</div>'
                                 }
                             </div>
                         </div>
                     </div>
                     
-                    <!-- TABELA -->
-                    ${Object.keys(stats.clientsByCompany).length > 0 ? `
+                    <!-- TABELA DE TODAS AS EMPRESAS -->
                     <div style="background: #f9fafb; padding: 28px; border-radius: 16px; border: 2px solid #e5e7eb; margin-bottom: 32px;">
-                        <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🏢 Distribuição por Empresa</h3>
+                        <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🏬 Distribuição por Empresa (Todas as 6)</h3>
                         <div style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
                                 <thead>
@@ -230,23 +247,37 @@ class Dashboard {
                                         const cities = stats.citiesByCompany[company] || 0;
                                         const percentage = stats.totalClients > 0 ? Math.round((count / stats.totalClients) * 100) : 0;
                                         const bgColor = index % 2 === 0 ? 'white' : '#f9fafb';
+                                        
+                                        // Cores das empresas
+                                        const companyColors = {
+                                            'CDO': '#ef4444',
+                                            'SUPORTE': '#3b82f6',
+                                            'WAUX': '#10b981',
+                                            'MONTEBELLO': '#f59e0b',
+                                            'HIRATA': '#8b5cf6',
+                                            'LUBMULTI': '#6b7280'
+                                        };
+                                        const companyColor = companyColors[company] || '#6b7280';
+                                        
                                         return `
                                             <tr style="background: ${bgColor};">
                                                 <td style="padding: 16px; font-weight: 600; color: #1f2937; border-bottom: 1px solid #f3f4f6;">
                                                     <div style="display: flex; align-items: center; gap: 12px;">
-                                                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">${company.substring(0, 2).toUpperCase()}</div>
+                                                        <div style="width: 32px; height: 32px; background: ${companyColor}; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">${company.substring(0, 2).toUpperCase()}</div>
                                                         ${company}
                                                     </div>
                                                 </td>
-                                                <td style="padding: 16px; text-align: center; font-weight: 600; color: #3b82f6; border-bottom: 1px solid #f3f4f6;">${cities}</td>
-                                                <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 18px; color: #10b981; border-bottom: 1px solid #f3f4f6;">${count}</td>
+                                                <td style="padding: 16px; text-align: center; font-weight: 600; color: ${cities > 0 ? '#3b82f6' : '#9ca3af'}; border-bottom: 1px solid #f3f4f6;">${cities}</td>
+                                                <td style="padding: 16px; text-align: center; font-weight: 700; font-size: 18px; color: ${count > 0 ? '#10b981' : '#9ca3af'}; border-bottom: 1px solid #f3f4f6;">${count}</td>
                                                 <td style="padding: 16px; text-align: center; border-bottom: 1px solid #f3f4f6;">
+                                                    ${count > 0 ? `
                                                     <div style="display: inline-flex; align-items: center; gap: 8px; background: #10b98120; padding: 6px 12px; border-radius: 8px;">
                                                         <div style="font-weight: 700; color: #10b981;">${percentage}%</div>
                                                         <div style="width: 80px; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
                                                             <div style="width: ${percentage}%; height: 100%; background: #10b981;"></div>
                                                         </div>
                                                     </div>
+                                                    ` : '<span style="color: #9ca3af; font-weight: 600;">-</span>'}
                                                 </td>
                                             </tr>
                                         `;
@@ -255,7 +286,6 @@ class Dashboard {
                             </table>
                         </div>
                     </div>
-                    ` : ''}
                     
                     <!-- BOTÕES -->
                     <div style="display: flex; gap: 16px; justify-content: center;">
@@ -272,21 +302,6 @@ class Dashboard {
                             transition: all 0.2s;
                         " onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
                             🔄 Atualizar
-                        </button>
-                        
-                        <button onclick="if(window.reportsAndHistory) window.reportsAndHistory.exportDashboardToPDF();" style="
-                            padding: 14px 28px;
-                            background: linear-gradient(135deg, #f59e0b, #d97706);
-                            color: white;
-                            border: none;
-                            border-radius: 10px;
-                            font-weight: 700;
-                            font-size: 15px;
-                            cursor: pointer;
-                            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-                            transition: all 0.2s;
-                        " onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
-                            📄 Exportar PDF
                         </button>
                         
                         <button onclick="window.dashboard.hideDashboard()" style="
@@ -322,19 +337,27 @@ class Dashboard {
             if (chart) chart.destroy();
         });
         
-        const colors = [
-            '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', 
-            '#ef4444', '#ec4899', '#06b6d4', '#84cc16'
-        ];
+        // Cores das empresas (mesmas do main.js)
+        const companyColors = {
+            'CDO': '#ef4444',
+            'SUPORTE': '#3b82f6',
+            'WAUX': '#10b981',
+            'MONTEBELLO': '#f59e0b',
+            'HIRATA': '#8b5cf6',
+            'LUBMULTI': '#6b7280'
+        };
         
-        // GRÁFICO 1: Pizza - Clientes por Empresa
+        // GRÁFICO 1: Pizza - Clientes por Empresa (TODAS as 6)
         const chartClientsCompany = document.getElementById('chart-clients-by-company');
-        if (chartClientsCompany && Object.keys(stats.clientsByCompany).length > 0) {
+        if (chartClientsCompany) {
             const ctx1 = chartClientsCompany.getContext('2d');
+            const companies = Object.keys(stats.clientsByCompany);
+            const colors = companies.map(c => companyColors[c] || '#6b7280');
+            
             this.charts.clientsByCompany = new Chart(ctx1, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(stats.clientsByCompany),
+                    labels: companies,
                     datasets: [{
                         data: Object.values(stats.clientsByCompany),
                         backgroundColor: colors,
@@ -364,8 +387,8 @@ class Dashboard {
                                     const label = context.label || '';
                                     const value = context.parsed;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} clientes ${total > 0 ? `(${percentage}%)` : ''}`;
                                 }
                             }
                         }
@@ -385,7 +408,7 @@ class Dashboard {
                     datasets: [{
                         label: 'Clientes',
                         data: Object.values(stats.clientsBySegment),
-                        backgroundColor: colors[0],
+                        backgroundColor: '#3b82f6',
                         borderRadius: 8
                     }]
                 },
@@ -426,4 +449,4 @@ class Dashboard {
 }
 
 window.Dashboard = Dashboard;
-console.log('✅ Dashboard v2.0 loaded (compatible with main.js v2.6)');
+console.log('✅ Dashboard v2.1 loaded - FIX: Mostra todas as 6 empresas (incluindo LUBMULTI)');
