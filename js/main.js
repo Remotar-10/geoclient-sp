@@ -1,9 +1,9 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.22 - Código Ultra Limpo
+// GeoClient SP - VERSÃO PREMIUM v2.9.25 - LUBMULTI Removida
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
-// ✅ LUBMULTI adicionado (6 empresas completas)
+// ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
 // ✅ Código morto removido (159 linhas limpas)
 
 class GeoClientApp {
@@ -24,7 +24,7 @@ class GeoClientApp {
         this.currentCityLayer = null;
         this.lastClickPosition = { x: 0, y: 0 };
         
-        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
+        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         this.totalMunicipalitiesSP = 645;
         
         this.clickCount = 0;
@@ -155,7 +155,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.22...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.25...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -171,7 +171,7 @@ class GeoClientApp {
             this.createCompanyDropdown();
             this.initMapControls();
             this.setupSearchListeners();
-            console.log('✅ GeoClient SP v2.9.22 iniciado!');
+            console.log('✅ GeoClient SP v2.9.25 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -373,8 +373,7 @@ class GeoClientApp {
             'SUPORTE': '#3b82f6',
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
-            'HIRATA': '#8b5cf6',
-            'LUBMULTI': '#6b7280'
+            'HIRATA': '#8b5cf6'
         };
         return colors[company] || '#6b7280';
     }
@@ -867,5 +866,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.22 - Ultra Limpo! ✅');
+    console.log('✨ GeoClient SP v2.9.25 - 5 Empresas + Código Limpo! ✅');
 });
