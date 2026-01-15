@@ -1,10 +1,10 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.28 - Sistema de 1 CLIQUE
+// GeoClient SP - VERSÃO PREMIUM v2.9.29 - Sistema de 1 CLIQUE
 // Sistema de cliques: 1=zoom 1.5x + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
-// ✅ Código morto removido (159 linhas limpas)
+// ✅ Código morto removido (164 linhas limpas - v2.9.29)
 // ✅ 1 CLIQUE = Zoom + Dropdown (mais rápido!)
 
 class GeoClientApp {
@@ -22,15 +22,10 @@ class GeoClientApp {
         this.tooltip = null;
         this.companyDropdown = null;
         this.currentCityName = null;
-        this.currentCityLayer = null;
         this.lastClickPosition = { x: 0, y: 0 };
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         this.totalMunicipalitiesSP = 645;
-        
-        // ✅ Removido sistema de duplo clique
-        this.clickTimer = null;
-        this.clickTimeout = 300; // Reduzido para resposta mais rápida
         
         this.initialView = {
             center: [-22.5, -49.2],
@@ -156,7 +151,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.28...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.29...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -172,7 +167,7 @@ class GeoClientApp {
             this.createCompanyDropdown();
             this.initMapControls();
             this.setupSearchListeners();
-            console.log('✅ GeoClient SP v2.9.28 iniciado!');
+            console.log('✅ GeoClient SP v2.9.29 iniciado!');
             console.log('🖱️ 1 CLIQUE = Zoom 1.5x + Dropdown | Seleciona empresa = Marca cidade');
         }, 100);
     }
@@ -282,7 +277,7 @@ class GeoClientApp {
                             this.showContextMenu(e.originalEvent, name);
                         });
                         
-                        // ✅ NOVO: 1 CLIQUE = Zoom + Dropdown
+                        // ✅ 1 CLIQUE = Zoom + Dropdown
                         layer.on('click', (e) => {
                             L.DomEvent.stop(e);
                             this.handleCityClick(name, layer, e);
@@ -306,7 +301,7 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
-    // ✅ NOVO: Simplificado - 1 CLIQUE faz tudo
+    // ✅ Sistema simplificado - 1 CLIQUE faz tudo
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
@@ -314,7 +309,6 @@ class GeoClientApp {
         };
         
         this.currentCityName = name;
-        this.currentCityLayer = layer;
         
         // Zoom imediato
         const latlng = event.latlng;
@@ -597,7 +591,6 @@ class GeoClientApp {
     hideCompanyDropdown() {
         this.companyDropdown.style.display = 'none';
         this.currentCityName = null;
-        this.currentCityLayer = null;
     }
 
     setupSearchListeners() {
@@ -847,5 +840,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.28 - 1 CLIQUE = Zoom + Dropdown! ✅');
+    console.log('✨ GeoClient SP v2.9.29 - Código 100% limpo! 🧹');
 });
