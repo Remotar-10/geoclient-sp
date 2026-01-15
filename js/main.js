@@ -1,17 +1,20 @@
-// GeoClient SP - v3.0.1 (Premium Edition)
-// Sistema de mapeamento territorial com 6 empresas
+// GeoClient SP - VERSÃO PREMIUM v2.9.10 - Botão Home via map-controls.js
+// Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
+// ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
+// ✅ Botão Home agora é gerenciado por map-controls.js
+// ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 
 class GeoClientApp {
     constructor() {
         this.map = null;
         this.currentFilters = { 
-            company: '',
-            segment: '',
+            companies: [],
             status: 'todos',
             searchQuery: '',
             clientSearch: ''
         };
         
+        // ✅ Propriedades compatíveis com dashboard.js
         this.clients = [];
         this.currentClients = [];
         this.occupiedCities = {};
@@ -31,7 +34,7 @@ class GeoClientApp {
         this.filtersAppliedToMap = false;
         this.charts = {};
         
-        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
+        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         this.totalMunicipalitiesSP = 645;
         
         this.clickCount = 0;
@@ -46,12 +49,16 @@ class GeoClientApp {
         this.loadFromLocalStorage();
     }
 
+    // 📝 ==================== ACTIVITY LOGGER HELPER ====================
+    
     logActivity(method, ...args) {
         if (window.activityLogger && typeof window.activityLogger[method] === 'function') {
             window.activityLogger[method](...args);
         }
     }
 
+    // 💾 ==================== LOCALSTORAGE ====================
+    
     loadFromLocalStorage() {
         try {
             const savedCities = localStorage.getItem('geoclient-marked-cities');
@@ -162,7 +169,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP v3.0.1...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.10...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -173,56 +180,17 @@ class GeoClientApp {
         setTimeout(() => {
             this.initMap();
             this.setupEventListeners();
-            this.setupFilterListeners();
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
-            this.initMapControls();
+            this.initMapControls(); // ✅ Usa map-controls.js ao invés de createHomeButton()
             this.setupSearchListeners();
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v3.0.1 iniciado!');
+            console.log('✅ GeoClient SP v2.9.10 iniciado!');
+            console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
-    }
-
-    setupFilterListeners() {
-        window.addEventListener('filtersChanged', (e) => {
-            const { company, segment, status } = e.detail;
-            this.currentFilters.company = company;
-            this.currentFilters.segment = segment;
-            this.currentFilters.status = status;
-            
-            console.log('🔍 Filtros aplicados:', this.currentFilters);
-            this.applyFilters();
-        });
-        
-        console.log('✅ Filter listeners configurados');
-    }
-
-    applyFilters() {
-        this.currentClients = this.clients.filter(client => {
-            const matchesCompany = !this.currentFilters.company || 
-                client.company === this.currentFilters.company;
-            
-            const matchesSegment = !this.currentFilters.segment || 
-                client.segment === this.currentFilters.segment;
-            
-            const matchesStatus = this.currentFilters.status === 'todos' || 
-                (this.currentFilters.status === 'ativo' && client.status === 'active') ||
-                (this.currentFilters.status === 'inativo' && client.status === 'inactive');
-            
-            const matchesSearch = !this.currentFilters.clientSearch || 
-                client.name.toLowerCase().includes(this.currentFilters.clientSearch) ||
-                (client.municipality && client.municipality.toLowerCase().includes(this.currentFilters.clientSearch));
-            
-            return matchesCompany && matchesSegment && matchesStatus && matchesSearch;
-        });
-        
-        console.log(`📊 ${this.currentClients.length}/${this.clients.length} clientes após filtros`);
-        
-        this.renderClientTable();
-        this.renderMarkers();
     }
 
     initMap() {
@@ -230,7 +198,7 @@ class GeoClientApp {
             this.map = L.map('map', {
                 center: this.initialView.center,
                 zoom: this.initialView.zoom,
-                zoomControl: false,
+                zoomControl: false, // ✅ REMOVIDO: Sem botões +/- do Leaflet
                 attributionControl: true,
                 minZoom: 6,
                 maxZoom: 12,
@@ -261,11 +229,12 @@ class GeoClientApp {
         }
     }
 
+    // ✅ NOVO: Inicializa map-controls.js ao invés de criar botão manualmente
     initMapControls() {
         const mapControls = document.querySelector('custom-map-controls');
         if (mapControls && typeof mapControls.init === 'function') {
             mapControls.init(this.map);
-            console.log('✅ Map controls inicializados');
+            console.log('✅ Map controls inicializados via componente');
         } else {
             console.warn('⚠️ Componente custom-map-controls não encontrado');
         }
@@ -353,6 +322,7 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
+    // ✅ FIX #10: 1 clique = zoom 1.5x | 2 cliques = zoom 1.5x + AGUARDA + dropdown
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
@@ -367,8 +337,10 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
+                // ✅ 1 CLIQUE = ZOOM 1.5x APENAS
                 this.zoomToCity(name, event, 1.5);
             } else if (clicks >= 2) {
+                // ✅ 2 CLIQUES = ZOOM 1.5x PRIMEIRO + AGUARDA + DROPDOWN
                 this.zoomThenShowDropdown(name, layer, event);
             }
         }, this.clickTimeout);
@@ -382,20 +354,25 @@ class GeoClientApp {
         console.log(`🔍 Zoom ${zoomMultiplier}x em ${name}`);
     }
 
+    // ✅ NOVO: Zoom PRIMEIRO, aguarda animação terminar, DEPOIS abre dropdown
     zoomThenShowDropdown(name, layer, event) {
         const latlng = event.latlng;
         const currentZoom = this.map.getZoom();
         const newZoom = Math.min(currentZoom + 1.5, 12);
         
+        // Armazena para usar depois
         this.currentCityName = name;
         this.currentCityLayer = layer;
         
+        // ✅ PASSO 1: Zoom 1.5x
         this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
         console.log(`🔍 Zoom 1.5x em ${name}`);
         
+        // ✅ PASSO 2: AGUARDA zoom terminar (850ms)
         setTimeout(() => {
+            // ✅ PASSO 3: DEPOIS abre dropdown (NÃO marca)
             this.showCompanyDropdown(name);
-            console.log(`📋 Dropdown aberto para ${name}`);
+            console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada)`);
         }, 850);
     }
 
@@ -422,8 +399,7 @@ class GeoClientApp {
             'SUPORTE': '#3b82f6',
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
-            'HIRATA': '#8b5cf6',
-            'LUBMULTI': '#6b7280'
+            'HIRATA': '#8b5cf6'
         };
         return colors[company] || '#6b7280';
     }
@@ -773,7 +749,7 @@ class GeoClientApp {
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.currentFilters.clientSearch = e.target.value.toLowerCase();
-                this.applyFilters();
+                this.renderClientTable();
             });
         }
     }
@@ -782,12 +758,23 @@ class GeoClientApp {
         const tableBody = document.getElementById('clients-table');
         if (!tableBody) return;
         
-        if (this.currentClients.length === 0) {
+        const filteredClients = this.clients.filter(client => {
+            const matchesSearch = !this.currentFilters.clientSearch || 
+                client.name.toLowerCase().includes(this.currentFilters.clientSearch) ||
+                (client.municipality && client.municipality.toLowerCase().includes(this.currentFilters.clientSearch));
+            
+            const matchesStatus = this.currentFilters.status === 'todos' || 
+                client.status === this.currentFilters.status;
+            
+            return matchesSearch && matchesStatus;
+        });
+        
+        if (filteredClients.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#9ca3af;">Nenhum cliente encontrado</td></tr>';
             return;
         }
         
-        tableBody.innerHTML = this.currentClients.map(client => `
+        tableBody.innerHTML = filteredClients.map(client => `
             <tr>
                 <td class="px-6 py-4">${client.name || '-'}</td>
                 <td class="px-6 py-4">${client.segment || '-'}</td>
@@ -814,7 +801,7 @@ class GeoClientApp {
         });
         this.markers = {};
         
-        this.currentClients.forEach(client => {
+        this.clients.forEach(client => {
             if (!client.municipality) return;
             
             const coords = this.getCityCoordinates(client.municipality);
@@ -851,9 +838,7 @@ class GeoClientApp {
             'Ribeirão Preto': { lat: -21.1704, lng: -47.8103 },
             'Sorocaba': { lat: -23.5015, lng: -47.4526 },
             'Santos': { lat: -23.9608, lng: -46.3336 },
-            'Itapetininga': { lat: -23.5917, lng: -48.0530 },
-            'Americana': { lat: -22.7390, lng: -47.3308 },
-            'Iguape': { lat: -24.7081, lng: -47.5550 }
+            'Itapetininga': { lat: -23.5917, lng: -48.0530 }
         };
         return MUNICIPALITIES[cityName] || null;
     }
@@ -984,7 +969,8 @@ class GeoClientApp {
                 }
                 
                 this.saveToLocalStorage();
-                this.applyFilters();
+                this.renderClientTable();
+                this.renderMarkers();
                 this.loadMunicipalitiesBoundaries();
                 
                 document.getElementById('import-modal').remove();
@@ -1006,7 +992,8 @@ class GeoClientApp {
         this.clients.push(clientData);
         this.currentClients = this.clients;
         this.saveToLocalStorage();
-        this.applyFilters();
+        this.renderClientTable();
+        this.renderMarkers();
         this.showToast(`✅ Cliente ${clientData.name} adicionado!`, 'success');
         this.logActivity('logClientAdded', clientData.name, clientData.municipality);
     }
@@ -1026,7 +1013,8 @@ class GeoClientApp {
         this.clients = this.clients.filter(c => c.id !== clientId);
         this.currentClients = this.clients;
         this.saveToLocalStorage();
-        this.applyFilters();
+        this.renderClientTable();
+        this.renderMarkers();
         this.showToast('🗑️ Cliente deletado', 'success');
         this.logActivity('logClientDeleted', clientName);
     }
@@ -1038,5 +1026,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v3.0.1 - Sistema Premium Operacional!');
+    console.log('✨ GeoClient SP v2.9.10 RESTAURADO - Sistema 100% Funcional!');
 });
