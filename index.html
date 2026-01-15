@@ -11,6 +11,10 @@
     
     <title>GeoClient SP - Domínio Territorial</title>
 
+    <!-- 🎨 Tailwind CSS - Play CDN (Development) -->
+    <!-- 🛡️ BACKUP: Todo CSS nativo mantido abaixo caso CDN falhe -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
 
@@ -18,7 +22,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- 📊 Chart.js - CARREGADO UMA VEZ AQUI -->
+    <!-- 📊 Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- 📄 PDF Libraries -->
@@ -26,9 +30,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011552&t=1736965920">
+    <link rel="stylesheet" href="style.css?v=2026011605&t=1736966700">
 
     <style>
+        /* 🛡️ CSS BACKUP - Garante funcionamento mesmo se Tailwind CDN falhar */
+        /* Prioridade alta (!important) para elementos críticos */
+        
         /* 🎨 GRID LAYOUT - FIX CRÍTICO */
         .main-container {
             max-width: 1536px;
@@ -37,14 +44,14 @@
         }
         
         .grid-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 1.5rem;
+            display: grid !important;
+            grid-template-columns: 300px 1fr !important;
+            gap: 1.5rem !important;
         }
         
         @media (max-width: 1024px) {
             .grid-layout {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
             }
         }
         
@@ -60,7 +67,7 @@
             gap: 1.5rem;
         }
         
-        /* 📍 MAPA - FIX CRÍTICO: Garante altura fixa */
+        /* 📍 MAPA - FIX CRÍTICO: Altura fixa SEMPRE */
         #map {
             height: 600px !important;
             min-height: 600px !important;
@@ -71,7 +78,7 @@
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         
-        /* ✅ ESCONDE COMPLETAMENTE A LEGENDA DE MARCADORES (Cliente Ativo/Inativo) */
+        /* ✅ ESCONDE COMPLETAMENTE A LEGENDA DE MARCADORES */
         .leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution) {
             display: none !important;
             visibility: hidden !important;
@@ -175,7 +182,7 @@
         
         .dropdown-separator { height: 1px; background: #e5e7eb; margin: 0; }
         
-        /* Utility classes */
+        /* 🛡️ BACKUP: Utility classes - Funcionam se Tailwind falhar */
         .container { max-width: 1536px; }
         .mx-auto { margin-left: auto; margin-right: auto; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
@@ -295,7 +302,7 @@
                         </div>
                         
                         <div class="action-buttons-container">
-                            <!-- 🎉 UNIFIED MENU - All actions in one place -->
+                            <!-- 🎉 UNIFIED MENU -->
                             <div class="main-menu-dropdown">
                                 <button id="main-menu-toggle" class="btn-modern btn-main-menu">
                                     <i data-feather="menu"></i>
@@ -303,7 +310,6 @@
                                     <span class="dropdown-arrow">▼</span>
                                 </button>
                                 <div class="main-menu-dropdown-content">
-                                    <!-- Visualização -->
                                     <div class="menu-section-header">📊 Visualização</div>
                                     <button id="menu-dashboard" class="btn-menu-dashboard">
                                         <i data-feather="bar-chart-2"></i>
@@ -316,7 +322,6 @@
                                     
                                     <div class="dropdown-separator"></div>
                                     
-                                    <!-- Backup -->
                                     <div class="menu-section-header">💾 Backup</div>
                                     <button id="menu-backup" class="btn-menu-backup">
                                         <i data-feather="hard-drive"></i>
@@ -325,7 +330,6 @@
                                     
                                     <div class="dropdown-separator"></div>
                                     
-                                    <!-- Importar -->
                                     <div class="menu-section-header">📥 Importar</div>
                                     <button id="menu-import-csv" class="btn-menu-import">
                                         <i data-feather="upload"></i>
@@ -338,7 +342,6 @@
                                     
                                     <div class="dropdown-separator"></div>
                                     
-                                    <!-- Exportar -->
                                     <div class="menu-section-header">📤 Exportar</div>
                                     <button id="menu-export-csv" class="btn-menu-export">
                                         <i data-feather="download"></i>
@@ -355,7 +358,6 @@
                                     
                                     <div class="dropdown-separator"></div>
                                     
-                                    <!-- Perigo -->
                                     <button id="menu-clear-data" class="btn-menu-danger">
                                         <i data-feather="trash-2"></i>
                                         Limpar Todos os Dados
@@ -365,13 +367,13 @@
                         </div>
                     </div>
 
-                    <!-- ✅ MAPA COM ALTURA FIXA - FIX CRÍTICO -->
+                    <!-- ✅ MAPA COM ALTURA FIXA -->
                     <div style="position: relative;">
                         <div id="map" style="height: 600px; min-height: 600px; width: 100%;"></div>
                         <custom-map-controls></custom-map-controls>
                     </div>
 
-                    <!-- ✅ LEGENDA TRADUZIDA PARA PT-BR -->
+                    <!-- ✅ LEGENDA -->
                     <div class="p-4 border-t bg-gray-50">
                         <div class="flex flex-wrap gap-4">
                             <div class="flex items-center">
@@ -464,20 +466,30 @@
         </div>
     </div>
 
-    <!-- Scripts - TIMESTAMP UNICO PARA FORÇAR RELOAD -->
-    <script src="data/clients.js?v=2026011552&t=1736965920"></script>
-    <script src="components/navbar.js?v=2026011552&t=1736965920"></script>
-    <script src="components/filter-panel.js?v=2026011552&t=1736965920"></script>
-    <script src="components/map-controls.js?v=2026011552&t=1736965920"></script>
-    <script src="js/activity-logger.js?v=2026011552&t=1736965920"></script>
-    <script src="js/sidebar-stats.js?v=2026011552&t=1736965920"></script>
-    <script src="js/dashboard.js?v=2026011552&t=1736965920"></script>
-    <script src="js/reports-and-history.js?v=2026011552&t=1736965920"></script>
-    <script src="js/main.js?v=2026011552&t=1736965920"></script>
-    <script src="js/auto-backup.js?v=2026011552&t=1736965920"></script>
+    <!-- Scripts -->
+    <script src="data/clients.js?v=2026011605&t=1736966700"></script>
+    <script src="components/navbar.js?v=2026011605&t=1736966700"></script>
+    <script src="components/filter-panel.js?v=2026011605&t=1736966700"></script>
+    <script src="components/map-controls.js?v=2026011605&t=1736966700"></script>
+    <script src="js/activity-logger.js?v=2026011605&t=1736966700"></script>
+    <script src="js/sidebar-stats.js?v=2026011605&t=1736966700"></script>
+    <script src="js/dashboard.js?v=2026011605&t=1736966700"></script>
+    <script src="js/reports-and-history.js?v=2026011605&t=1736966700"></script>
+    <script src="js/main.js?v=2026011605&t=1736966700"></script>
+    <script src="js/auto-backup.js?v=2026011605&t=1736966700"></script>
 
     <script>
         feather.replace();
+        
+        // 🛡️ Validação: Verifica se Tailwind carregou
+        setTimeout(() => {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'bg-blue-500';
+            document.body.appendChild(testDiv);
+            const hasTailwind = window.getComputedStyle(testDiv).backgroundColor === 'rgb(59, 130, 246)';
+            document.body.removeChild(testDiv);
+            console.log(hasTailwind ? '✅ Tailwind CSS carregado' : '⚠️ Tailwind CDN falhou - usando CSS backup');
+        }, 100);
         
         function waitForApp() {
             return new Promise((resolve) => {
@@ -518,22 +530,21 @@
             setupUnifiedMenu();
             setupClientModal();
             
-            // 🔧 FIX ADICIONAL: Força invalidateSize após inicialização
             setTimeout(() => {
                 if (window.app && window.app.map) {
                     window.app.map.invalidateSize();
-                    console.log('✅ Mapa recalculado após inicialização');
+                    console.log('✅ Mapa recalculado');
                 }
             }, 500);
             
             setTimeout(() => {
                 const legendElements = document.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution)');
                 legendElements.forEach(el => el.remove());
-                console.log('✅ Legenda de marcadores removida!');
+                console.log('✅ Legenda removida');
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.18 - LAYOUT CORRIGIDO! ✅');
+            console.log('🎉 GeoClient SP v2.9.19 - Tailwind + Backup! ✅');
         }
         
         function setupClientModal() {
@@ -542,10 +553,7 @@
             const closeModalBtn = document.getElementById('close-modal');
             const form = document.getElementById('client-form');
             
-            if (!addClientBtn || !modal || !closeModalBtn || !form) {
-                console.error('❌ Elementos do modal de cliente não encontrados!');
-                return;
-            }
+            if (!addClientBtn || !modal || !closeModalBtn || !form) return;
             
             addClientBtn.addEventListener('click', () => {
                 document.getElementById('modal-title').textContent = 'Novo Cliente';
@@ -559,19 +567,11 @@
                 feather.replace();
             });
             
-            closeModalBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-            });
-            
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
+            closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
             
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
                 const clientData = {
                     id: Date.now(),
                     name: document.getElementById('client-name').value,
@@ -584,23 +584,17 @@
                 if (window.app && typeof window.app.addClient === 'function') {
                     window.app.addClient(clientData);
                     modal.classList.add('hidden');
-                } else {
-                    console.error('❌ app.addClient() não encontrado!');
-                    alert('❌ Erro ao adicionar cliente. Recarregue a página.');
                 }
             });
             
-            console.log('✅ Modal de cliente configurado');
+            console.log('✅ Modal configurado');
         }
         
         function setupUnifiedMenu() {
             const dropdown = document.querySelector('.main-menu-dropdown');
             const toggle = document.getElementById('main-menu-toggle');
             
-            if (!dropdown || !toggle) {
-                console.error('❌ Menu dropdown não encontrado!');
-                return;
-            }
+            if (!dropdown || !toggle) return;
             
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -609,10 +603,7 @@
             });
             
             document.addEventListener('click', () => dropdown.classList.remove('active'));
-            
-            dropdown.querySelector('.main-menu-dropdown-content')?.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
+            dropdown.querySelector('.main-menu-dropdown-content')?.addEventListener('click', (e) => e.stopPropagation());
             
             const menuActions = {
                 'menu-dashboard': () => window.dashboard?.showDashboard?.(),
@@ -628,15 +619,10 @@
             
             Object.entries(menuActions).forEach(([id, action]) => {
                 const button = document.getElementById(id);
-                if (button) {
-                    button.addEventListener('click', () => {
-                        dropdown.classList.remove('active');
-                        action();
-                    });
-                }
+                if (button) button.addEventListener('click', () => { dropdown.classList.remove('active'); action(); });
             });
             
-            console.log('✅ Menu unificado configurado com sucesso!');
+            console.log('✅ Menu configurado');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
