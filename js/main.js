@@ -391,7 +391,7 @@ class GeoClientApp {
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
             'HIRATA': '#8b5cf6',
-            'LUBMULTI': '#fb923c'
+            'LUBMULTI': '#6b7280'
         };
         return colors[company] || '#6b7280';
     }
