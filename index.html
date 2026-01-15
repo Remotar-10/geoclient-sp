@@ -26,21 +26,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011515&t=1736963400">
+    <link rel="stylesheet" href="style.css?v=2026011543&t=1736965380">
 
     <style>
+        /* 📍 MAPA - FIX CRÍTICO: Garante altura fixa */
+        #map {
+            height: 600px !important;
+            min-height: 600px !important;
+            width: 100% !important;
+            position: relative !important;
+        }
+        
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         
         /* ✅ ESCONDE COMPLETAMENTE A LEGENDA DE MARCADORES (Cliente Ativo/Inativo) */
-        /* Esta legenda aparece no canto inferior direito */
         .leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution) {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
         }
         
-        /* Alternativa: esconde qualquer legend box criada dinamicamente */
         [class*="legend"],
         [id*="legend"],
         .map-legend,
@@ -300,9 +306,9 @@
                         </div>
                     </div>
 
-                    <!-- ✅ COMPONENTE DE MAP CONTROLS - Gerencia botão de reset de zoom -->
+                    <!-- ✅ MAPA COM ALTURA FIXA - FIX CRÍTICO -->
                     <div style="position: relative;">
-                        <div id="map" class="h-[600px] w-full"></div>
+                        <div id="map" style="height: 600px; min-height: 600px; width: 100%;"></div>
                         <custom-map-controls></custom-map-controls>
                     </div>
 
@@ -400,16 +406,16 @@
     </div>
 
     <!-- Scripts - TIMESTAMP UNICO PARA FORÇAR RELOAD -->
-    <script src="data/clients.js?v=2026011515&t=1736963400"></script>
-    <script src="components/navbar.js?v=2026011515&t=1736963400"></script>
-    <script src="components/filter-panel.js?v=2026011515&t=1736963400"></script>
-    <script src="components/map-controls.js?v=2026011515&t=1736963400"></script>
-    <script src="js/activity-logger.js?v=2026011515&t=1736963400"></script>
-    <script src="js/sidebar-stats.js?v=2026011515&t=1736963400"></script>
-    <script src="js/dashboard.js?v=2026011515&t=1736963400"></script>
-    <script src="js/reports-and-history.js?v=2026011515&t=1736963400"></script>
-    <script src="js/main.js?v=2026011515&t=1736963400"></script>
-    <script src="js/auto-backup.js?v=2026011515&t=1736963400"></script>
+    <script src="data/clients.js?v=2026011543&t=1736965380"></script>
+    <script src="components/navbar.js?v=2026011543&t=1736965380"></script>
+    <script src="components/filter-panel.js?v=2026011543&t=1736965380"></script>
+    <script src="components/map-controls.js?v=2026011543&t=1736965380"></script>
+    <script src="js/activity-logger.js?v=2026011543&t=1736965380"></script>
+    <script src="js/sidebar-stats.js?v=2026011543&t=1736965380"></script>
+    <script src="js/dashboard.js?v=2026011543&t=1736965380"></script>
+    <script src="js/reports-and-history.js?v=2026011543&t=1736965380"></script>
+    <script src="js/main.js?v=2026011543&t=1736965380"></script>
+    <script src="js/auto-backup.js?v=2026011543&t=1736965380"></script>
 
     <script>
         feather.replace();
@@ -453,6 +459,14 @@
             setupUnifiedMenu();
             setupClientModal();
             
+            // 🔧 FIX ADICIONAL: Força invalidateSize após inicialização
+            setTimeout(() => {
+                if (window.app && window.app.map) {
+                    window.app.map.invalidateSize();
+                    console.log('✅ Mapa recalculado após inicialização');
+                }
+            }, 500);
+            
             setTimeout(() => {
                 const legendElements = document.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution)');
                 legendElements.forEach(el => el.remove());
@@ -460,7 +474,7 @@
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.16 RESTAURADO - Sistema 100% Funcional! ✅');
+            console.log('🎉 GeoClient SP v2.9.17 - MAPA CORRIGIDO! ✅');
         }
         
         function setupClientModal() {
