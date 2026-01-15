@@ -1,15 +1,15 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.20 - CSS Nativo Puro + LUBMULTI Completo
+// GeoClient SP - VERSÃO PREMIUM v2.9.21 - Código Limpo + Otimizado
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 // ✅ LUBMULTI adicionado (6 empresas completas)
+// ✅ Código morto removido (filtros não utilizados)
 
 class GeoClientApp {
     constructor() {
         this.map = null;
         this.currentFilters = { 
-            companies: [],
             status: 'todos',
             clientSearch: ''
         };
@@ -26,13 +26,9 @@ class GeoClientApp {
         this.contextMenu = null;
         this.tooltip = null;
         this.companyDropdown = null;
-        this.isDropdownOpen = false;
         this.currentCityName = null;
         this.currentCityLayer = null;
         this.lastClickPosition = { x: 0, y: 0 };
-        this.searchBox = null;
-        this.filtersAppliedToMap = false;
-        this.charts = {};
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
         this.totalMunicipalitiesSP = 645;
@@ -169,7 +165,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.20...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.21...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -188,7 +184,7 @@ class GeoClientApp {
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.20 iniciado!');
+            console.log('✅ GeoClient SP v2.9.21 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -1018,5 +1014,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.20 - CSS Nativo Puro + LUBMULTI! ✅');
+    console.log('✨ GeoClient SP v2.9.21 - Código Limpo + Otimizado! ✅');
 });
