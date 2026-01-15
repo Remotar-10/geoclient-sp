@@ -26,9 +26,40 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011543&t=1736965380">
+    <link rel="stylesheet" href="style.css?v=2026011552&t=1736965920">
 
     <style>
+        /* 🎨 GRID LAYOUT - FIX CRÍTICO */
+        .main-container {
+            max-width: 1536px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
         /* 📍 MAPA - FIX CRÍTICO: Garante altura fixa */
         #map {
             height: 600px !important;
@@ -145,6 +176,7 @@
         .dropdown-separator { height: 1px; background: #e5e7eb; margin: 0; }
         
         /* Utility classes */
+        .container { max-width: 1536px; }
         .mx-auto { margin-left: auto; margin-right: auto; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
@@ -153,16 +185,20 @@
         .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
         .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
         .py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
         .text-xs { font-size: 0.75rem; }
         .text-sm { font-size: 0.875rem; }
         .text-lg { font-size: 1.125rem; }
         .text-2xl { font-size: 1.5rem; }
+        .text-xl { font-size: 1.25rem; }
         .font-medium { font-weight: 500; }
         .font-bold { font-weight: 700; }
         .uppercase { text-transform: uppercase; }
         .text-left { text-align: left; }
         .text-gray-500 { color: #6b7280; }
         .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
         .text-blue-600 { color: #2563eb; }
         .text-red-600 { color: #dc2626; }
         .text-green-600 { color: #16a34a; }
@@ -178,27 +214,43 @@
         .bg-orange-600 { background-color: #ea580c; }
         .rounded-md { border-radius: 0.375rem; }
         .rounded-lg { border-radius: 0.5rem; }
+        .rounded { border-radius: 0.25rem; }
         .border { border-width: 1px; }
         .border-b { border-bottom-width: 1px; }
+        .border-t { border-top-width: 1px; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .border-gray-400 { border-color: #9ca3af; }
+        .border-gray-600 { border-color: #4b5563; }
+        .border-green-700 { border-color: #15803d; }
         .divide-y > * + * { border-top-width: 1px; }
         .divide-gray-200 > * + * { border-color: #e5e7eb; }
         .shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
         .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
         .justify-between { justify-content: space-between; }
         .gap-4 { gap: 1rem; }
         .gap-2 { gap: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
         .space-x-2 > * + * { margin-left: 0.5rem; }
         .hidden { display: none; }
+        .block { display: block; }
+        .inline-flex { display: inline-flex; }
         .fixed { position: fixed; }
         .relative { position: relative; }
+        .absolute { position: absolute; }
         .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
         .top-20 { top: 5rem; }
         .z-50 { z-index: 50; }
         .w-full { width: 100%; }
+        .w-4 { width: 1rem; }
+        .h-4 { height: 1rem; }
         .max-w-md { max-width: 28rem; }
         .min-w-full { min-width: 100%; }
+        .mb-1 { margin-bottom: 0.25rem; }
         .mb-4 { margin-bottom: 1rem; }
         .mb-6 { margin-bottom: 1.5rem; }
         .mr-2 { margin-right: 0.5rem; }
@@ -206,29 +258,36 @@
         .overflow-x-auto { overflow-x: auto; }
         .whitespace-nowrap { white-space: nowrap; }
         .hover\:bg-gray-300:hover { background-color: #d1d5db; }
+        .hover\:bg-gray-900:hover { background-color: #111827; }
         .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
         .hover\:bg-green-700:hover { background-color: #15803d; }
         .hover\:bg-purple-700:hover { background-color: #7e22ce; }
         .hover\:bg-red-700:hover { background-color: #b91c1c; }
         .hover\:bg-orange-700:hover { background-color: #c2410c; }
-        @media (min-width: 640px) { .sm\:flex-row { flex-direction: row; } .sm\:items-center { align-items: center; } }
+        .hover\:text-gray-900:hover { color: #111827; }
+        .focus\:ring-2:focus { box-shadow: 0 0 0 2px; }
+        .focus\:ring-blue-500:focus { --tw-ring-color: #3b82f6; }
+        @media (min-width: 640px) { 
+            .sm\:flex-row { flex-direction: row; } 
+            .sm\:items-center { align-items: center; } 
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
     <custom-navbar></custom-navbar>
 
-    <div class="container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="main-container">
+        <div class="grid-layout">
 
-            <!-- Sidebar - LIMPA! Apenas Filtros + Empresas -->
-            <div class="lg:col-span-1 space-y-6">
+            <!-- Sidebar - Painel de Filtros -->
+            <div class="sidebar">
                 <custom-filter-panel></custom-filter-panel>
             </div>
 
-            <!-- Main -->
-            <div class="lg:col-span-3">
-                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+            <!-- Main Content - Mapa + Tabela -->
+            <div class="main-content">
+                <div class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 class="text-2xl font-bold">Mapa de São Paulo</h1>
@@ -362,7 +421,7 @@
 
     <!-- Modal Cliente -->
     <div id="client-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-        <div class="relative top-20 mx-auto p-5 w-full max-w-md bg-white rounded-md shadow-lg">
+        <div class="relative top-20 mx-auto p-6 w-full max-w-md bg-white rounded-md shadow-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium" id="modal-title">Novo Cliente</h3>
                 <button id="close-modal" class="text-gray-600 hover:text-gray-900"><i data-feather="x"></i></button>
@@ -406,16 +465,16 @@
     </div>
 
     <!-- Scripts - TIMESTAMP UNICO PARA FORÇAR RELOAD -->
-    <script src="data/clients.js?v=2026011543&t=1736965380"></script>
-    <script src="components/navbar.js?v=2026011543&t=1736965380"></script>
-    <script src="components/filter-panel.js?v=2026011543&t=1736965380"></script>
-    <script src="components/map-controls.js?v=2026011543&t=1736965380"></script>
-    <script src="js/activity-logger.js?v=2026011543&t=1736965380"></script>
-    <script src="js/sidebar-stats.js?v=2026011543&t=1736965380"></script>
-    <script src="js/dashboard.js?v=2026011543&t=1736965380"></script>
-    <script src="js/reports-and-history.js?v=2026011543&t=1736965380"></script>
-    <script src="js/main.js?v=2026011543&t=1736965380"></script>
-    <script src="js/auto-backup.js?v=2026011543&t=1736965380"></script>
+    <script src="data/clients.js?v=2026011552&t=1736965920"></script>
+    <script src="components/navbar.js?v=2026011552&t=1736965920"></script>
+    <script src="components/filter-panel.js?v=2026011552&t=1736965920"></script>
+    <script src="components/map-controls.js?v=2026011552&t=1736965920"></script>
+    <script src="js/activity-logger.js?v=2026011552&t=1736965920"></script>
+    <script src="js/sidebar-stats.js?v=2026011552&t=1736965920"></script>
+    <script src="js/dashboard.js?v=2026011552&t=1736965920"></script>
+    <script src="js/reports-and-history.js?v=2026011552&t=1736965920"></script>
+    <script src="js/main.js?v=2026011552&t=1736965920"></script>
+    <script src="js/auto-backup.js?v=2026011552&t=1736965920"></script>
 
     <script>
         feather.replace();
@@ -474,7 +533,7 @@
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.17 - MAPA CORRIGIDO! ✅');
+            console.log('🎉 GeoClient SP v2.9.18 - LAYOUT CORRIGIDO! ✅');
         }
         
         function setupClientModal() {
