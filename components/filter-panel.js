@@ -1,7 +1,9 @@
-// Custom Filter Panel Component - v2.9.21 (Filtros removidos, estatísticas mantidas)
+// Custom Filter Panel Component - v2.9.23 (LUBMULTI fix - sempre visível)
 class CustomFilterPanel extends HTMLElement {
     constructor() {
         super();
+        // ✅ Define todas as empresas que devem aparecer (sempre)
+        this.allCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
     }
 
     connectedCallback() {
@@ -11,79 +13,67 @@ class CustomFilterPanel extends HTMLElement {
 
     // ✅ Função auxiliar para contar clientes por empresa
     getClientsByCompany(company) {
-        return CLIENTS_DATA.filter(c => c.company === company);
+        if (!window.CLIENTS_DATA || !Array.isArray(window.CLIENTS_DATA)) {
+            return [];
+        }
+        return window.CLIENTS_DATA.filter(c => c.company === company);
     }
 
     // ✅ Função auxiliar para clientes ativos
     getActiveClients() {
-        return CLIENTS_DATA.filter(c => c.status === 'ativo');
+        if (!window.CLIENTS_DATA || !Array.isArray(window.CLIENTS_DATA)) {
+            return [];
+        }
+        return window.CLIENTS_DATA.filter(c => c.status === 'ativo');
     }
 
     // ✅ Função auxiliar para municípios ocupados
     getOccupiedMunicipalities() {
-        return [...new Set(CLIENTS_DATA.map(c => c.municipality))];
+        if (!window.CLIENTS_DATA || !Array.isArray(window.CLIENTS_DATA)) {
+            return [];
+        }
+        return [...new Set(window.CLIENTS_DATA.map(c => c.municipality))];
+    }
+
+    // ✅ Retorna cor da empresa
+    getCompanyColor(company) {
+        const colors = {
+            'CDO': '#ef4444',
+            'SUPORTE': '#3b82f6',
+            'WAUX': '#10b981',
+            'MONTEBELLO': '#f59e0b',
+            'HIRATA': '#8b5cf6',
+            'LUBMULTI': '#6b7280'
+        };
+        return colors[company] || '#6b7280';
     }
 
     render() {
-        // ✅ Contadores por empresa
-        const cdoCount = this.getClientsByCompany("CDO").length;
-        const suporteCount = this.getClientsByCompany("SUPORTE").length;
-        const wauxCount = this.getClientsByCompany("WAUX").length;
-        const montebelloCount = this.getClientsByCompany("MONTEBELLO").length;
-        const hirataCount = this.getClientsByCompany("HIRATA").length;
-        const lubmultiCount = this.getClientsByCompany("LUBMULTI").length;
+        // ✅ Contadores por empresa (garantindo que LUBMULTI sempre apareça)
+        const companyCounts = {};
+        this.allCompanies.forEach(company => {
+            companyCounts[company] = this.getClientsByCompany(company).length;
+        });
 
         const activeCount = this.getActiveClients().length;
         const occupiedCount = this.getOccupiedMunicipalities().length;
         const totalMunicipalities = 645; // Total de municípios de SP
+        const totalClients = window.CLIENTS_DATA ? window.CLIENTS_DATA.length : 0;
 
         this.innerHTML = `
             <!-- ✅ SEÇÃO: EMPRESAS (Estatísticas) -->
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-xl font-bold mb-4">Empresas</h2>
                 <div class="space-y-3">
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="CDO">
-                        <div class="w-4 h-4 rounded-full mr-3" style="background: #ef4444;"></div>
-                        <div>
-                            <span class="font-medium text-sm">CDO</span>
-                            <div class="text-xs text-gray-500">${cdoCount} clientes</div>
+                    ${this.allCompanies.map(company => `
+                        <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="${company}">
+                            <div class="w-4 h-4 rounded-full mr-3" style="background: ${this.getCompanyColor(company)};"></div>
+                            <div>
+                                <span class="font-medium text-sm">${company}</span>
+                                <div class="text-xs text-gray-500">${companyCounts[company]} clientes</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="SUPORTE">
-                        <div class="w-4 h-4 rounded-full mr-3" style="background: #3b82f6;"></div>
-                        <div>
-                            <span class="font-medium text-sm">SUPORTE</span>
-                            <div class="text-xs text-gray-500">${suporteCount} clientes</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="WAUX">
-                        <div class="w-4 h-4 rounded-full mr-3" style="background: #10b981;"></div>
-                        <div>
-                            <span class="font-medium text-sm">WAUX</span>
-                            <div class="text-xs text-gray-500">${wauxCount} clientes</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="MONTEBELLO">
-                        <div class="w-4 h-4 rounded-full mr-3" style="background: #f59e0b;"></div>
-                        <div>
-                            <span class="font-medium text-sm">MONTEBELLO</span>
-                            <div class="text-xs text-gray-500">${montebelloCount} clientes</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="HIRATA">
-                        <div class="w-4 h-4 rounded-full mr-3" style="background: #8b5cf6;"></div>
-                        <div>
-                            <span class="font-medium text-sm">HIRATA</span>
-                            <div class="text-xs text-gray-500">${hirataCount} clientes</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer" data-company="LUBMULTI">
-                        <div class="w-4 h-4 rounded-full mr-3" style="background: #6b7280;"></div>
-                        <div>
-                            <span class="font-medium text-sm">LUBMULTI</span>
-                            <div class="text-xs text-gray-500">${lubmultiCount} clientes</div>
-                        </div>
-                    </div>
+                    `).join('')}
                 </div>
             </div>
 
@@ -97,7 +87,7 @@ class CustomFilterPanel extends HTMLElement {
                             <span class="text-sm font-bold text-green-600">${activeCount}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-green-600 h-2 rounded-full" style="width: ${CLIENTS_DATA.length > 0 ? (activeCount / CLIENTS_DATA.length * 100) : 0}%"></div>
+                            <div class="bg-green-600 h-2 rounded-full" style="width: ${totalClients > 0 ? (activeCount / totalClients * 100) : 0}%"></div>
                         </div>
                     </div>
                     <div>
