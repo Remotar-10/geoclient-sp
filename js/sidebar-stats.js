@@ -1,5 +1,5 @@
 // 📊 GeoClient SP - Dynamic Sidebar Stats
-// v1.0 - Atualiza estatísticas da sidebar em tempo real
+// v2.9.26 - Atualiza estatísticas da sidebar em tempo real (Bug fixes aplicados)
 
 class SidebarStats {
     constructor(app) {
@@ -97,9 +97,9 @@ class SidebarStats {
     }
 
     updateQuickStats() {
-        // Total de clientes ativos
+        // ✅ FIX: Corrigido 'active' → 'ativo' (português)
         const activeClients = this.app.clients ? 
-            this.app.clients.filter(c => c.status === 'active').length : 0;
+            this.app.clients.filter(c => c.status === 'ativo').length : 0;
         const totalClients = this.app.clients ? this.app.clients.length : 0;
         const activePercentage = totalClients > 0 ? Math.round((activeClients / totalClients) * 100) : 0;
 
@@ -107,7 +107,7 @@ class SidebarStats {
         if (activeClientElement) {
             activeClientElement.innerHTML = `
                 <div class="flex justify-between mb-1">
-                    <span class="text-sm font-medium">Active Clients</span>
+                    <span class="text-sm font-medium">Clientes Ativos</span>
                     <span class="text-sm font-bold text-green-600">${activeClients}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
@@ -126,7 +126,7 @@ class SidebarStats {
         if (municipalitiesElement) {
             municipalitiesElement.innerHTML = `
                 <div class="flex justify-between mb-1">
-                    <span class="text-sm font-medium">Occupied Municipalities</span>
+                    <span class="text-sm font-medium">Municípios Ocupados</span>
                     <span class="text-sm font-bold text-blue-600">${occupiedMunicipalities}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
