@@ -11,10 +11,6 @@
     
     <title>GeoClient SP - Domínio Territorial</title>
 
-    <!-- 🎨 Tailwind CSS - Play CDN (Development) -->
-    <!-- 🛡️ BACKUP: Todo CSS nativo mantido abaixo caso CDN falhe -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
 
@@ -30,13 +26,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011605&t=1736966700">
+    <link rel="stylesheet" href="style.css?v=2026011619&t=1736967540">
 
     <style>
-        /* 🛡️ CSS BACKUP - Garante funcionamento mesmo se Tailwind CDN falhar */
-        /* Prioridade alta (!important) para elementos críticos */
+        /* 🎨 CSS NATIVO PURO - Sem dependências externas */
+        /* Robusto, rápido e 100% confiável */
         
-        /* 🎨 GRID LAYOUT - FIX CRÍTICO */
+        /* 🎨 GRID LAYOUT - Layout principal */
         .main-container {
             max-width: 1536px;
             margin: 0 auto;
@@ -67,7 +63,7 @@
             gap: 1.5rem;
         }
         
-        /* 📍 MAPA - FIX CRÍTICO: Altura fixa SEMPRE */
+        /* 📍 MAPA - Altura fixa SEMPRE garantida */
         #map {
             height: 600px !important;
             min-height: 600px !important;
@@ -78,7 +74,7 @@
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         
-        /* ✅ ESCONDE COMPLETAMENTE A LEGENDA DE MARCADORES */
+        /* ✅ ESCONDE LEGENDA DE MARCADORES */
         .leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution) {
             display: none !important;
             visibility: hidden !important;
@@ -182,7 +178,7 @@
         
         .dropdown-separator { height: 1px; background: #e5e7eb; margin: 0; }
         
-        /* 🛡️ BACKUP: Utility classes - Funcionam se Tailwind falhar */
+        /* Utility classes */
         .container { max-width: 1536px; }
         .mx-auto { margin-left: auto; margin-right: auto; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
@@ -219,6 +215,9 @@
         .bg-purple-600 { background-color: #9333ea; }
         .bg-red-600 { background-color: #dc2626; }
         .bg-orange-600 { background-color: #ea580c; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .bg-gray-400 { background-color: #9ca3af; }
+        .bg-green-500 { background-color: #22c55e; }
         .rounded-md { border-radius: 0.375rem; }
         .rounded-lg { border-radius: 0.5rem; }
         .rounded { border-radius: 0.25rem; }
@@ -467,29 +466,19 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=2026011605&t=1736966700"></script>
-    <script src="components/navbar.js?v=2026011605&t=1736966700"></script>
-    <script src="components/filter-panel.js?v=2026011605&t=1736966700"></script>
-    <script src="components/map-controls.js?v=2026011605&t=1736966700"></script>
-    <script src="js/activity-logger.js?v=2026011605&t=1736966700"></script>
-    <script src="js/sidebar-stats.js?v=2026011605&t=1736966700"></script>
-    <script src="js/dashboard.js?v=2026011605&t=1736966700"></script>
-    <script src="js/reports-and-history.js?v=2026011605&t=1736966700"></script>
-    <script src="js/main.js?v=2026011605&t=1736966700"></script>
-    <script src="js/auto-backup.js?v=2026011605&t=1736966700"></script>
+    <script src="data/clients.js?v=2026011619&t=1736967540"></script>
+    <script src="components/navbar.js?v=2026011619&t=1736967540"></script>
+    <script src="components/filter-panel.js?v=2026011619&t=1736967540"></script>
+    <script src="components/map-controls.js?v=2026011619&t=1736967540"></script>
+    <script src="js/activity-logger.js?v=2026011619&t=1736967540"></script>
+    <script src="js/sidebar-stats.js?v=2026011619&t=1736967540"></script>
+    <script src="js/dashboard.js?v=2026011619&t=1736967540"></script>
+    <script src="js/reports-and-history.js?v=2026011619&t=1736967540"></script>
+    <script src="js/main.js?v=2026011619&t=1736967540"></script>
+    <script src="js/auto-backup.js?v=2026011619&t=1736967540"></script>
 
     <script>
         feather.replace();
-        
-        // 🛡️ Validação: Verifica se Tailwind carregou
-        setTimeout(() => {
-            const testDiv = document.createElement('div');
-            testDiv.className = 'bg-blue-500';
-            document.body.appendChild(testDiv);
-            const hasTailwind = window.getComputedStyle(testDiv).backgroundColor === 'rgb(59, 130, 246)';
-            document.body.removeChild(testDiv);
-            console.log(hasTailwind ? '✅ Tailwind CSS carregado' : '⚠️ Tailwind CDN falhou - usando CSS backup');
-        }, 100);
         
         function waitForApp() {
             return new Promise((resolve) => {
@@ -544,7 +533,7 @@
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.19 - Tailwind + Backup! ✅');
+            console.log('🎉 GeoClient SP v2.9.20 - CSS Nativo Puro! ✅');
         }
         
         function setupClientModal() {
