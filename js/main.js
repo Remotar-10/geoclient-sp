@@ -1,8 +1,9 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.10 - Botão Home via map-controls.js
+// GeoClient SP - VERSÃO PREMIUM v2.9.20 - CSS Nativo Puro + LUBMULTI Completo
 // Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
+// ✅ LUBMULTI adicionado (6 empresas completas)
 
 class GeoClientApp {
     constructor() {
@@ -10,7 +11,6 @@ class GeoClientApp {
         this.currentFilters = { 
             companies: [],
             status: 'todos',
-            searchQuery: '',
             clientSearch: ''
         };
         
@@ -34,7 +34,7 @@ class GeoClientApp {
         this.filtersAppliedToMap = false;
         this.charts = {};
         
-        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
+        this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
         this.totalMunicipalitiesSP = 645;
         
         this.clickCount = 0;
@@ -169,7 +169,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.10...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.20...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -183,12 +183,12 @@ class GeoClientApp {
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
-            this.initMapControls(); // ✅ Usa map-controls.js ao invés de createHomeButton()
+            this.initMapControls();
             this.setupSearchListeners();
             this.setupClientSearch();
             this.renderClientTable();
             this.renderMarkers();
-            console.log('✅ GeoClient SP v2.9.10 iniciado!');
+            console.log('✅ GeoClient SP v2.9.20 iniciado!');
             console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
         }, 100);
     }
@@ -198,7 +198,7 @@ class GeoClientApp {
             this.map = L.map('map', {
                 center: this.initialView.center,
                 zoom: this.initialView.zoom,
-                zoomControl: false, // ✅ REMOVIDO: Sem botões +/- do Leaflet
+                zoomControl: false,
                 attributionControl: true,
                 minZoom: 6,
                 maxZoom: 12,
@@ -229,7 +229,6 @@ class GeoClientApp {
         }
     }
 
-    // ✅ NOVO: Inicializa map-controls.js ao invés de criar botão manualmente
     initMapControls() {
         const mapControls = document.querySelector('custom-map-controls');
         if (mapControls && typeof mapControls.init === 'function') {
@@ -322,7 +321,6 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
-    // ✅ FIX #10: 1 clique = zoom 1.5x | 2 cliques = zoom 1.5x + AGUARDA + dropdown
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
@@ -337,10 +335,8 @@ class GeoClientApp {
             this.clickCount = 0;
             
             if (clicks === 1) {
-                // ✅ 1 CLIQUE = ZOOM 1.5x APENAS
                 this.zoomToCity(name, event, 1.5);
             } else if (clicks >= 2) {
-                // ✅ 2 CLIQUES = ZOOM 1.5x PRIMEIRO + AGUARDA + DROPDOWN
                 this.zoomThenShowDropdown(name, layer, event);
             }
         }, this.clickTimeout);
@@ -354,23 +350,18 @@ class GeoClientApp {
         console.log(`🔍 Zoom ${zoomMultiplier}x em ${name}`);
     }
 
-    // ✅ NOVO: Zoom PRIMEIRO, aguarda animação terminar, DEPOIS abre dropdown
     zoomThenShowDropdown(name, layer, event) {
         const latlng = event.latlng;
         const currentZoom = this.map.getZoom();
         const newZoom = Math.min(currentZoom + 1.5, 12);
         
-        // Armazena para usar depois
         this.currentCityName = name;
         this.currentCityLayer = layer;
         
-        // ✅ PASSO 1: Zoom 1.5x
         this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
         console.log(`🔍 Zoom 1.5x em ${name}`);
         
-        // ✅ PASSO 2: AGUARDA zoom terminar (850ms)
         setTimeout(() => {
-            // ✅ PASSO 3: DEPOIS abre dropdown (NÃO marca)
             this.showCompanyDropdown(name);
             console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada)`);
         }, 850);
@@ -399,7 +390,8 @@ class GeoClientApp {
             'SUPORTE': '#3b82f6',
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
-            'HIRATA': '#8b5cf6'
+            'HIRATA': '#8b5cf6',
+            'LUBMULTI': '#fb923c'
         };
         return colors[company] || '#6b7280';
     }
@@ -1026,5 +1018,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.10 RESTAURADO - Sistema 100% Funcional!');
+    console.log('✨ GeoClient SP v2.9.20 - CSS Nativo Puro + LUBMULTI! ✅');
 });
