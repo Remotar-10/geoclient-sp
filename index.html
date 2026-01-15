@@ -26,371 +26,454 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=FORCE1736969535">
+    <link rel="stylesheet" href="style.css?v=FORCE1736971000">
 
     <style>
-        /* 🎨 CSS NATIVO PURO - Sem dependências externas */
-        /* Robusto, rápido e 100% confiável */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f9fafb; }
         
-        /* 🎨 GRID LAYOUT - Layout principal */
+        /* 🎨 LAYOUT PRINCIPAL - Mapa em tela cheia */
         .main-container {
-            max-width: 1536px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        
-        .grid-layout {
-            display: grid !important;
-            grid-template-columns: 300px 1fr !important;
-            gap: 1.5rem !important;
-        }
-        
-        @media (max-width: 1024px) {
-            .grid-layout {
-                grid-template-columns: 1fr !important;
-            }
-        }
-        
-        .sidebar {
+            width: 100%;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
         }
         
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        /* 📍 MAPA - Altura fixa SEMPRE garantida */
+        /* 📍 MAPA - Altura total */
         #map {
-            height: 600px !important;
-            min-height: 600px !important;
             width: 100% !important;
+            height: 100% !important;
             position: relative !important;
         }
         
         .leaflet-control-attribution { font-size: 10px; }
         .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         
-        /* ✅ ESCONDE LEGENDA DE MARCADORES */
-        .leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution) {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
+        /* ✅ SIDEBAR RETRÁTIL - Similar Google Maps */
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
         
-        [class*="legend"],
-        [id*="legend"],
-        .map-legend,
-        .marker-legend {
-            display: none !important;
-            visibility: hidden !important;
+        .sidebar-toggle:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: scale(1.05);
         }
         
-        /* Unified Menu Button */
-        .action-buttons-container { display: flex; gap: 8px; align-items: center; }
-        .btn-modern { display: inline-flex; align-items: center; justify-content: center; padding: 12px 20px; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-modern i { margin-right: 8px; width: 18px; height: 18px; }
-        
-        /* Main Menu Button - Gradient roxo/azul */
-        .btn-main-menu { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); position: relative; }
-        .btn-main-menu:hover { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
-        .btn-main-menu .dropdown-arrow { margin-left: 8px; font-size: 10px; transition: transform 0.2s; }
-        
-        /* Menu Dropdown */
-        .main-menu-dropdown { position: relative; display: inline-block; }
-        .main-menu-dropdown-content { 
-            display: none; 
-            position: absolute; 
-            right: 0; 
-            top: 52px; 
-            background: white; 
-            min-width: 280px; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
-            z-index: 1000; 
-            overflow: hidden; 
-            border: 1px solid #e5e7eb;
-        }
-        .main-menu-dropdown.active .main-menu-dropdown-content { display: block; animation: dropdownSlide 0.2s ease; }
-        .main-menu-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
-        
-        @keyframes dropdownSlide { 
-            from { opacity: 0; transform: translateY(-10px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        .sidebar-toggle i {
+            width: 24px;
+            height: 24px;
+            color: #374151;
         }
         
-        /* Menu Items */
-        .main-menu-dropdown-content button { 
-            display: flex; 
-            align-items: center; 
-            width: 100%; 
-            padding: 14px 20px; 
-            background: white; 
-            border: none; 
-            cursor: pointer; 
-            transition: all 0.15s; 
-            font-size: 14px; 
-            color: #374151; 
-            font-weight: 600; 
-            text-align: left; 
-            border-bottom: 1px solid #f3f4f6; 
+        /* Sidebar container */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
-        .main-menu-dropdown-content button:last-child { border-bottom: none; }
-        .main-menu-dropdown-content button:hover { background-color: #f9fafb; }
-        .main-menu-dropdown-content button i { margin-right: 12px; width: 18px; height: 18px; }
         
-        /* Menu Section Headers */
-        .menu-section-header {
-            padding: 10px 20px;
-            font-size: 11px;
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100%;
+            background: white;
+            z-index: 1001;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar.active {
+            left: 0;
+        }
+        
+        /* Sidebar header */
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 20px;
             font-weight: 700;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: #f9fafb;
+        }
+        
+        .sidebar-close {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        
+        .sidebar-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-close i {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Sidebar content */
+        .sidebar-content {
+            flex: 1;
+            padding: 0;
+        }
+        
+        /* Sidebar sections */
+        .sidebar-section {
             border-bottom: 1px solid #e5e7eb;
         }
         
-        /* Color variants for menu items */
-        .btn-menu-dashboard { color: #9333ea !important; }
-        .btn-menu-dashboard:hover { background-color: #faf5ff !important; }
+        .sidebar-section-title {
+            padding: 16px 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #f9fafb;
+        }
         
-        .btn-menu-history { color: #6366f1 !important; }
-        .btn-menu-history:hover { background-color: #f0f1ff !important; }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
         
-        .btn-menu-backup { color: #10b981 !important; }
-        .btn-menu-backup:hover { background-color: #f0fdf4 !important; }
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border: none;
+            background: white;
+            width: 100%;
+            text-align: left;
+            color: #374151;
+            font-size: 15px;
+            font-weight: 500;
+        }
         
-        .btn-menu-import { color: #3b82f6 !important; }
-        .btn-menu-import:hover { background-color: #eff6ff !important; }
+        .sidebar-menu-item:hover {
+            background: #f3f4f6;
+        }
         
-        .btn-menu-export { color: #0891b2 !important; }
-        .btn-menu-export:hover { background-color: #ecfeff !important; }
+        .sidebar-menu-item i {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #6b7280;
+        }
         
-        .btn-menu-pdf { color: #ea580c !important; }
-        .btn-menu-pdf:hover { background-color: #fff7ed !important; }
+        /* Stats dentro da sidebar */
+        .sidebar-stats {
+            padding: 20px;
+        }
         
-        .btn-menu-danger { color: #dc2626 !important; }
-        .btn-menu-danger:hover { background-color: #fef2f2 !important; }
+        .stat-card {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
         
-        .dropdown-separator { height: 1px; background: #e5e7eb; margin: 0; }
+        .stat-card-title {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .stat-card-label {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+        
+        /* Company badges */
+        .company-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        
+        .company-item:hover {
+            background: #f9fafb;
+        }
+        
+        .company-badge {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .company-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .company-count {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+                left: -280px;
+            }
+        }
         
         /* Utility classes */
-        .container { max-width: 1536px; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
-        .p-4 { padding: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .text-xs { font-size: 0.75rem; }
         .text-sm { font-size: 0.875rem; }
-        .text-lg { font-size: 1.125rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-xl { font-size: 1.25rem; }
+        .text-xs { font-size: 0.75rem; }
         .font-medium { font-weight: 500; }
         .font-bold { font-weight: 700; }
-        .uppercase { text-transform: uppercase; }
-        .text-left { text-align: left; }
         .text-gray-500 { color: #6b7280; }
         .text-gray-600 { color: #4b5563; }
-        .text-gray-700 { color: #374151; }
         .text-blue-600 { color: #2563eb; }
-        .text-red-600 { color: #dc2626; }
         .text-green-600 { color: #16a34a; }
-        .text-white { color: white; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .bg-white { background-color: white; }
-        .bg-gray-600 { background-color: #4b5563; }
-        .bg-opacity-50 { --tw-bg-opacity: 0.5; }
-        .bg-blue-600 { background-color: #2563eb; }
-        .bg-green-600 { background-color: #16a34a; }
-        .bg-purple-600 { background-color: #9333ea; }
-        .bg-red-600 { background-color: #dc2626; }
-        .bg-orange-600 { background-color: #ea580c; }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .bg-gray-400 { background-color: #9ca3af; }
-        .bg-green-500 { background-color: #22c55e; }
-        .rounded-md { border-radius: 0.375rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .rounded { border-radius: 0.25rem; }
-        .border { border-width: 1px; }
-        .border-b { border-bottom-width: 1px; }
-        .border-t { border-top-width: 1px; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .border-gray-400 { border-color: #9ca3af; }
-        .border-gray-600 { border-color: #4b5563; }
-        .border-green-700 { border-color: #15803d; }
-        .divide-y > * + * { border-top-width: 1px; }
-        .divide-gray-200 > * + * { border-color: #e5e7eb; }
-        .shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
-        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
-        .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .flex-wrap { flex-wrap: wrap; }
-        .items-center { align-items: center; }
-        .items-start { align-items: flex-start; }
-        .justify-between { justify-content: space-between; }
-        .gap-4 { gap: 1rem; }
-        .gap-2 { gap: 0.5rem; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .space-x-2 > * + * { margin-left: 0.5rem; }
-        .hidden { display: none; }
-        .block { display: block; }
-        .inline-flex { display: inline-flex; }
-        .fixed { position: fixed; }
-        .relative { position: relative; }
-        .absolute { position: absolute; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .top-20 { top: 5rem; }
-        .z-50 { z-index: 50; }
-        .w-full { width: 100%; }
-        .w-4 { width: 1rem; }
-        .h-4 { height: 1rem; }
-        .max-w-md { max-width: 28rem; }
-        .min-w-full { min-width: 100%; }
-        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
         .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mr-2 { margin-right: 0.5rem; }
-        .overflow-hidden { overflow: hidden; }
-        .overflow-x-auto { overflow-x: auto; }
-        .whitespace-nowrap { white-space: nowrap; }
-        .hover\:bg-gray-300:hover { background-color: #d1d5db; }
-        .hover\:bg-gray-900:hover { background-color: #111827; }
-        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
-        .hover\:bg-green-700:hover { background-color: #15803d; }
-        .hover\:bg-purple-700:hover { background-color: #7e22ce; }
-        .hover\:bg-red-700:hover { background-color: #b91c1c; }
-        .hover\:bg-orange-700:hover { background-color: #c2410c; }
-        .hover\:text-gray-900:hover { color: #111827; }
-        .focus\:ring-2:focus { box-shadow: 0 0 0 2px; }
-        .focus\:ring-blue-500:focus { --tw-ring-color: #3b82f6; }
-        @media (min-width: 640px) { 
-            .sm\:flex-row { flex-direction: row; } 
-            .sm\:items-center { align-items: center; } 
-        }
     </style>
 </head>
 
-<body class="bg-gray-50">
-    <custom-navbar></custom-navbar>
+<body>
+    <!-- ☰ Botão Toggle Sidebar -->
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <i data-feather="menu"></i>
+    </button>
 
-    <div class="main-container">
-        <div class="grid-layout">
+    <!-- 🎨 Overlay (backdrop escuro) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-            <!-- Sidebar - Painel de Estatísticas -->
-            <div class="sidebar">
-                <custom-filter-panel></custom-filter-panel>
-            </div>
+    <!-- 📋 SIDEBAR RETRÁTIL -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Header -->
+        <div class="sidebar-header">
+            <h1>GeoClient SP</h1>
+            <button class="sidebar-close" id="sidebar-close">
+                <i data-feather="x"></i>
+            </button>
+        </div>
 
-            <!-- Main Content - Mapa -->
-            <div class="main-content">
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <div class="p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <h1 class="text-2xl font-bold">Mapa de São Paulo</h1>
-                            <p class="text-gray-600 text-sm">Clique nos municípios para ver detalhes</p>
-                        </div>
-                        
-                        <div class="action-buttons-container">
-                            <!-- 🎉 UNIFIED MENU -->
-                            <div class="main-menu-dropdown">
-                                <button id="main-menu-toggle" class="btn-modern btn-main-menu">
-                                    <i data-feather="menu"></i>
-                                    Menu
-                                    <span class="dropdown-arrow">▼</span>
-                                </button>
-                                <div class="main-menu-dropdown-content">
-                                    <div class="menu-section-header">📊 Visualização</div>
-                                    <button id="menu-dashboard" class="btn-menu-dashboard">
-                                        <i data-feather="bar-chart-2"></i>
-                                        Dashboard
-                                    </button>
-                                    <button id="menu-history" class="btn-menu-history">
-                                        <i data-feather="clock"></i>
-                                        Histórico de Atividades
-                                    </button>
-                                    
-                                    <div class="dropdown-separator"></div>
-                                    
-                                    <div class="menu-section-header">💾 Backup</div>
-                                    <button id="menu-backup" class="btn-menu-backup">
-                                        <i data-feather="hard-drive"></i>
-                                        Backup Automático
-                                    </button>
-                                    
-                                    <div class="dropdown-separator"></div>
-                                    
-                                    <div class="menu-section-header">📥 Importar</div>
-                                    <button id="menu-import-csv" class="btn-menu-import">
-                                        <i data-feather="upload"></i>
-                                        Importar CSV
-                                    </button>
-                                    <button id="menu-import-json" class="btn-menu-import">
-                                        <i data-feather="upload"></i>
-                                        Importar JSON
-                                    </button>
-                                    
-                                    <div class="dropdown-separator"></div>
-                                    
-                                    <div class="menu-section-header">📤 Exportar</div>
-                                    <button id="menu-export-csv" class="btn-menu-export">
-                                        <i data-feather="download"></i>
-                                        Exportar CSV
-                                    </button>
-                                    <button id="menu-export-json" class="btn-menu-export">
-                                        <i data-feather="code"></i>
-                                        Exportar JSON
-                                    </button>
-                                    <button id="menu-export-pdf" class="btn-menu-pdf">
-                                        <i data-feather="file-text"></i>
-                                        Exportar Dashboard PDF
-                                    </button>
-                                    
-                                    <div class="dropdown-separator"></div>
-                                    
-                                    <button id="menu-clear-data" class="btn-menu-danger">
-                                        <i data-feather="trash-2"></i>
-                                        Limpar Todos os Dados
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        <!-- Content -->
+        <div class="sidebar-content">
+            <!-- 📊 ESTATÍSTICAS -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">📊 Estatísticas</div>
+                <div class="sidebar-stats" id="sidebar-stats">
+                    <div class="stat-card">
+                        <div class="stat-card-title">Total de Municípios</div>
+                        <div class="stat-card-value">645</div>
+                        <div class="stat-card-label">Estado de São Paulo</div>
                     </div>
-
-                    <!-- ✅ MAPA COM ALTURA FIXA -->
-                    <div style="position: relative;">
-                        <div id="map" style="height: 600px; min-height: 600px; width: 100%;"></div>
-                        <custom-map-controls></custom-map-controls>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Com Empresa</div>
+                        <div class="stat-card-value" id="stat-with-company">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Disponíveis</div>
+                        <div class="stat-card-value" id="stat-available">645</div>
                     </div>
                 </div>
             </div>
+
+            <!-- 🏢 EMPRESAS -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">🏢 Empresas</div>
+                <div id="companies-list"></div>
+            </div>
+
+            <!-- 📍 NAVEGAÇÃO -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">📍 Navegação</div>
+                <ul class="sidebar-menu">
+                    <li><button class="sidebar-menu-item" id="menu-dashboard"><i data-feather="bar-chart-2"></i> Dashboard</button></li>
+                    <li><button class="sidebar-menu-item" id="menu-history"><i data-feather="clock"></i> Histórico</button></li>
+                </ul>
+            </div>
+
+            <!-- 💾 DADOS -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">💾 Dados</div>
+                <ul class="sidebar-menu">
+                    <li><button class="sidebar-menu-item" id="menu-import"><i data-feather="upload"></i> Importar CSV/JSON</button></li>
+                    <li><button class="sidebar-menu-item" id="menu-export-csv"><i data-feather="download"></i> Exportar CSV</button></li>
+                    <li><button class="sidebar-menu-item" id="menu-export-json"><i data-feather="code"></i> Exportar JSON</button></li>
+                    <li><button class="sidebar-menu-item" id="menu-export-pdf"><i data-feather="file-text"></i> Exportar PDF</button></li>
+                    <li><button class="sidebar-menu-item" id="menu-backup"><i data-feather="hard-drive"></i> Backup Automático</button></li>
+                </ul>
+            </div>
+
+            <!-- ⚙️ AÇÕES -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">⚙️ Ações</div>
+                <ul class="sidebar-menu">
+                    <li><button class="sidebar-menu-item" id="menu-clear" style="color: #dc2626;"><i data-feather="trash-2"></i> Limpar Dados</button></li>
+                </ul>
+            </div>
         </div>
+    </aside>
+
+    <!-- 📍 MAPA PRINCIPAL -->
+    <div class="main-container">
+        <div id="map"></div>
+        <custom-map-controls></custom-map-controls>
     </div>
 
-    <!-- Scripts com FORÇA CACHE BUST -->
-    <script src="data/clients.js?v=FORCE1736969535"></script>
-    <script src="components/navbar.js?v=FORCE1736969535"></script>
-    <script src="components/filter-panel.js?v=FORCE1736969535"></script>
-    <script src="components/map-controls.js?v=FORCE1736969535"></script>
-    <script src="js/activity-logger.js?v=FORCE1736969535"></script>
-    <script src="js/sidebar-stats.js?v=FORCE1736969535"></script>
-    <script src="js/dashboard.js?v=FORCE1736969535"></script>
-    <script src="js/reports-and-history.js?v=FORCE1736969535"></script>
-    <script src="js/main.js?v=FORCE1736969535"></script>
-    <script src="js/auto-backup.js?v=FORCE1736969535"></script>
+    <!-- Scripts -->
+    <script src="data/clients.js?v=FORCE1736971000"></script>
+    <script src="components/navbar.js?v=FORCE1736971000"></script>
+    <script src="components/map-controls.js?v=FORCE1736971000"></script>
+    <script src="js/activity-logger.js?v=FORCE1736971000"></script>
+    <script src="js/sidebar-stats.js?v=FORCE1736971000"></script>
+    <script src="js/dashboard.js?v=FORCE1736971000"></script>
+    <script src="js/reports-and-history.js?v=FORCE1736971000"></script>
+    <script src="js/main.js?v=FORCE1736971000"></script>
+    <script src="js/auto-backup.js?v=FORCE1736971000"></script>
 
     <script>
         feather.replace();
         
+        // 🎨 SIDEBAR TOGGLE
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const closeBtn = document.getElementById('sidebar-close');
+        
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        toggleBtn.addEventListener('click', openSidebar);
+        closeBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        
+        // Fecha ao clicar em item do menu
+        document.querySelectorAll('.sidebar-menu-item, .company-item').forEach(item => {
+            item.addEventListener('click', closeSidebar);
+        });
+        
+        // 📊 Atualiza estatísticas
+        function updateSidebarStats() {
+            if (!window.CLIENTS_DATA) return;
+            
+            const withCompany = window.CLIENTS_DATA.length;
+            const available = 645 - withCompany;
+            
+            document.getElementById('stat-with-company').textContent = withCompany;
+            document.getElementById('stat-available').textContent = available;
+            
+            // Renderiza empresas
+            const companies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
+            const colors = {
+                'CDO': '#ef4444',
+                'SUPORTE': '#3b82f6',
+                'WAUX': '#10b981',
+                'MONTEBELLO': '#f59e0b',
+                'HIRATA': '#8b5cf6'
+            };
+            
+            const companiesList = document.getElementById('companies-list');
+            companiesList.innerHTML = companies.map(company => {
+                const count = window.CLIENTS_DATA.filter(c => c.company === company).length;
+                return `
+                    <div class="company-item" data-company="${company}">
+                        <div class="company-badge" style="background: ${colors[company]}"></div>
+                        <span class="company-name">${company}</span>
+                        <span class="company-count">${count}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            // Event listeners para filtros
+            document.querySelectorAll('.company-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const company = item.dataset.company;
+                    window.dispatchEvent(new CustomEvent('companyFilterChanged', {
+                        detail: { company }
+                    }));
+                });
+            });
+        }
+        
+        // 🎯 Menu actions
+        document.getElementById('menu-dashboard')?.addEventListener('click', () => window.dashboard?.showDashboard?.());
+        document.getElementById('menu-history')?.addEventListener('click', () => window.reportsAndHistory?.showActivityLog?.());
+        document.getElementById('menu-import')?.addEventListener('click', () => window.app?.showImportModal?.());
+        document.getElementById('menu-export-csv')?.addEventListener('click', () => window.app?.exportCSV?.());
+        document.getElementById('menu-export-json')?.addEventListener('click', () => window.app?.exportJSON?.());
+        document.getElementById('menu-export-pdf')?.addEventListener('click', () => window.reportsAndHistory?.exportDashboardToPDF?.());
+        document.getElementById('menu-backup')?.addEventListener('click', () => window.autoBackup?.showBackupSettings?.());
+        document.getElementById('menu-clear')?.addEventListener('click', () => window.app?.clearAllData?.());
+        
+        // ⏳ Aguarda app carregar
         function waitForApp() {
             return new Promise((resolve) => {
                 if (window.app && window.app.map) {
@@ -421,13 +504,7 @@
                 console.log('✅ ReportsAndHistory inicializado');
             }
             
-            if (typeof SidebarStats !== 'undefined') {
-                window.sidebarStats = new SidebarStats(window.app);
-                window.sidebarStats.init();
-                console.log('✅ SidebarStats inicializado');
-            }
-            
-            setupUnifiedMenu();
+            updateSidebarStats();
             
             setTimeout(() => {
                 if (window.app && window.app.map) {
@@ -436,52 +513,14 @@
                 }
             }, 500);
             
-            setTimeout(() => {
-                const legendElements = document.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution)');
-                legendElements.forEach(el => el.remove());
-                console.log('✅ Legenda removida');
-            }, 1000);
-            
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.25 - Legenda removida! ✅');
-        }
-        
-        function setupUnifiedMenu() {
-            const dropdown = document.querySelector('.main-menu-dropdown');
-            const toggle = document.getElementById('main-menu-toggle');
-            
-            if (!dropdown || !toggle) return;
-            
-            toggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('active');
-                feather.replace();
-            });
-            
-            document.addEventListener('click', () => dropdown.classList.remove('active'));
-            dropdown.querySelector('.main-menu-dropdown-content')?.addEventListener('click', (e) => e.stopPropagation());
-            
-            const menuActions = {
-                'menu-dashboard': () => window.dashboard?.showDashboard?.(),
-                'menu-history': () => window.reportsAndHistory?.showActivityLog?.(),
-                'menu-backup': () => window.autoBackup?.showBackupSettings?.(),
-                'menu-import-csv': () => window.app?.showImportModal?.(),
-                'menu-import-json': () => window.app?.showImportModal?.(),
-                'menu-export-csv': () => window.app?.exportCSV?.(),
-                'menu-export-json': () => window.app?.exportJSON?.(),
-                'menu-export-pdf': () => window.reportsAndHistory?.exportDashboardToPDF?.(),
-                'menu-clear-data': () => window.app?.clearAllData?.()
-            };
-            
-            Object.entries(menuActions).forEach(([id, action]) => {
-                const button = document.getElementById(id);
-                if (button) button.addEventListener('click', () => { dropdown.classList.remove('active'); action(); });
-            });
-            
-            console.log('✅ Menu configurado');
+            console.log('🎉 GeoClient SP v3.0.0 - Sidebar retrátil implementada! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
+        
+        // Atualiza stats quando dados mudam
+        window.addEventListener('clientsDataUpdated', updateSidebarStats);
     </script>
 </body>
 </html>
