@@ -1,9 +1,9 @@
-// Custom Filter Panel Component - v2.9.23 (LUBMULTI fix - sempre visível)
+// Custom Filter Panel Component - v2.9.26 (Bug fix - LUBMULTI removida)
 class CustomFilterPanel extends HTMLElement {
     constructor() {
         super();
-        // ✅ Define todas as empresas que devem aparecer (sempre)
-        this.allCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
+        // ✅ Define todas as empresas que devem aparecer (5 empresas)
+        this.allCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
     }
 
     connectedCallback() {
@@ -42,14 +42,13 @@ class CustomFilterPanel extends HTMLElement {
             'SUPORTE': '#3b82f6',
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
-            'HIRATA': '#8b5cf6',
-            'LUBMULTI': '#6b7280'
+            'HIRATA': '#8b5cf6'
         };
         return colors[company] || '#6b7280';
     }
 
     render() {
-        // ✅ Contadores por empresa (garantindo que LUBMULTI sempre apareça)
+        // ✅ Contadores por empresa (5 empresas)
         const companyCounts = {};
         this.allCompanies.forEach(company => {
             companyCounts[company] = this.getClientsByCompany(company).length;
