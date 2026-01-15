@@ -1,10 +1,11 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.25 - LUBMULTI Removida
-// Sistema de cliques: 1=zoom 1.5x | 2=zoom 1.5x + AGUARDA + dropdown (NÃO marca) | Seleciona empresa=marca com cor
+// GeoClient SP - VERSÃO PREMIUM v2.9.28 - Sistema de 1 CLIQUE
+// Sistema de cliques: 1=zoom 1.5x + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
 // ✅ Código morto removido (159 linhas limpas)
+// ✅ 1 CLIQUE = Zoom + Dropdown (mais rápido!)
 
 class GeoClientApp {
     constructor() {
@@ -27,9 +28,9 @@ class GeoClientApp {
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         this.totalMunicipalitiesSP = 645;
         
-        this.clickCount = 0;
+        // ✅ Removido sistema de duplo clique
         this.clickTimer = null;
-        this.clickTimeout = 400;
+        this.clickTimeout = 300; // Reduzido para resposta mais rápida
         
         this.initialView = {
             center: [-22.5, -49.2],
@@ -155,7 +156,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.25...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.28...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -171,8 +172,8 @@ class GeoClientApp {
             this.createCompanyDropdown();
             this.initMapControls();
             this.setupSearchListeners();
-            console.log('✅ GeoClient SP v2.9.25 iniciado!');
-            console.log('🔍 1 CLIQUE = Zoom 1.5x | 2 CLIQUES = Zoom 1.5x + AGUARDA + Dropdown');
+            console.log('✅ GeoClient SP v2.9.28 iniciado!');
+            console.log('🖱️ 1 CLIQUE = Zoom 1.5x + Dropdown | Seleciona empresa = Marca cidade');
         }, 100);
     }
 
@@ -281,6 +282,7 @@ class GeoClientApp {
                             this.showContextMenu(e.originalEvent, name);
                         });
                         
+                        // ✅ NOVO: 1 CLIQUE = Zoom + Dropdown
                         layer.on('click', (e) => {
                             L.DomEvent.stop(e);
                             this.handleCityClick(name, layer, e);
@@ -304,49 +306,28 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
+    // ✅ NOVO: Simplificado - 1 CLIQUE faz tudo
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
             y: event.originalEvent.clientY
         };
         
-        this.clickCount++;
-        clearTimeout(this.clickTimer);
-        
-        this.clickTimer = setTimeout(() => {
-            const clicks = this.clickCount;
-            this.clickCount = 0;
-            
-            if (clicks === 1) {
-                this.zoomToCity(name, event, 1.5);
-            } else if (clicks >= 2) {
-                this.zoomThenShowDropdown(name, layer, event);
-            }
-        }, this.clickTimeout);
-    }
-
-    zoomToCity(name, event, zoomMultiplier = 1.5) {
-        const latlng = event.latlng;
-        const currentZoom = this.map.getZoom();
-        const newZoom = Math.min(currentZoom + zoomMultiplier, 12);
-        this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
-        console.log(`🔍 Zoom ${zoomMultiplier}x em ${name}`);
-    }
-
-    zoomThenShowDropdown(name, layer, event) {
-        const latlng = event.latlng;
-        const currentZoom = this.map.getZoom();
-        const newZoom = Math.min(currentZoom + 1.5, 12);
-        
         this.currentCityName = name;
         this.currentCityLayer = layer;
         
+        // Zoom imediato
+        const latlng = event.latlng;
+        const currentZoom = this.map.getZoom();
+        const newZoom = Math.min(currentZoom + 1.5, 12);
         this.map.flyTo(latlng, newZoom, { duration: 0.8, easeLinearity: 0.25 });
+        
         console.log(`🔍 Zoom 1.5x em ${name}`);
         
+        // Aguarda animação do zoom e abre dropdown
         setTimeout(() => {
             this.showCompanyDropdown(name);
-            console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada)`);
+            console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada ainda)`);
         }, 850);
     }
 
@@ -866,5 +847,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.25 - 5 Empresas + Código Limpo! ✅');
+    console.log('✨ GeoClient SP v2.9.28 - 1 CLIQUE = Zoom + Dropdown! ✅');
 });
