@@ -20,13 +20,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Setup Node.js
+      - name: Setup Node.js (with cache)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+
+      - name: Check if GeoJSON changed
+        id: geojson-check
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q "municipios-sp.geojson"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "⚠️ GeoJSON was modified - optimization will run"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "✅ GeoJSON unchanged - skipping optimization"
+          fi
 
       - name: Smart GeoJSON Optimization
+        if: steps.geojson-check.outputs.changed == 'true'
         run: |
           echo "📊 Checking GeoJSON size..."
           GEOJSON_FILE="data/municipios-sp.geojson"
@@ -36,13 +51,11 @@ jobs:
             exit 1
           fi
           
-          # Get file size in bytes
           FILE_SIZE=$(stat -c%s "$GEOJSON_FILE")
           FILE_SIZE_MB=$((FILE_SIZE / 1024 / 1024))
           
           echo "📏 Current size: ${FILE_SIZE_MB} MB (${FILE_SIZE} bytes)"
           
-          # Threshold: 5 MB (5242880 bytes)
           THRESHOLD=5242880
           
           if [ $FILE_SIZE -lt $THRESHOLD ]; then
@@ -50,8 +63,6 @@ jobs:
             echo "📊 Size: ${FILE_SIZE_MB} MB"
             echo "🚀 Skipping optimization step"
             
-            # Quick validation
-            echo "🔍 Validating JSON..."
             if command -v jq &> /dev/null; then
               FEATURES=$(jq '.features | length' "$GEOJSON_FILE" 2>/dev/null || echo "unknown")
               echo "✅ Valid JSON with $FEATURES features"
@@ -78,10 +89,8 @@ jobs:
               -simplify 10% keep-shapes \
               -o /tmp/step2.geojson precision=0.00001
             
-            # Final compact output
             jq -c . /tmp/step2.geojson > "$GEOJSON_FILE"
             
-            # Calculate reduction
             OPTIMIZED_SIZE=$(stat -c%s "$GEOJSON_FILE")
             OPTIMIZED_MB=$((OPTIMIZED_SIZE / 1024 / 1024))
             REDUCTION=$((100 - (OPTIMIZED_SIZE * 100 / FILE_SIZE)))
@@ -91,7 +100,6 @@ jobs:
             echo "📊 Optimized: ${OPTIMIZED_MB} MB"
             echo "📉 Reduction: ${REDUCTION}%"
             
-            # Verify
             echo "🔍 Validating optimized JSON..."
             FEATURES=$(jq '.features | length' "$GEOJSON_FILE")
             echo "✅ Valid JSON with $FEATURES features"
@@ -104,17 +112,37 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Build artifact
+      - name: Build optimized artifact
         run: |
+          echo "📦 Building optimized artifact..."
           mkdir -p _site
-          cp -r * _site/ 2>/dev/null || true
+          
+          # Copy only essential files
+          echo "📋 Copying core files..."
+          cp index.html _site/ 2>/dev/null || true
           cp .nojekyll _site/ 2>/dev/null || true
+          cp README.md _site/ 2>/dev/null || true
+          
+          # Copy essential directories
+          echo "📁 Copying directories..."
+          cp -r js _site/ 2>/dev/null || true
+          cp -r css _site/ 2>/dev/null || true
+          cp -r components _site/ 2>/dev/null || true
+          cp -r data _site/ 2>/dev/null || true
+          
+          # Exclude heavy documentation from deploy
+          echo "🚫 Excluding heavy files:"
+          echo "  - HISTORICO-COMPLETO-CONVERSAS.md"
+          echo "  - MAPA-*.md"
+          echo "  - .github/"
+          
           rm -rf _site/.github 2>/dev/null || true
           
+          echo "✅ Artifact built successfully!"
           echo "📦 Artifact contents:"
           du -sh _site
           echo "📄 GeoJSON in artifact:"
-          du -sh _site/data/municipios-sp.geojson
+          du -sh _site/data/municipios-sp.geojson 2>/dev/null || echo "GeoJSON not found"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -132,5 +160,5 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          timeout: 600000
+          timeout: 300000
           error_count: 10
