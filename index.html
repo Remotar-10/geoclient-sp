@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=2026011619&t=1736967540">
+    <link rel="stylesheet" href="style.css?v=2026011621&t=1736967600">
 
     <style>
         /* 🎨 CSS NATIVO PURO - Sem dependências externas */
@@ -286,12 +286,12 @@
     <div class="main-container">
         <div class="grid-layout">
 
-            <!-- Sidebar - Painel de Filtros -->
+            <!-- Sidebar - Painel de Estatísticas -->
             <div class="sidebar">
                 <custom-filter-panel></custom-filter-panel>
             </div>
 
-            <!-- Main Content - Mapa + Tabela -->
+            <!-- Main Content - Mapa -->
             <div class="main-content">
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -390,92 +390,21 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold">Clientes Cadastrados</h2>
-                        <button id="add-client" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center">
-                            <i data-feather="plus" class="w-4 h-4 mr-2"></i>
-                            Novo Cliente
-                        </button>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Segmento</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Município</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clients-table" class="bg-white divide-y divide-gray-200"></tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal Cliente -->
-    <div id="client-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-        <div class="relative top-20 mx-auto p-6 w-full max-w-md bg-white rounded-md shadow-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium" id="modal-title">Novo Cliente</h3>
-                <button id="close-modal" class="text-gray-600 hover:text-gray-900"><i data-feather="x"></i></button>
-            </div>
-            <form id="client-form" class="space-y-4">
-                <input type="hidden" id="client-id">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente *</label>
-                    <input type="text" id="client-name" placeholder="Digite o nome do cliente" required class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Município *</label>
-                    <input type="text" id="client-municipality" placeholder="Digite o município" required class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
-                    <select id="client-company" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
-                        <option value="">Selecione a empresa</option>
-                        <option value="CDO">CDO</option>
-                        <option value="SUPORTE">SUPORTE</option>
-                        <option value="WAUX">WAUX</option>
-                        <option value="MONTEBELLO">MONTEBELLO</option>
-                        <option value="HIRATA">HIRATA</option>
-                        <option value="LUBMULTI">LUBMULTI</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Segmento</label>
-                    <input type="text" id="client-segment" placeholder="Ex: Varejo, Saúde" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select id="client-status" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500">
-                        <option value="active">Ativo</option>
-                        <option value="inactive">Inativo</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold">Salvar Cliente</button>
-            </form>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=2026011619&t=1736967540"></script>
-    <script src="components/navbar.js?v=2026011619&t=1736967540"></script>
-    <script src="components/filter-panel.js?v=2026011619&t=1736967540"></script>
-    <script src="components/map-controls.js?v=2026011619&t=1736967540"></script>
-    <script src="js/activity-logger.js?v=2026011619&t=1736967540"></script>
-    <script src="js/sidebar-stats.js?v=2026011619&t=1736967540"></script>
-    <script src="js/dashboard.js?v=2026011619&t=1736967540"></script>
-    <script src="js/reports-and-history.js?v=2026011619&t=1736967540"></script>
-    <script src="js/main.js?v=2026011619&t=1736967540"></script>
-    <script src="js/auto-backup.js?v=2026011619&t=1736967540"></script>
+    <script src="data/clients.js?v=2026011621&t=1736967600"></script>
+    <script src="components/navbar.js?v=2026011621&t=1736967600"></script>
+    <script src="components/filter-panel.js?v=2026011621&t=1736967600"></script>
+    <script src="components/map-controls.js?v=2026011621&t=1736967600"></script>
+    <script src="js/activity-logger.js?v=2026011621&t=1736967600"></script>
+    <script src="js/sidebar-stats.js?v=2026011621&t=1736967600"></script>
+    <script src="js/dashboard.js?v=2026011621&t=1736967600"></script>
+    <script src="js/reports-and-history.js?v=2026011621&t=1736967600"></script>
+    <script src="js/main.js?v=2026011621&t=1736967600"></script>
+    <script src="js/auto-backup.js?v=2026011621&t=1736967600"></script>
 
     <script>
         feather.replace();
@@ -517,7 +446,6 @@
             }
             
             setupUnifiedMenu();
-            setupClientModal();
             
             setTimeout(() => {
                 if (window.app && window.app.map) {
@@ -533,50 +461,7 @@
             }, 1000);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v2.9.20 - CSS Nativo Puro! ✅');
-        }
-        
-        function setupClientModal() {
-            const addClientBtn = document.getElementById('add-client');
-            const modal = document.getElementById('client-modal');
-            const closeModalBtn = document.getElementById('close-modal');
-            const form = document.getElementById('client-form');
-            
-            if (!addClientBtn || !modal || !closeModalBtn || !form) return;
-            
-            addClientBtn.addEventListener('click', () => {
-                document.getElementById('modal-title').textContent = 'Novo Cliente';
-                document.getElementById('client-id').value = '';
-                document.getElementById('client-name').value = '';
-                document.getElementById('client-municipality').value = '';
-                document.getElementById('client-company').value = '';
-                document.getElementById('client-segment').value = '';
-                document.getElementById('client-status').value = 'active';
-                modal.classList.remove('hidden');
-                feather.replace();
-            });
-            
-            closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
-            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
-            
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const clientData = {
-                    id: Date.now(),
-                    name: document.getElementById('client-name').value,
-                    municipality: document.getElementById('client-municipality').value,
-                    company: document.getElementById('client-company').value,
-                    segment: document.getElementById('client-segment').value,
-                    status: document.getElementById('client-status').value
-                };
-                
-                if (window.app && typeof window.app.addClient === 'function') {
-                    window.app.addClient(clientData);
-                    modal.classList.add('hidden');
-                }
-            });
-            
-            console.log('✅ Modal configurado');
+            console.log('🎉 GeoClient SP v2.9.21 - Código Limpo + Otimizado! ✅');
         }
         
         function setupUnifiedMenu() {
