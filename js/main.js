@@ -1,7 +1,8 @@
-// GeoClient SP - Sistema de Gestão Territorial v2.9
+// GeoClient SP - Sistema de Gestão Territorial v3.0
 // Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
 // ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
+// 🐛 BUG FIXES: #8, #9, #10, #11, #14, #15, #17
 
 class GeoClientApp {
     constructor() {
@@ -27,6 +28,9 @@ class GeoClientApp {
             zoom: 7.2
         };
         
+        // ✅ FIX BUG #10: Flag para prevenir race condition
+        this.isLoadingGeoJson = false;
+        
         this.loadFromLocalStorage();
     }
 
@@ -44,15 +48,43 @@ class GeoClientApp {
         try {
             const savedCities = localStorage.getItem('geoclient-marked-cities');
             if (savedCities) {
-                this.markedCities = JSON.parse(savedCities);
-                this.syncOccupiedCities();
-                console.log(`💾 ${Object.keys(this.markedCities).length} cidades restauradas`);
+                try {
+                    // ✅ FIX BUG #17: Validação antes de usar JSON.parse
+                    this.markedCities = JSON.parse(savedCities);
+                    
+                    // ✅ Valida estrutura
+                    if (typeof this.markedCities !== 'object' || Array.isArray(this.markedCities)) {
+                        throw new Error('markedCities deve ser um objeto');
+                    }
+                    
+                    this.syncOccupiedCities();
+                    console.log(`💾 ${Object.keys(this.markedCities).length} cidades restauradas`);
+                } catch (parseError) {
+                    console.error('❌ Dados de cidades corrompidos, limpando localStorage');
+                    localStorage.removeItem('geoclient-marked-cities');
+                    this.markedCities = {};
+                    this.showToast('⚠️ Dados de cidades corrompidos foram resetados', 'warning');
+                }
             }
             
             const savedClients = localStorage.getItem('geoclient-clients');
             if (savedClients) {
-                this.clients = JSON.parse(savedClients);
-                console.log(`💾 ${this.clients.length} clientes restaurados`);
+                try {
+                    // ✅ FIX BUG #17: Validação antes de usar JSON.parse
+                    this.clients = JSON.parse(savedClients);
+                    
+                    // ✅ Valida estrutura
+                    if (!Array.isArray(this.clients)) {
+                        throw new Error('clients deve ser um array');
+                    }
+                    
+                    console.log(`💾 ${this.clients.length} clientes restaurados`);
+                } catch (parseError) {
+                    console.error('❌ Dados de clientes corrompidos, limpando');
+                    localStorage.removeItem('geoclient-clients');
+                    this.clients = [];
+                    this.showToast('⚠️ Dados de clientes corrompidos foram resetados', 'warning');
+                }
             }
         } catch (error) {
             console.error('❌ Erro ao carregar localStorage:', error);
@@ -62,12 +94,29 @@ class GeoClientApp {
     
     saveToLocalStorage() {
         try {
-            localStorage.setItem('geoclient-marked-cities', JSON.stringify(this.markedCities));
-            localStorage.setItem('geoclient-clients', JSON.stringify(this.clients));
+            const citiesData = JSON.stringify(this.markedCities);
+            const clientsData = JSON.stringify(this.clients);
+            
+            // ✅ FIX BUG #9: Verifica tamanho antes de salvar
+            const totalSize = (citiesData.length + clientsData.length) / 1024 / 1024; // MB
+            
+            if (totalSize > 4.5) { // 4.5MB = margem de segurança
+                this.showToast('⚠️ Dados muito grandes! Exporte para não perder.', 'warning');
+                console.warn(`⚠️ Dados: ${totalSize.toFixed(2)}MB (próximo do limite)`);
+            }
+            
+            localStorage.setItem('geoclient-marked-cities', citiesData);
+            localStorage.setItem('geoclient-clients', clientsData);
             this.syncOccupiedCities();
             console.log('💾 Dados salvos');
         } catch (error) {
-            console.error('❌ Erro ao salvar:', error);
+            // ✅ FIX BUG #9: Detecta QuotaExceededError
+            if (error.name === 'QuotaExceededError') {
+                this.showToast('❌ Espaço insuficiente! Exporte seus dados.', 'error');
+                console.error('❌ QuotaExceededError - localStorage cheio');
+            } else {
+                console.error('❌ Erro ao salvar:', error);
+            }
             this.logActivity('logError', 'Erro ao salvar no localStorage', { error: error.message });
         }
     }
@@ -98,6 +147,12 @@ class GeoClientApp {
     }
     
     showToast(message, type = 'success') {
+        // ✅ FIX BUG #8: Limita número de toasts simultâneos
+        const existingToasts = document.querySelectorAll('.app-toast');
+        if (existingToasts.length >= 3) {
+            existingToasts[0].remove(); // Remove o mais antigo
+        }
+        
         const colors = {
             success: '#10b981',
             error: '#ef4444',
@@ -106,6 +161,7 @@ class GeoClientApp {
         };
         
         const toast = document.createElement('div');
+        toast.className = 'app-toast'; // ✅ Classe para identificar e limitar
         toast.style.cssText = `
             position: fixed;
             bottom: 30px;
@@ -147,7 +203,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🚀 Inicializando GeoClient SP v2.9...');
+        console.log('🚀 Inicializando GeoClient SP v3.0...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -161,7 +217,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v2.9 iniciado com sucesso!');
+            console.log('✅ GeoClient SP v3.0 iniciado com sucesso!');
         }, 100);
     }
 
@@ -209,6 +265,13 @@ class GeoClientApp {
     }
 
     loadMunicipalitiesBoundaries() {
+        // ✅ FIX BUG #10: Previne múltiplas chamadas simultâneas
+        if (this.isLoadingGeoJson) {
+            console.warn('⚠️ GeoJSON já está carregando...');
+            return;
+        }
+        
+        this.isLoadingGeoJson = true;
         const geojsonUrl = 'https://media.githubusercontent.com/media/Remotar-10/geoclient-sp/main/data/municipios-sp.geojson';
         
         fetch(geojsonUrl)
@@ -280,6 +343,10 @@ class GeoClientApp {
                 console.error('❌ Erro ao carregar municípios:', error);
                 this.showToast('❌ Erro ao carregar mapa', 'error');
                 this.logActivity('logError', 'Erro ao carregar municípios', { error: error.message });
+            })
+            .finally(() => {
+                // ✅ FIX BUG #10: Libera flag sempre (sucesso ou erro)
+                this.isLoadingGeoJson = false;
             });
     }
 
@@ -391,13 +458,21 @@ class GeoClientApp {
         
         if (!this.markedCities[cityName]) return;
         
-        this.contextMenu.innerHTML = `
-            <div onclick="if(confirm('Remover ${cityName}?')) { window.app.removeCity('${cityName}'); window.app.contextMenu.style.display='none'; }"
-                 style="padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600;">
-                🗑️ Remover Marcação
-            </div>
-        `;
+        // ✅ FIX BUG #11: Cria elemento via DOM (não innerHTML) para prevenir XSS
+        this.contextMenu.innerHTML = '';
         
+        const button = document.createElement('div');
+        button.style.cssText = 'padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600;';
+        button.textContent = '🗑️ Remover Marcação';
+        
+        button.addEventListener('click', () => {
+            if (confirm(`Remover ${cityName}?`)) {
+                this.removeCity(cityName);
+                this.contextMenu.style.display = 'none';
+            }
+        });
+        
+        this.contextMenu.appendChild(button);
         this.contextMenu.style.display = 'block';
         this.contextMenu.style.left = event.pageX + 'px';
         this.contextMenu.style.top = event.pageY + 'px';
@@ -587,8 +662,18 @@ class GeoClientApp {
             c.id, c.name, c.municipality || '', c.company || '', c.segment || '', c.status
         ]);
         
+        // ✅ FIX BUG #14: Escapa caracteres especiais corretamente
+        const escapeCsvCell = (cell) => {
+            const str = String(cell);
+            // Se contém aspas, vírgulas ou quebras de linha, envolve em aspas e duplica aspas internas
+            if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}`;
+            }
+            return `"${str}"`;
+        };
+        
         const csv = [headers, ...rows]
-            .map(row => row.map(cell => `"${cell}"`).join(','))
+            .map(row => row.map(escapeCsvCell).join(','))
             .join('\n');
         
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -679,10 +764,40 @@ class GeoClientApp {
                         this.markedCities = data.markedCities;
                     }
                 } else if (file.name.endsWith('.csv')) {
+                    // ✅ FIX BUG #15: Parser CSV correto que respeita RFC 4180
                     const lines = content.split('\n');
-                    const headers = lines[0].split(',');
+                    
+                    const parseCsvLine = (line) => {
+                        const result = [];
+                        let current = '';
+                        let inQuotes = false;
+                        
+                        for (let i = 0; i < line.length; i++) {
+                            const char = line[i];
+                            
+                            if (char === '"') {
+                                if (inQuotes && line[i + 1] === '"') {
+                                    // Aspas duplas dentro de campo = aspas literal
+                                    current += '"';
+                                    i++;
+                                } else {
+                                    // Alterna estado de estar dentro/fora de aspas
+                                    inQuotes = !inQuotes;
+                                }
+                            } else if (char === ',' && !inQuotes) {
+                                // Vírgula fora de aspas = separador de campo
+                                result.push(current.trim());
+                                current = '';
+                            } else {
+                                current += char;
+                            }
+                        }
+                        result.push(current.trim());
+                        return result;
+                    };
+                    
                     this.clients = lines.slice(1).filter(line => line.trim()).map((line, index) => {
-                        const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+                        const values = parseCsvLine(line);
                         return {
                             id: parseInt(values[0]) || index + 1,
                             name: values[1] || '',
@@ -715,7 +830,57 @@ class GeoClientApp {
     }
 }
 
+// ✅ Error boundary para capturar erros fatais na inicialização
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new GeoClientApp();
-    window.app.init();
+    try {
+        window.app = new GeoClientApp();
+        window.app.init();
+    } catch (error) {
+        console.error('❌ Erro fatal ao inicializar app:', error);
+        
+        // Mostra mensagem amigável ao usuário
+        document.body.innerHTML = `
+            <div style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                font-family: sans-serif;
+                background: #f9fafb;
+                color: #374151;
+            ">
+                <div style="text-align: center; max-width: 500px; padding: 32px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+                    <h1 style="margin: 0 0 16px 0; font-size: 24px;">Erro ao carregar aplicação</h1>
+                    <p style="color: #6b7280; margin-bottom: 24px;">
+                        Ocorreu um erro inesperado. Por favor, recarregue a página.
+                    </p>
+                    <button onclick="location.reload()" style="
+                        padding: 12px 24px;
+                        background: #3b82f6;
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                    ">
+                        Recarregar Página
+                    </button>
+                    <details style="margin-top: 24px; text-align: left;">
+                        <summary style="cursor: pointer; color: #6b7280;">Detalhes técnicos</summary>
+                        <pre style="
+                            margin-top: 12px;
+                            padding: 12px;
+                            background: white;
+                            border-radius: 6px;
+                            overflow: auto;
+                            font-size: 12px;
+                            color: #ef4444;
+                        ">${error.stack || error.message}</pre>
+                    </details>
+                </div>
+            </div>
+        `;
+    }
 });
