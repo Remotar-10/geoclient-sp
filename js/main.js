@@ -1,11 +1,11 @@
-// GeoClient SP - VERSÃO PREMIUM v2.9.31 - Sistema de 1 CLIQUE COM ZOOM 1x
+// GeoClient SP - VERSÃO PREMIUM v3.2.0 - Sistema de 1 CLIQUE COM ZOOM 1x
 // Sistema de cliques: 1=zoom 1x + dropdown (NÃO marca) | Seleciona empresa=marca com cor
 // ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
 // ✅ Botão Home agora é gerenciado por map-controls.js
 // ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
-// ✅ Código morto removido (164 linhas limpas - v2.9.29)
-// ✅ 1 CLIQUE = Zoom 1x + Dropdown (suave e balanceado!)
+// ✅ Código de busca obsoleto removido (navbar.js deletado)
+// ✅ Código limpo e otimizado
 
 class GeoClientApp {
     constructor() {
@@ -151,7 +151,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v2.9.31...');
+        console.log('🗺️ Inicializando GeoClient SP Premium v3.2.0...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -166,9 +166,8 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            this.setupSearchListeners();
-            console.log('✅ GeoClient SP v2.9.31 iniciado!');
-            console.log('🖱️ 1 CLIQUE = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade');
+            console.log('✅ GeoClient SP v3.2.0 iniciado!');
+            console.log('🖋️ 1 CLIQUE = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade');
         }, 100);
     }
 
@@ -593,105 +592,6 @@ class GeoClientApp {
         this.currentCityName = null;
     }
 
-    setupSearchListeners() {
-        setTimeout(() => {
-            const input = document.getElementById('city-search-input');
-            const clearBtn = document.getElementById('search-clear-btn');
-            const results = document.getElementById('search-results');
-            
-            if (!input || !clearBtn || !results) {
-                console.error('❌ Elementos de busca não encontrados na navbar!');
-                return;
-            }
-            
-            input.addEventListener('input', (e) => {
-                const query = e.target.value.trim();
-                clearBtn.style.display = query ? 'block' : 'none';
-                
-                if (query.length >= 2) {
-                    this.performSearch(query, results);
-                } else {
-                    this.hideSearchResults(results);
-                }
-            });
-            
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    input.value = '';
-                    clearBtn.style.display = 'none';
-                    this.hideSearchResults(results);
-                }
-            });
-            
-            clearBtn.addEventListener('click', () => {
-                input.value = '';
-                clearBtn.style.display = 'none';
-                this.hideSearchResults(results);
-            });
-            
-            console.log('✅ Search listeners configurados');
-        }, 500);
-    }
-
-    performSearch(query, resultsContainer) {
-        const allCities = Object.keys(this.cityLayers);
-        const matches = allCities.filter(city => 
-            city.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 5);
-        
-        if (matches.length === 0) {
-            resultsContainer.innerHTML = '<div style="padding: 12px; color: #9ca3af;">Nenhum município encontrado</div>';
-            resultsContainer.style.display = 'block';
-            return;
-        }
-        
-        resultsContainer.innerHTML = matches.map(city => {
-            const cityData = this.markedCities[city];
-            let statusBadge = '';
-            
-            if (cityData && cityData.companies && cityData.companies.length > 0) {
-                const color = this.getCompanyColor(cityData.companies[0]);
-                statusBadge = `<span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${cityData.companies[0]}</span>`;
-            }
-            
-            return `
-                <div onclick="window.app.searchSelectCity('${city}');" 
-                     style="padding: 12px; cursor: pointer; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;"
-                     onmouseover="this.style.background='#f3f4f6';"
-                     onmouseout="this.style.background='white';">
-                    <span style="font-weight: 600;">${city}</span>
-                    ${statusBadge}
-                </div>
-            `;
-        }).join('');
-        
-        resultsContainer.style.display = 'block';
-    }
-
-    searchSelectCity(cityName) {
-        const layer = this.cityLayers[cityName];
-        if (!layer) return;
-        
-        const bounds = layer.getBounds();
-        this.map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
-        
-        const results = document.getElementById('search-results');
-        if (results) results.style.display = 'none';
-        
-        const input = document.getElementById('city-search-input');
-        if (input) input.value = '';
-        
-        const clearBtn = document.getElementById('search-clear-btn');
-        if (clearBtn) clearBtn.style.display = 'none';
-        
-        this.showToast(`🗺️ ${cityName}`, 'info');
-    }
-
-    hideSearchResults(resultsContainer) {
-        resultsContainer.style.display = 'none';
-        resultsContainer.innerHTML = '';
-    }
-
     setupEventListeners() {
         console.log('✅ Event listeners configurados');
     }
@@ -840,5 +740,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v2.9.31 - 1 CLIQUE = Zoom 1x + Dropdown! ✅');
+    console.log('✨ GeoClient SP v3.2.0 - Código limpo! ✅');
 });
