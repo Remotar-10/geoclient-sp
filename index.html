@@ -421,7 +421,7 @@
 </head>
 
 <body>
-    <!-- ☰ Botão Toggle Sidebar -->
+    <!-- ☺ Botão Toggle Sidebar -->
     <button class="sidebar-toggle" id="sidebar-toggle">
         <i data-feather="menu"></i>
     </button>
@@ -466,10 +466,10 @@
                 </div>
             </div>
 
-            <!-- 🏢 EMPRESAS -->
+            <!-- 🏬 EMPRESAS -->
             <div class="accordion-section">
                 <div class="accordion-header" data-section="companies">
-                    <span class="accordion-title">🏢 Empresas</span>
+                    <span class="accordion-title">🏬 Empresas</span>
                     <i data-feather="chevron-down" class="accordion-icon"></i>
                 </div>
                 <div class="accordion-content" id="content-companies">
@@ -705,18 +705,16 @@
             item.addEventListener('click', closeSidebar);
         });
         
-        // 📊 Atualiza estatísticas (CORRIGIDO - agora conta cidades marcadas)
+        // 📊 Atualiza estatísticas
         function updateSidebarStats() {
             if (!window.app) return;
             
-            // Conta cidades marcadas
             const markedCitiesCount = Object.keys(window.app.markedCities || {}).length;
             const availableCitiesCount = 645 - markedCitiesCount;
             
             document.getElementById('stat-with-company').textContent = markedCitiesCount;
             document.getElementById('stat-available').textContent = availableCitiesCount;
             
-            // Renderiza empresas (conta cidades por empresa)
             const companies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
             const colors = {
                 'CDO': '#ef4444',
@@ -726,7 +724,6 @@
                 'HIRATA': '#8b5cf6'
             };
             
-            // Conta quantas cidades cada empresa tem
             const companyCounts = {};
             companies.forEach(company => companyCounts[company] = 0);
             
@@ -752,7 +749,6 @@
                 `;
             }).join('');
             
-            // Event listeners para filtros
             document.querySelectorAll('.company-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const company = item.dataset.company;
@@ -762,8 +758,6 @@
                     closeSidebar();
                 });
             });
-            
-            console.log(`📊 Stats atualizadas: ${markedCitiesCount} cidades marcadas`);
         }
         
         // 🎯 Menu actions
@@ -792,23 +786,18 @@
         }
         
         async function initializeSystem() {
-            console.log('⏳ Aguardando app carregar...');
             await waitForApp();
-            console.log('✅ App carregado!');
             
             if (typeof Dashboard !== 'undefined') {
                 window.dashboard = new Dashboard(window.app);
-                console.log('✅ Dashboard inicializado');
             }
             
             if (typeof ReportsAndHistory !== 'undefined') {
                 window.reportsAndHistory = new ReportsAndHistory(window.app);
-                console.log('✅ ReportsAndHistory inicializado');
             }
             
             updateSidebarStats();
             
-            // ✅ EVENTO CUSTOMIZADO para atualizar stats (em vez de hook)
             window.addEventListener('cityDataChanged', () => {
                 updateSidebarStats();
             });
@@ -816,17 +805,14 @@
             setTimeout(() => {
                 if (window.app && window.app.map) {
                     window.app.map.invalidateSize();
-                    console.log('✅ Mapa recalculado');
                 }
             }, 500);
             
             feather.replace();
-            console.log('🧹 GeoClient SP v2.9 - Código limpo! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
         
-        // Atualiza stats quando dados mudam
         window.addEventListener('clientsDataUpdated', updateSidebarStats);
     </script>
 </body>
