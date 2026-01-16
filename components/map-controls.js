@@ -22,7 +22,7 @@ class CustomMapControls extends HTMLElement {
     addResetViewControl() {
         const resetControl = L.Control.extend({
             options: {
-                position: 'bottomright' // ✅ Movido para parte de baixo, mesmo lado
+                position: 'topright' // ✅ Voltou para o topo
             },
 
             onAdd: (map) => {
