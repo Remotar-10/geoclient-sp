@@ -25,9 +25,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=FORCE1737032700">
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f9fafb; }
@@ -520,7 +517,6 @@
                         <li><button class="sidebar-menu-item" id="menu-export-csv"><i data-feather="download"></i> Exportar CSV</button></li>
                         <li><button class="sidebar-menu-item" id="menu-export-json"><i data-feather="code"></i> Exportar JSON</button></li>
                         <li><button class="sidebar-menu-item" id="menu-export-pdf"><i data-feather="file-text"></i> Exportar PDF</button></li>
-                        <li><button class="sidebar-menu-item" id="menu-backup"><i data-feather="hard-drive"></i> Backup Automático</button></li>
                     </ul>
                 </div>
             </div>
@@ -553,7 +549,6 @@
     <script src="js/dashboard.js?v=FORCE1737032700"></script>
     <script src="js/reports-and-history.js?v=FORCE1737032700"></script>
     <script src="js/main.js?v=FORCE1737032700"></script>
-    <script src="js/auto-backup.js?v=FORCE1737032700"></script>
 
     <script>
         feather.replace();
@@ -778,7 +773,6 @@
         document.getElementById('menu-export-csv')?.addEventListener('click', () => window.app?.exportCSV?.());
         document.getElementById('menu-export-json')?.addEventListener('click', () => window.app?.exportJSON?.());
         document.getElementById('menu-export-pdf')?.addEventListener('click', () => window.reportsAndHistory?.exportDashboardToPDF?.());
-        document.getElementById('menu-backup')?.addEventListener('click', () => window.autoBackup?.showBackupSettings?.());
         document.getElementById('menu-clear')?.addEventListener('click', () => window.app?.clearAllData?.());
         
         // ⏳ Aguarda app carregar
@@ -814,22 +808,10 @@
             
             updateSidebarStats();
             
-            // ✅ Hook para atualizar stats quando cidades são adicionadas/removidas
-            // Intercepta métodos DEPOIS que window.app existe
-            const originalAddCompany = window.app.addCompanyToCity;
-            const originalRemoveCity = window.app.removeCity;
-            
-            window.app.addCompanyToCity = function(...args) {
-                const result = originalAddCompany.apply(this, args);
+            // ✅ EVENTO CUSTOMIZADO para atualizar stats (em vez de hook)
+            window.addEventListener('cityDataChanged', () => {
                 updateSidebarStats();
-                return result;
-            };
-            
-            window.app.removeCity = function(...args) {
-                const result = originalRemoveCity.apply(this, args);
-                updateSidebarStats();
-                return result;
-            };
+            });
             
             setTimeout(() => {
                 if (window.app && window.app.map) {
@@ -839,7 +821,7 @@
             }, 500);
             
             feather.replace();
-            console.log('🧹 GeoClient SP v3.4.0 - Código limpo! ✅');
+            console.log('🧹 GeoClient SP v2.9 - Código limpo! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
