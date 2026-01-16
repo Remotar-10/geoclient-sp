@@ -1,11 +1,11 @@
-// 📝 GeoClient SP - Activity Logger
-// v1.0 - Sistema de logging automático de atividades
+// 📝 GeoClient SP - Activity Logger v2.9
+// Sistema de logging automático de atividades
 
 class ActivityLogger {
     constructor() {
         this.enabled = true;
         this.debugMode = false;
-        console.log('✅ ActivityLogger initialized');
+        console.log('✅ ActivityLogger v2.9 initialized');
     }
 
     // Habilita/desabilita logging
@@ -126,20 +126,7 @@ class ActivityLogger {
 // ✅ Cria instância global
 window.activityLogger = new ActivityLogger();
 
-// ✅ Auto-integra com app quando disponível
-if (typeof window !== 'undefined') {
-    const checkAppInterval = setInterval(() => {
-        if (window.app && window.reportsAndHistory) {
-            console.log('✅ ActivityLogger integrado com app e ReportsAndHistory');
-            clearInterval(checkAppInterval);
-        }
-    }, 100);
-    
-    // Para de tentar após 5 segundos
-    setTimeout(() => clearInterval(checkAppInterval), 5000);
-}
-
-console.log('✅ ActivityLogger loaded and ready');
-
 // ✅ EXPÕE GLOBALMENTE
 window.ActivityLogger = ActivityLogger;
+
+console.log('✅ ActivityLogger v2.9 loaded and ready');
