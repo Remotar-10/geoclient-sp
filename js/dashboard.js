@@ -1,13 +1,24 @@
-// 📊 GeoClient SP - Dashboard Professional v2.9
-// ✅ COMPATÍVEL COM MAIN.JS V2.9
+// 📊 GeoClient SP - Dashboard Professional v2.9.1
+// ✅ COMPATÍVEL COM MAIN.JS V3.3.0
 // ✅ Apenas 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
+// 🔄 Auto-atualiza ao adicionar/remover empresas
 
 class Dashboard {
     constructor(app) {
         this.app = app;
         this.modal = null;
         this.charts = {};
-        console.log('✅ Dashboard v2.9 initialized');
+        this.isOpen = false; // 🔄 v2.9.1: Rastreia se dashboard está aberto
+        
+        // 🔄 v2.9.1: Escuta mudanças nas cidades
+        window.addEventListener('cityDataChanged', () => {
+            if (this.isOpen) {
+                console.log('🔄 Dashboard: Atualizando estatísticas (cityDataChanged)');
+                this.refreshDashboard();
+            }
+        });
+        
+        console.log('✅ Dashboard v2.9.1 initialized');
     }
 
     showDashboard() {
@@ -15,6 +26,7 @@ class Dashboard {
             this.createDashboardModal();
         }
         
+        this.isOpen = true; // 🔄 v2.9.1: Marca como aberto
         this.renderDashboard();
         this.modal.style.display = 'block';
         
@@ -31,6 +43,8 @@ class Dashboard {
         if (this.modal) {
             this.modal.style.display = 'none';
         }
+        
+        this.isOpen = false; // 🔄 v2.9.1: Marca como fechado
         
         Object.values(this.charts).forEach(chart => {
             if (chart) chart.destroy();
@@ -164,7 +178,7 @@ class Dashboard {
                             align-items: center;
                             justify-content: center;
                             font-weight: 300;
-                        " onmouseover="this.style.background='rgba(255,255,255,0.3)';" onmouseout="this.style.background='rgba(255,255,255,0.2)';">×</button>
+                        " onmouseover="this.style.background='rgba(255,255,255,0.3)';" onmouseout="this.style.background='rgba(255,255,255,0.2)';"></button>
                     </div>
                 </div>
                 
@@ -447,4 +461,4 @@ class Dashboard {
 }
 
 window.Dashboard = Dashboard;
-console.log('✅ Dashboard v2.9 loaded - Apenas 5 empresas (CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA)');
+console.log('✅ Dashboard v2.9.1 loaded - Auto-atualiza com cityDataChanged');
