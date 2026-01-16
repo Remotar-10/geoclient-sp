@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=FORCE1736972300">
+    <link rel="stylesheet" href="style.css?v=FORCE1736973400">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -305,6 +305,115 @@
             color: #6b7280;
         }
         
+        /* 🔍 BUSCA DE CIDADES */
+        .city-search-container {
+            padding: 16px 20px;
+            background: #f9fafb;
+        }
+        
+        .city-search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px 12px;
+            transition: all 0.2s;
+        }
+        
+        .city-search-box:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .city-search-box i {
+            width: 18px;
+            height: 18px;
+            color: #9ca3af;
+            margin-right: 10px;
+        }
+        
+        .city-search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: #374151;
+            background: transparent;
+        }
+        
+        .city-search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .search-clear-btn {
+            display: none;
+            background: #e5e7eb;
+            border: none;
+            border-radius: 4px;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        
+        .search-clear-btn:hover {
+            background: #d1d5db;
+        }
+        
+        .search-results {
+            margin-top: 12px;
+            background: white;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-item:hover {
+            background: #f9fafb;
+        }
+        
+        .search-result-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .search-result-badge {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .search-no-results {
+            padding: 16px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
         /* Mobile adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -372,13 +481,27 @@
                 </div>
             </div>
 
-            <!-- 📍 NAVEGAÇÃO -->
+            <!-- 📍 NAVEGAÇÃO (COM BUSCA) -->
             <div class="accordion-section">
                 <div class="accordion-header" data-section="navigation">
                     <span class="accordion-title">📍 Navegação</span>
                     <i data-feather="chevron-down" class="accordion-icon"></i>
                 </div>
                 <div class="accordion-content" id="content-navigation">
+                    <!-- 🔍 BUSCA DE CIDADES -->
+                    <div class="city-search-container">
+                        <div class="city-search-box">
+                            <i data-feather="search"></i>
+                            <input type="text" 
+                                   class="city-search-input" 
+                                   id="city-search-input"
+                                   placeholder="Buscar cidade..."
+                                   autocomplete="off">
+                            <button class="search-clear-btn" id="search-clear-btn">×</button>
+                        </div>
+                        <div class="search-results" id="search-results"></div>
+                    </div>
+                    
                     <ul class="sidebar-menu">
                         <li><button class="sidebar-menu-item" id="menu-dashboard"><i data-feather="bar-chart-2"></i> Dashboard</button></li>
                         <li><button class="sidebar-menu-item" id="menu-history"><i data-feather="clock"></i> Histórico</button></li>
@@ -425,13 +548,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1736972300"></script>
-    <script src="components/map-controls.js?v=FORCE1736972300"></script>
-    <script src="js/activity-logger.js?v=FORCE1736972300"></script>
-    <script src="js/dashboard.js?v=FORCE1736972300"></script>
-    <script src="js/reports-and-history.js?v=FORCE1736972300"></script>
-    <script src="js/main.js?v=FORCE1736972300"></script>
-    <script src="js/auto-backup.js?v=FORCE1736972300"></script>
+    <script src="data/clients.js?v=FORCE1736973400"></script>
+    <script src="components/map-controls.js?v=FORCE1736973400"></script>
+    <script src="js/activity-logger.js?v=FORCE1736973400"></script>
+    <script src="js/dashboard.js?v=FORCE1736973400"></script>
+    <script src="js/reports-and-history.js?v=FORCE1736973400"></script>
+    <script src="js/main.js?v=FORCE1736973400"></script>
+    <script src="js/auto-backup.js?v=FORCE1736973400"></script>
 
     <script>
         feather.replace();
@@ -482,6 +605,105 @@
                 
                 feather.replace();
             });
+        });
+        
+        // 🔍 BUSCA DE CIDADES
+        const searchInput = document.getElementById('city-search-input');
+        const searchClearBtn = document.getElementById('search-clear-btn');
+        const searchResults = document.getElementById('search-results');
+        
+        function performCitySearch(query) {
+            if (!window.app || !window.app.cityLayers) {
+                console.warn('⚠️ App ainda não carregado');
+                return;
+            }
+            
+            const allCities = Object.keys(window.app.cityLayers);
+            const matches = allCities.filter(city => 
+                city.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 8);
+            
+            if (matches.length === 0) {
+                searchResults.innerHTML = '<div class="search-no-results">🔍 Nenhuma cidade encontrada</div>';
+                searchResults.style.display = 'block';
+                return;
+            }
+            
+            searchResults.innerHTML = matches.map(city => {
+                const cityData = window.app.markedCities[city];
+                let badge = '';
+                
+                if (cityData && cityData.companies && cityData.companies.length > 0) {
+                    const company = cityData.companies[0];
+                    const color = window.app.getCompanyColor(company);
+                    badge = `<span class="search-result-badge" style="background: ${color};">${company}</span>`;
+                }
+                
+                return `
+                    <div class="search-result-item" data-city="${city}">
+                        <span class="search-result-name">${city}</span>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+            
+            searchResults.style.display = 'block';
+            
+            // Event listeners para resultados
+            document.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const cityName = item.dataset.city;
+                    selectCityFromSearch(cityName);
+                });
+            });
+        }
+        
+        function selectCityFromSearch(cityName) {
+            if (!window.app || !window.app.cityLayers) return;
+            
+            const layer = window.app.cityLayers[cityName];
+            if (!layer) return;
+            
+            const bounds = layer.getBounds();
+            window.app.map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
+            
+            // Limpa busca
+            searchInput.value = '';
+            searchClearBtn.style.display = 'none';
+            searchResults.style.display = 'none';
+            
+            // Fecha sidebar
+            closeSidebar();
+            
+            // Toast
+            window.app.showToast(`🗺️ ${cityName}`, 'info');
+            console.log(`🔍 Busca: ${cityName}`);
+        }
+        
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            searchClearBtn.style.display = query ? 'block' : 'none';
+            
+            if (query.length >= 2) {
+                performCitySearch(query);
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                searchClearBtn.style.display = 'none';
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        searchClearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchClearBtn.style.display = 'none';
+            searchResults.style.display = 'none';
+            searchInput.focus();
         });
         
         // Fecha sidebar ao clicar em item do menu
@@ -584,7 +806,7 @@
             }, 500);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v3.2.0 - Código limpo! ✅');
+            console.log('🎉 GeoClient SP v3.3.0 - Busca de cidades implementada! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
