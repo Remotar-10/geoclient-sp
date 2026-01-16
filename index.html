@@ -423,14 +423,21 @@
             font-size: 14px;
         }
         
-        /* 🌟 BUSCA FLUTUANTE - Movida para a ESQUERDA dos controles de zoom */
-        .map-search-container {
+        /* 🌟 CONTAINER DE BUSCA + FILTRO */
+        .map-tools-container {
             position: fixed;
             top: 20px;
-            right: 90px; /* ✅ 90px para dar espaço aos controles de zoom (que ficam em right: 10px) */
+            right: 90px;
             z-index: 1100;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        /* 🔍 BUSCA FLUTUANTE */
+        .map-search-container {
             width: 360px;
-            max-width: calc(100vw - 180px); /* Ajustado para considerar espaço dos controles */
+            max-width: calc(100vw - 180px);
         }
         
         .map-search-wrapper {
@@ -544,9 +551,168 @@
             font-size: 14px;
         }
         
-        /* 📱 Mobile: Esconde busca flutuante */
+        /* 🏬 FILTRO DE EMPRESA (NOVO v5.0) */
+        .company-filter-container {
+            position: relative;
+        }
+        
+        .company-filter-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            cursor: pointer;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+            transition: all 0.2s;
+            min-width: 140px;
+        }
+        
+        .company-filter-btn:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+        }
+        
+        .company-filter-btn.active {
+            background: #6366f1;
+            color: white;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .company-filter-btn i {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .company-filter-badge {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            display: none;
+        }
+        
+        .company-filter-btn.active .company-filter-badge {
+            display: block;
+            background: white;
+        }
+        
+        .company-filter-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            padding: 12px;
+            min-width: 220px;
+            display: none;
+            z-index: 1101;
+        }
+        
+        .company-filter-dropdown.active {
+            display: block;
+            animation: dropdownSlideIn 0.2s ease;
+        }
+        
+        @keyframes dropdownSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .company-filter-header {
+            padding: 8px 12px;
+            border-bottom: 2px solid #f3f4f6;
+            margin-bottom: 8px;
+        }
+        
+        .company-filter-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .company-filter-option {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.15s;
+            gap: 10px;
+        }
+        
+        .company-filter-option:hover {
+            background: #f9fafb;
+        }
+        
+        .company-filter-option.selected {
+            background: #eff6ff;
+        }
+        
+        .company-filter-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .company-filter-option.selected .company-filter-checkbox {
+            background: #6366f1;
+            border-color: #6366f1;
+        }
+        
+        .company-filter-checkmark {
+            display: none;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .company-filter-option.selected .company-filter-checkmark {
+            display: block;
+        }
+        
+        .company-filter-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .company-filter-label {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .company-filter-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+        }
+        
+        /* 📱 Mobile: Esconde ferramentas flutuantes */
         @media (max-width: 768px) {
-            .map-search-container {
+            .map-tools-container {
                 display: none !important;
             }
             
@@ -556,11 +722,14 @@
             }
         }
         
-        /* Tablet: Reduz largura e ajusta posição */
+        /* Tablet: Ajusta larguras */
         @media (max-width: 1024px) and (min-width: 769px) {
+            .map-tools-container {
+                right: 80px;
+            }
+            
             .map-search-container {
                 width: 300px;
-                right: 80px; /* Ajustado para tablets */
             }
         }
     </style>
@@ -575,20 +744,39 @@
     <!-- 🎨 Overlay (backdrop escuro) -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <!-- 🔍 BUSCA FLUTUANTE NO MAPA (À ESQUERDA DOS CONTROLES) -->
-    <div class="map-search-container" id="map-search-container">
-        <div class="map-search-wrapper" id="map-search-wrapper">
-            <div class="map-search-box-floating">
-                <i data-feather="search"></i>
-                <input type="text" 
-                       class="map-search-input-floating" 
-                       id="map-search-input-floating"
-                       placeholder="Buscar cidade no mapa..."
-                       autocomplete="off">
-                <span class="map-search-kbd" id="map-search-kbd">Ctrl+K</span>
-                <button class="map-search-clear-btn" id="map-search-clear-btn">×</button>
+    <!-- 🌟 CONTAINER DE FERRAMENTAS (BUSCA + FILTRO) -->
+    <div class="map-tools-container" id="map-tools-container">
+        <!-- 🔍 BUSCA FLUTUANTE -->
+        <div class="map-search-container" id="map-search-container">
+            <div class="map-search-wrapper" id="map-search-wrapper">
+                <div class="map-search-box-floating">
+                    <i data-feather="search"></i>
+                    <input type="text" 
+                           class="map-search-input-floating" 
+                           id="map-search-input-floating"
+                           placeholder="Buscar cidade no mapa..."
+                           autocomplete="off">
+                    <span class="map-search-kbd" id="map-search-kbd">Ctrl+K</span>
+                    <button class="map-search-clear-btn" id="map-search-clear-btn">×</button>
+                </div>
+                <div class="map-search-results" id="map-search-results"></div>
             </div>
-            <div class="map-search-results" id="map-search-results"></div>
+        </div>
+        
+        <!-- 🏬 FILTRO DE EMPRESA (NOVO v5.0) -->
+        <div class="company-filter-container" id="company-filter-container">
+            <button class="company-filter-btn" id="company-filter-btn">
+                <i data-feather="filter"></i>
+                <span id="company-filter-text">Filtrar</span>
+                <div class="company-filter-badge"></div>
+            </button>
+            
+            <div class="company-filter-dropdown" id="company-filter-dropdown">
+                <div class="company-filter-header">
+                    <div class="company-filter-title">Empresas</div>
+                </div>
+                <div id="company-filter-options"></div>
+            </div>
         </div>
     </div>
 
@@ -706,12 +894,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1737051400"></script>
-    <script src="components/map-controls.js?v=FORCE1737051400"></script>
-    <script src="js/activity-logger.js?v=FORCE1737051400"></script>
-    <script src="js/dashboard.js?v=FORCE1737051400"></script>
-    <script src="js/reports-and-history.js?v=FORCE1737051400"></script>
-    <script src="js/main.js?v=FORCE1737051400"></script>
+    <script src="data/clients.js?v=FORCE1737052800"></script>
+    <script src="components/map-controls.js?v=FORCE1737052800"></script>
+    <script src="js/activity-logger.js?v=FORCE1737052800"></script>
+    <script src="js/dashboard.js?v=FORCE1737052800"></script>
+    <script src="js/reports-and-history.js?v=FORCE1737052800"></script>
+    <script src="js/company-filter.js?v=FORCE1737052800"></script>
+    <script src="js/main.js?v=FORCE1737052800"></script>
 
     <script>
         feather.replace();
@@ -747,14 +936,12 @@
                 const content = document.getElementById(`content-${section}`);
                 const isActive = header.classList.contains('active');
                 
-                // Fecha todas as outras seções
                 accordionHeaders.forEach(h => {
                     h.classList.remove('active');
                     const c = document.getElementById(`content-${h.dataset.section}`);
                     c.classList.remove('active');
                 });
                 
-                // Abre a seção clicada (se não estava aberta)
                 if (!isActive) {
                     header.classList.add('active');
                     content.classList.add('active');
@@ -804,7 +991,6 @@
             
             resultsContainer.style.display = 'block';
             
-            // Event listeners para resultados
             document.querySelectorAll('.search-result-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const cityName = item.dataset.city;
@@ -824,22 +1010,18 @@
             const bounds = layer.getBounds();
             window.app.map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
             
-            // Limpa busca sidebar
             searchInput.value = '';
             searchClearBtn.style.display = 'none';
             searchResults.style.display = 'none';
             
-            // Limpa busca flutuante
             mapSearchInput.value = '';
             mapSearchClearBtn.style.display = 'none';
             mapSearchKbd.style.display = 'inline-flex';
             mapSearchResults.classList.remove('active');
             mapSearchWrapper.classList.remove('focused');
             
-            // Fecha sidebar
             closeSidebar();
             
-            // Toast
             window.app.showToast(`🗺️ ${cityName}`, 'info');
             console.log(`🔍 Busca: ${cityName}`);
         }
@@ -870,7 +1052,7 @@
             searchInput.focus();
         });
         
-        // 🌟 BUSCA FLUTUANTE NO MAPA (NOVA)
+        // 🌟 BUSCA FLUTUANTE NO MAPA
         const mapSearchInput = document.getElementById('map-search-input-floating');
         const mapSearchClearBtn = document.getElementById('map-search-clear-btn');
         const mapSearchResults = document.getElementById('map-search-results');
@@ -879,13 +1061,11 @@
         let selectedResultIndex = -1;
         let currentMatches = [];
         
-        // Focus visual
         mapSearchInput.addEventListener('focus', () => {
             mapSearchWrapper.classList.add('focused');
         });
         
         mapSearchInput.addEventListener('blur', () => {
-            // Delay para permitir clique nos resultados
             setTimeout(() => {
                 if (!mapSearchInput.value) {
                     mapSearchWrapper.classList.remove('focused');
@@ -893,11 +1073,9 @@
             }, 200);
         });
         
-        // Input
         mapSearchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
             
-            // Mostra/esconde botões
             if (query) {
                 mapSearchClearBtn.style.display = 'flex';
                 mapSearchKbd.style.display = 'none';
@@ -906,7 +1084,6 @@
                 mapSearchKbd.style.display = 'inline-flex';
             }
             
-            // Busca
             if (query.length >= 2) {
                 currentMatches = performMapSearch(query);
                 selectedResultIndex = -1;
@@ -951,7 +1128,6 @@
             
             mapSearchResults.classList.add('active');
             
-            // Event listeners
             document.querySelectorAll('.map-search-result-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const cityName = item.dataset.city;
@@ -962,7 +1138,6 @@
             return matches;
         }
         
-        // Navegação por teclado
         mapSearchInput.addEventListener('keydown', (e) => {
             const items = document.querySelectorAll('.map-search-result-item');
             
@@ -1001,7 +1176,6 @@
             });
         }
         
-        // Botão limpar
         mapSearchClearBtn.addEventListener('click', () => {
             mapSearchInput.value = '';
             mapSearchClearBtn.style.display = 'none';
@@ -1012,7 +1186,6 @@
             mapSearchInput.focus();
         });
         
-        // Atalho CTRL+K (ou CMD+K no Mac)
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
@@ -1020,7 +1193,6 @@
             }
         });
         
-        // Fecha resultados ao clicar fora
         document.addEventListener('click', (e) => {
             if (!document.getElementById('map-search-container').contains(e.target)) {
                 mapSearchResults.classList.remove('active');
@@ -1030,7 +1202,6 @@
             }
         });
         
-        // ✅ FIX BUG #1: Fecha sidebar APENAS em menu-items (não em company-item)
         document.querySelectorAll('.sidebar-menu-item').forEach(item => {
             item.addEventListener('click', closeSidebar);
         });
@@ -1079,14 +1250,13 @@
                 `;
             }).join('');
             
-            // ✅ FIX BUG #1: Event listeners AQUI (após criar os elementos dinamicamente)
             document.querySelectorAll('.company-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const company = item.dataset.company;
                     window.dispatchEvent(new CustomEvent('companyFilterChanged', {
                         detail: { company }
                     }));
-                    closeSidebar(); // ✅ Agora fecha a sidebar!
+                    closeSidebar();
                 });
             });
         }
@@ -1127,10 +1297,18 @@
                 window.reportsAndHistory = new ReportsAndHistory(window.app);
             }
             
+            // ⭐ NOVO v5.0: Inicializa filtro de empresa
+            if (typeof CompanyFilter !== 'undefined') {
+                window.companyFilter = new CompanyFilter(window.app);
+            }
+            
             updateSidebarStats();
             
             window.addEventListener('cityDataChanged', () => {
                 updateSidebarStats();
+                if (window.companyFilter) {
+                    window.companyFilter.updateCounts();
+                }
             });
             
             setTimeout(() => {
