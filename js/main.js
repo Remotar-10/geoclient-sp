@@ -1,8 +1,8 @@
-// GeoClient SP - Sistema de Gestão Territorial v3.0
+// GeoClient SP - Sistema de Gestão Territorial v3.1 FINAL
 // Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
 // ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
-// 🐛 BUG FIXES: #8, #9, #10, #11, #14, #15, #17
+// 🐛 ALL BUG FIXES: #8, #9, #10, #11, #12, #13, #14, #15, #16, #17
 
 class GeoClientApp {
     constructor() {
@@ -30,6 +30,9 @@ class GeoClientApp {
         
         // ✅ FIX BUG #10: Flag para prevenir race condition
         this.isLoadingGeoJson = false;
+        
+        // ✅ FIX BUG #12: Referência para event listener do dropdown
+        this.dropdownClickHandler = null;
         
         this.loadFromLocalStorage();
     }
@@ -203,7 +206,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🚀 Inicializando GeoClient SP v3.0...');
+        console.log('🚀 Inicializando GeoClient SP v3.1 FINAL...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -217,7 +220,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v3.0 iniciado com sucesso!');
+            console.log('✅ GeoClient SP v3.1 FINAL iniciado com sucesso!');
         }, 100);
     }
 
@@ -518,15 +521,38 @@ class GeoClientApp {
         
         this.tooltip.innerHTML = content;
         this.tooltip.style.display = 'block';
+        
+        // ✅ FIX BUG #13: Ajusta posição dinamicamente se sair da tela
+        setTimeout(() => {
+            const rect = this.tooltip.getBoundingClientRect();
+            
+            // Ajusta horizontal se necessário
+            if (rect.right > window.innerWidth - 10) {
+                this.tooltip.style.right = '10px';
+            }
+            
+            // Ajusta vertical se necessário
+            if (rect.bottom > window.innerHeight - 10) {
+                this.tooltip.style.bottom = '10px';
+            }
+        }, 0);
     }
 
     hideTooltip() {
         this.tooltip.style.display = 'none';
+        // ✅ Reseta posição para padrão
+        this.tooltip.style.right = '20px';
+        this.tooltip.style.bottom = '80px';
     }
 
     createCompanyDropdown() {
         const existingDropdown = document.getElementById('company-dropdown');
         if (existingDropdown) existingDropdown.remove();
+        
+        // ✅ FIX BUG #12: Remove listener anterior se existir
+        if (this.dropdownClickHandler) {
+            document.removeEventListener('click', this.dropdownClickHandler);
+        }
         
         this.companyDropdown = document.createElement('div');
         this.companyDropdown.id = 'company-dropdown';
@@ -543,12 +569,15 @@ class GeoClientApp {
         `;
         document.body.appendChild(this.companyDropdown);
         
-        document.addEventListener('click', (e) => {
+        // ✅ FIX BUG #12: Armazena referência do listener para poder remover depois
+        this.dropdownClickHandler = (e) => {
             if (this.companyDropdown.style.display === 'block' && 
                 !this.companyDropdown.contains(e.target)) {
                 this.hideCompanyDropdown();
             }
-        });
+        };
+        
+        document.addEventListener('click', this.dropdownClickHandler);
     }
 
     showCompanyDropdown(cityName) {
@@ -617,23 +646,32 @@ class GeoClientApp {
         
         this.companyDropdown.innerHTML = content;
         
-        const dropdownWidth = 280;
-        const dropdownHeight = 250;
-        
-        let left = this.lastClickPosition.x - (dropdownWidth / 2);
-        let top = this.lastClickPosition.y + 20;
-        
-        if (left < 10) left = 10;
-        if (left + dropdownWidth > window.innerWidth - 10) {
-            left = window.innerWidth - dropdownWidth - 10;
-        }
-        if (top + dropdownHeight > window.innerHeight - 10) {
-            top = this.lastClickPosition.y - dropdownHeight - 20;
-        }
-        
-        this.companyDropdown.style.left = left + 'px';
-        this.companyDropdown.style.top = top + 'px';
+        // ✅ FIX BUG #16: Calcula altura REAL após renderizar
         this.companyDropdown.style.display = 'block';
+        this.companyDropdown.style.visibility = 'hidden'; // Invisível temporariamente
+        
+        // Aguarda renderização
+        setTimeout(() => {
+            const rect = this.companyDropdown.getBoundingClientRect();
+            const dropdownWidth = rect.width;
+            const dropdownHeight = rect.height;
+            
+            let left = this.lastClickPosition.x - (dropdownWidth / 2);
+            let top = this.lastClickPosition.y + 20;
+            
+            // Ajustes de posição
+            if (left < 10) left = 10;
+            if (left + dropdownWidth > window.innerWidth - 10) {
+                left = window.innerWidth - dropdownWidth - 10;
+            }
+            if (top + dropdownHeight > window.innerHeight - 10) {
+                top = Math.max(10, this.lastClickPosition.y - dropdownHeight - 20);
+            }
+            
+            this.companyDropdown.style.left = left + 'px';
+            this.companyDropdown.style.top = top + 'px';
+            this.companyDropdown.style.visibility = 'visible'; // Torna visível
+        }, 0);
     }
 
     handleCompanySelect(company) {
