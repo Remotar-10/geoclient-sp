@@ -426,7 +426,7 @@ class GeoClientApp {
         this.tooltip.id = 'city-tooltip';
         this.tooltip.style.cssText = `
             position: fixed;
-            top: 80px;
+            bottom: 80px;
             right: 20px;
             display: none;
             background: white;
