@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=FORCE1736973400">
+    <link rel="stylesheet" href="style.css?v=FORCE1736974000">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -548,13 +548,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1736973400"></script>
-    <script src="components/map-controls.js?v=FORCE1736973400"></script>
-    <script src="js/activity-logger.js?v=FORCE1736973400"></script>
-    <script src="js/dashboard.js?v=FORCE1736973400"></script>
-    <script src="js/reports-and-history.js?v=FORCE1736973400"></script>
-    <script src="js/main.js?v=FORCE1736973400"></script>
-    <script src="js/auto-backup.js?v=FORCE1736973400"></script>
+    <script src="data/clients.js?v=FORCE1736974000"></script>
+    <script src="components/map-controls.js?v=FORCE1736974000"></script>
+    <script src="js/activity-logger.js?v=FORCE1736974000"></script>
+    <script src="js/dashboard.js?v=FORCE1736974000"></script>
+    <script src="js/reports-and-history.js?v=FORCE1736974000"></script>
+    <script src="js/main.js?v=FORCE1736974000"></script>
+    <script src="js/auto-backup.js?v=FORCE1736974000"></script>
 
     <script>
         feather.replace();
@@ -711,17 +711,18 @@
             item.addEventListener('click', closeSidebar);
         });
         
-        // 📊 Atualiza estatísticas
+        // 📊 Atualiza estatísticas (CORRIGIDO - agora conta cidades marcadas)
         function updateSidebarStats() {
-            if (!window.CLIENTS_DATA) return;
+            if (!window.app) return;
             
-            const withCompany = window.CLIENTS_DATA.length;
-            const available = 645 - withCompany;
+            // Conta cidades marcadas
+            const markedCitiesCount = Object.keys(window.app.markedCities || {}).length;
+            const availableCitiesCount = 645 - markedCitiesCount;
             
-            document.getElementById('stat-with-company').textContent = withCompany;
-            document.getElementById('stat-available').textContent = available;
+            document.getElementById('stat-with-company').textContent = markedCitiesCount;
+            document.getElementById('stat-available').textContent = availableCitiesCount;
             
-            // Renderiza empresas
+            // Renderiza empresas (conta cidades por empresa)
             const companies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
             const colors = {
                 'CDO': '#ef4444',
@@ -731,9 +732,23 @@
                 'HIRATA': '#8b5cf6'
             };
             
+            // Conta quantas cidades cada empresa tem
+            const companyCounts = {};
+            companies.forEach(company => companyCounts[company] = 0);
+            
+            Object.values(window.app.markedCities || {}).forEach(cityData => {
+                if (cityData.companies && cityData.companies.length > 0) {
+                    cityData.companies.forEach(company => {
+                        if (companyCounts.hasOwnProperty(company)) {
+                            companyCounts[company]++;
+                        }
+                    });
+                }
+            });
+            
             const companiesList = document.getElementById('companies-list');
             companiesList.innerHTML = companies.map(company => {
-                const count = window.CLIENTS_DATA.filter(c => c.company === company).length;
+                const count = companyCounts[company];
                 return `
                     <div class="company-item" data-company="${company}">
                         <div class="company-badge" style="background: ${colors[company]}"></div>
@@ -753,6 +768,8 @@
                     closeSidebar();
                 });
             });
+            
+            console.log(`📊 Stats atualizadas: ${markedCitiesCount} cidades marcadas`);
         }
         
         // 🎯 Menu actions
@@ -806,13 +823,29 @@
             }, 500);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v3.3.0 - Busca de cidades implementada! ✅');
+            console.log('🎉 GeoClient SP v3.3.1 - Contagem de empresas corrigida! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
         
         // Atualiza stats quando dados mudam
         window.addEventListener('clientsDataUpdated', updateSidebarStats);
+        
+        // ✅ Atualiza stats quando cidade é adicionada/removida
+        if (window.app) {
+            const originalAddCompany = window.app.addCompanyToCity;
+            const originalRemoveCity = window.app.removeCity;
+            
+            window.app.addCompanyToCity = function(...args) {
+                originalAddCompany.apply(this, args);
+                updateSidebarStats();
+            };
+            
+            window.app.removeCity = function(...args) {
+                originalRemoveCity.apply(this, args);
+                updateSidebarStats();
+            };
+        }
     </script>
 </body>
 </html>
