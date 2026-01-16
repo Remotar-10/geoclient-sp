@@ -104,7 +104,7 @@
 | **jsPDF** | 2.5.1 | Geração de PDFs |
 | **html2canvas** | 1.4.1 | Captura de elementos para PDF |
 | **Vanilla JavaScript** | ES6+ | Performance nativa |
-| **CSS Grid/Flexbox** | - | Layout responsivo |
+| **CSS Grid/Flexbox** | - | Layout responsivo (inline no index.html) |
 | **LocalStorage API** | - | Persistência de dados |
 | **Git LFS** | - | Gerenciamento de arquivos grandes |
 
@@ -218,10 +218,10 @@ Este projeto é de uso interno para gestão territorial.
 
 ```
 geoclient-sp/
-├── index.html              # Página principal
-├── style.css               # Estilos globais
+├── index.html              # Página principal com estilos inline
+├── quickfix-search.js      # Sistema de busca rápida (temporário)
 ├── components/
-│   ├── navbar.js           # Barra de navegação com busca
+│   ├── navbar.js           # Barra de navegação
 │   ├── filter-panel.js     # Painel de filtros
 │   └── map-controls.js     # Controles do mapa
 ├── js/
@@ -233,8 +233,12 @@ geoclient-sp/
 ├── data/
 │   ├── clients.js          # Dados de clientes
 │   └── municipios-sp.geojson  # GeoJSON 2MB (Git LFS)
+├── .github/
+│   └── workflows/          # GitHub Actions
 └── README.md               # Este arquivo
 ```
+
+**Nota:** Arquivos auxiliares como `HISTORICO-COMPLETO-CONVERSAS.md` e `FORCE_REBUILD.txt` são para desenvolvimento interno.
 
 ---
 
@@ -245,7 +249,7 @@ Para dúvidas ou sugestões, abra uma [Issue](https://github.com/Remotar-10/geoc
 ---
 
 **Versão:** 2.9  
-**Última atualização:** 13 de Janeiro de 2026  
+**Última atualização:** 16 de Janeiro de 2026  
 **Status:** ✅ Produtivo - Completo com todas as funcionalidades  
 **Build:** `v2.9-stable`
 
