@@ -21,7 +21,6 @@ class GeoClientApp {
         this.lastClickPosition = { x: 0, y: 0 };
         
         this.availableCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
-        this.totalMunicipalitiesSP = 645;
         
         this.initialView = {
             center: [-22.5, -49.2],
@@ -148,7 +147,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP v2.9...');
+        console.log('🚀 Inicializando GeoClient SP v2.9...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -158,13 +157,11 @@ class GeoClientApp {
         
         setTimeout(() => {
             this.initMap();
-            this.setupEventListeners();
             this.createContextMenu();
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v2.9 iniciado!');
-            console.log('🖋️ 1 CLIQUE = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade');
+            console.log('✅ GeoClient SP v2.9 iniciado com sucesso!');
         }, 100);
     }
 
@@ -208,9 +205,6 @@ class GeoClientApp {
         const mapControls = document.querySelector('custom-map-controls');
         if (mapControls && typeof mapControls.init === 'function') {
             mapControls.init(this.map);
-            console.log('✅ Map controls inicializados via componente');
-        } else {
-            console.warn('⚠️ Componente custom-map-controls não encontrado');
         }
     }
 
@@ -273,7 +267,6 @@ class GeoClientApp {
                             this.showContextMenu(e.originalEvent, name);
                         });
                         
-                        // ✅ 1 CLIQUE = Zoom 1x + Dropdown
                         layer.on('click', (e) => {
                             L.DomEvent.stop(e);
                             this.handleCityClick(name, layer, e);
@@ -297,7 +290,6 @@ class GeoClientApp {
                properties.nm_municipio || properties.NM_MUN || 'Município Desconhecido';
     }
 
-    // ✅ Sistema balanceado - 1 CLIQUE = Zoom 1x + Dropdown
     handleCityClick(name, layer, event) {
         this.lastClickPosition = {
             x: event.originalEvent.clientX,
@@ -306,18 +298,13 @@ class GeoClientApp {
         
         this.currentCityName = name;
         
-        // Zoom suave de 1x (não agressivo)
         const latlng = event.latlng;
         const currentZoom = this.map.getZoom();
-        const newZoom = Math.min(currentZoom + 1, 12); // +1 zoom level
+        const newZoom = Math.min(currentZoom + 1, 12);
         this.map.flyTo(latlng, newZoom, { duration: 0.6, easeLinearity: 0.25 });
         
-        console.log(`🔍 Zoom 1x em ${name}`);
-        
-        // Aguarda animação do zoom e abre dropdown
         setTimeout(() => {
             this.showCompanyDropdown(name);
-            console.log(`📋 Dropdown aberto para ${name} (cidade NÃO marcada ainda)`);
         }, 600);
     }
 
@@ -371,7 +358,6 @@ class GeoClientApp {
         
         this.saveToLocalStorage();
         this.showToast(`✅ ${company} adicionado a ${cityName}`, 'success');
-        console.log(`✅ Cidade ${cityName} marcada com ${company}`);
         this.logActivity('logCompanyAdded', cityName, company);
         window.dispatchEvent(new Event('cityDataChanged'));
     }
@@ -582,17 +568,12 @@ class GeoClientApp {
     }
 
     cancelDropdown() {
-        console.log(`❌ Cancelado: ${this.currentCityName} não foi marcada`);
         this.hideCompanyDropdown();
     }
 
     hideCompanyDropdown() {
         this.companyDropdown.style.display = 'none';
         this.currentCityName = null;
-    }
-
-    setupEventListeners() {
-        console.log('✅ Event listeners configurados');
     }
 
     exportCSV() {
@@ -734,11 +715,7 @@ class GeoClientApp {
     }
 }
 
-let app;
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM Carregado!');
-    app = new GeoClientApp();
-    window.app = app;
-    app.init();
-    console.log('✨ GeoClient SP v2.9 - Código limpo! ✅');
+    window.app = new GeoClientApp();
+    window.app.init();
 });
