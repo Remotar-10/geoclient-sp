@@ -1,9 +1,9 @@
-// GeoClient SP - Sistema de Gestão Territorial v3.2
+// GeoClient SP - Sistema de Gestão Territorial v3.2.1
 // 🎨 MÚLTIPLAS EMPRESAS: Visualização com bordas coloridas
 // Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
 // ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
-// 🐛 ALL BUG FIXES: #8, #9, #10, #11, #12, #13, #14, #15, #16, #17
+// 🐛 ALL BUG FIXES: #8-#17 + SyntaxError linha 884
 
 class GeoClientApp {
     constructor() {
@@ -197,7 +197,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🚀 Inicializando GeoClient SP v3.2 (Multi-company borders)...');
+        console.log('🚀 Inicializando GeoClient SP v3.2.1 (Multi-company borders)...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -211,7 +211,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v3.2 iniciado com sucesso!');
+            console.log('✅ GeoClient SP v3.2.1 iniciado com sucesso!');
         }, 100);
     }
 
@@ -881,7 +881,7 @@ class GeoClientApp {
         const escapeCsvCell = (cell) => {
             const str = String(cell);
             if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-                return `"${str.replace(/"/g, '""}")`;
+                return `"${str.replace(/"/g, '""')}"`;
             }
             return `"${str}"`;
         };
