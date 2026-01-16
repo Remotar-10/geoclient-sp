@@ -1,11 +1,7 @@
-// GeoClient SP - VERSÃO PREMIUM v3.2.0 - Sistema de 1 CLIQUE COM ZOOM 1x
-// Sistema de cliques: 1=zoom 1x + dropdown (NÃO marca) | Seleciona empresa=marca com cor
-// ✅ ACTIVITY LOGGER TOTALMENTE INTEGRADO
-// ✅ Botão Home agora é gerenciado por map-controls.js
-// ✅ Botões +/- de zoom REMOVIDOS (zoomControl: false)
+// GeoClient SP - Sistema de Gestão Territorial v2.9
+// Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
+// ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
-// ✅ Código de busca obsoleto removido (navbar.js deletado)
-// ✅ Código limpo e otimizado
 
 class GeoClientApp {
     constructor() {
@@ -99,6 +95,7 @@ class GeoClientApp {
         this.loadMunicipalitiesBoundaries();
         this.showToast('🗑️ Dados limpos!', 'success');
         this.logActivity('logDataCleared');
+        window.dispatchEvent(new Event('cityDataChanged'));
     }
     
     showToast(message, type = 'success') {
@@ -151,7 +148,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🗺️ Inicializando GeoClient SP Premium v3.2.0...');
+        console.log('🗺️ Inicializando GeoClient SP v2.9...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -166,7 +163,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v3.2.0 iniciado!');
+            console.log('✅ GeoClient SP v2.9 iniciado!');
             console.log('🖋️ 1 CLIQUE = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade');
         }, 100);
     }
@@ -339,6 +336,7 @@ class GeoClientApp {
         this.saveToLocalStorage();
         this.showToast(`🗑️ ${name} removido`, 'info');
         this.logActivity('logCityRemoved', name);
+        window.dispatchEvent(new Event('cityDataChanged'));
     }
 
     getCompanyColor(company) {
@@ -375,6 +373,7 @@ class GeoClientApp {
         this.showToast(`✅ ${company} adicionado a ${cityName}`, 'success');
         console.log(`✅ Cidade ${cityName} marcada com ${company}`);
         this.logActivity('logCompanyAdded', cityName, company);
+        window.dispatchEvent(new Event('cityDataChanged'));
     }
 
     createContextMenu() {
@@ -723,6 +722,7 @@ class GeoClientApp {
                 
                 const format = file.name.endsWith('.json') ? 'json' : 'csv';
                 this.logActivity('logImport', format, importedCount);
+                window.dispatchEvent(new Event('cityDataChanged'));
             } catch (error) {
                 console.error('Erro ao importar:', error);
                 this.showToast('❌ Erro ao importar arquivo', 'error');
@@ -740,5 +740,5 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new GeoClientApp();
     window.app = app;
     app.init();
-    console.log('✨ GeoClient SP v3.2.0 - Código limpo! ✅');
+    console.log('✨ GeoClient SP v2.9 - Código limpo! ✅');
 });
