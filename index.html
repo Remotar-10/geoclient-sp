@@ -46,6 +46,19 @@
         
         .leaflet-control-attribution { font-size: 10px; }
         
+        /* ✅ FIX BUG #5: Desabilita double-click em toda interface */
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+        
+        /* Permite seleção apenas em inputs */
+        input, textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+        
         /* ✅ SIDEBAR RETRÁTIL */
         .sidebar-toggle {
             position: fixed;
@@ -596,8 +609,6 @@
                     header.classList.add('active');
                     content.classList.add('active');
                 }
-                
-                feather.replace();
             });
         });
         
@@ -700,8 +711,8 @@
             searchInput.focus();
         });
         
-        // Fecha sidebar ao clicar em item do menu
-        document.querySelectorAll('.sidebar-menu-item, .company-item').forEach(item => {
+        // ✅ FIX BUG #1: Fecha sidebar APENAS em menu-items (não em company-item)
+        document.querySelectorAll('.sidebar-menu-item').forEach(item => {
             item.addEventListener('click', closeSidebar);
         });
         
@@ -749,13 +760,14 @@
                 `;
             }).join('');
             
+            // ✅ FIX BUG #1: Event listeners AQUI (após criar os elementos dinamicamente)
             document.querySelectorAll('.company-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const company = item.dataset.company;
                     window.dispatchEvent(new CustomEvent('companyFilterChanged', {
                         detail: { company }
                     }));
-                    closeSidebar();
+                    closeSidebar(); // ✅ Agora fecha a sidebar!
                 });
             });
         }
