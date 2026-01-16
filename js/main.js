@@ -1,4 +1,5 @@
-// GeoClient SP - Sistema de Gestão Territorial v3.1 FINAL
+// GeoClient SP - Sistema de Gestão Territorial v3.2
+// 🎨 MÚLTIPLAS EMPRESAS: Visualização com bordas coloridas
 // Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
 // ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
@@ -28,10 +29,7 @@ class GeoClientApp {
             zoom: 7.2
         };
         
-        // ✅ FIX BUG #10: Flag para prevenir race condition
         this.isLoadingGeoJson = false;
-        
-        // ✅ FIX BUG #12: Referência para event listener do dropdown
         this.dropdownClickHandler = null;
         
         this.loadFromLocalStorage();
@@ -52,10 +50,8 @@ class GeoClientApp {
             const savedCities = localStorage.getItem('geoclient-marked-cities');
             if (savedCities) {
                 try {
-                    // ✅ FIX BUG #17: Validação antes de usar JSON.parse
                     this.markedCities = JSON.parse(savedCities);
                     
-                    // ✅ Valida estrutura
                     if (typeof this.markedCities !== 'object' || Array.isArray(this.markedCities)) {
                         throw new Error('markedCities deve ser um objeto');
                     }
@@ -73,10 +69,8 @@ class GeoClientApp {
             const savedClients = localStorage.getItem('geoclient-clients');
             if (savedClients) {
                 try {
-                    // ✅ FIX BUG #17: Validação antes de usar JSON.parse
                     this.clients = JSON.parse(savedClients);
                     
-                    // ✅ Valida estrutura
                     if (!Array.isArray(this.clients)) {
                         throw new Error('clients deve ser um array');
                     }
@@ -100,10 +94,9 @@ class GeoClientApp {
             const citiesData = JSON.stringify(this.markedCities);
             const clientsData = JSON.stringify(this.clients);
             
-            // ✅ FIX BUG #9: Verifica tamanho antes de salvar
-            const totalSize = (citiesData.length + clientsData.length) / 1024 / 1024; // MB
+            const totalSize = (citiesData.length + clientsData.length) / 1024 / 1024;
             
-            if (totalSize > 4.5) { // 4.5MB = margem de segurança
+            if (totalSize > 4.5) {
                 this.showToast('⚠️ Dados muito grandes! Exporte para não perder.', 'warning');
                 console.warn(`⚠️ Dados: ${totalSize.toFixed(2)}MB (próximo do limite)`);
             }
@@ -113,7 +106,6 @@ class GeoClientApp {
             this.syncOccupiedCities();
             console.log('💾 Dados salvos');
         } catch (error) {
-            // ✅ FIX BUG #9: Detecta QuotaExceededError
             if (error.name === 'QuotaExceededError') {
                 this.showToast('❌ Espaço insuficiente! Exporte seus dados.', 'error');
                 console.error('❌ QuotaExceededError - localStorage cheio');
@@ -150,10 +142,9 @@ class GeoClientApp {
     }
     
     showToast(message, type = 'success') {
-        // ✅ FIX BUG #8: Limita número de toasts simultâneos
         const existingToasts = document.querySelectorAll('.app-toast');
         if (existingToasts.length >= 3) {
-            existingToasts[0].remove(); // Remove o mais antigo
+            existingToasts[0].remove();
         }
         
         const colors = {
@@ -164,7 +155,7 @@ class GeoClientApp {
         };
         
         const toast = document.createElement('div');
-        toast.className = 'app-toast'; // ✅ Classe para identificar e limitar
+        toast.className = 'app-toast';
         toast.style.cssText = `
             position: fixed;
             bottom: 30px;
@@ -206,7 +197,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🚀 Inicializando GeoClient SP v3.1 FINAL...');
+        console.log('🚀 Inicializando GeoClient SP v3.2 (Multi-company borders)...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -220,7 +211,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v3.1 FINAL iniciado com sucesso!');
+            console.log('✅ GeoClient SP v3.2 iniciado com sucesso!');
         }, 100);
     }
 
@@ -268,7 +259,6 @@ class GeoClientApp {
     }
 
     loadMunicipalitiesBoundaries() {
-        // ✅ FIX BUG #10: Previne múltiplas chamadas simultâneas
         if (this.isLoadingGeoJson) {
             console.warn('⚠️ GeoJSON já está carregando...');
             return;
@@ -293,13 +283,37 @@ class GeoClientApp {
                         const cityData = this.markedCities[name];
                         
                         if (cityData && cityData.companies && cityData.companies.length > 0) {
-                            return {
-                                fillColor: this.getCompanyColor(cityData.companies[0]),
-                                weight: 2,
-                                opacity: 1,
-                                color: '#374151',
-                                fillOpacity: 0.7
-                            };
+                            // 🎨 v3.2: Visualização diferenciada para múltiplas empresas
+                            const numCompanies = cityData.companies.length;
+                            
+                            if (numCompanies === 1) {
+                                // 1 empresa: estilo normal
+                                return {
+                                    fillColor: this.getCompanyColor(cityData.companies[0]),
+                                    weight: 2,
+                                    opacity: 1,
+                                    color: '#374151',
+                                    fillOpacity: 0.7
+                                };
+                            } else if (numCompanies === 2) {
+                                // 2 empresas: borda com cor da segunda empresa
+                                return {
+                                    fillColor: this.getCompanyColor(cityData.companies[0]),
+                                    weight: 5,
+                                    opacity: 1,
+                                    color: this.getCompanyColor(cityData.companies[1]),
+                                    fillOpacity: 0.7
+                                };
+                            } else {
+                                // 3+ empresas: borda dourada extra-grossa
+                                return {
+                                    fillColor: this.getCompanyColor(cityData.companies[0]),
+                                    weight: 6,
+                                    opacity: 1,
+                                    color: '#fbbf24', // Dourado
+                                    fillOpacity: 0.75
+                                };
+                            }
                         } else {
                             return {
                                 fillColor: '#d1d5db',
@@ -348,7 +362,6 @@ class GeoClientApp {
                 this.logActivity('logError', 'Erro ao carregar municípios', { error: error.message });
             })
             .finally(() => {
-                // ✅ FIX BUG #10: Libera flag sempre (sucesso ou erro)
                 this.isLoadingGeoJson = false;
             });
     }
@@ -395,6 +408,54 @@ class GeoClientApp {
         this.logActivity('logCityRemoved', name);
         window.dispatchEvent(new Event('cityDataChanged'));
     }
+    
+    // 🎨 v3.2: Remove empresa específica e atualiza visualização
+    removeCompanyFromCity(cityName, companyToRemove) {
+        const cityData = this.markedCities[cityName];
+        if (!cityData || !cityData.companies) return;
+        
+        cityData.companies = cityData.companies.filter(c => c !== companyToRemove);
+        
+        if (cityData.companies.length === 0) {
+            this.removeCity(cityName);
+        } else {
+            const layer = this.cityLayers[cityName];
+            if (layer) {
+                const numCompanies = cityData.companies.length;
+                
+                if (numCompanies === 1) {
+                    layer.setStyle({
+                        fillColor: this.getCompanyColor(cityData.companies[0]),
+                        weight: 2,
+                        opacity: 1,
+                        color: '#374151',
+                        fillOpacity: 0.7
+                    });
+                } else if (numCompanies === 2) {
+                    layer.setStyle({
+                        fillColor: this.getCompanyColor(cityData.companies[0]),
+                        weight: 5,
+                        opacity: 1,
+                        color: this.getCompanyColor(cityData.companies[1]),
+                        fillOpacity: 0.7
+                    });
+                } else {
+                    layer.setStyle({
+                        fillColor: this.getCompanyColor(cityData.companies[0]),
+                        weight: 6,
+                        opacity: 1,
+                        color: '#fbbf24',
+                        fillOpacity: 0.75
+                    });
+                }
+            }
+            
+            this.saveToLocalStorage();
+            this.showToast(`🗑️ ${companyToRemove} removido de ${cityName}`, 'info');
+            this.logActivity('logCompanyRemoved', cityName, companyToRemove);
+            window.dispatchEvent(new Event('cityDataChanged'));
+        }
+    }
 
     getCompanyColor(company) {
         const colors = {
@@ -413,23 +474,58 @@ class GeoClientApp {
         }
         
         const city = this.markedCities[cityName];
+        
+        // 🎨 v3.2: Previne duplicatas
+        if (city.companies.includes(company)) {
+            this.showToast(`⚠️ ${company} já está em ${cityName}`, 'warning');
+            return;
+        }
+        
         city.companies.push(company);
         
         const layer = this.cityLayers[cityName];
         if (layer) {
-            layer.setStyle({
-                fillColor: this.getCompanyColor(company),
-                weight: 2,
-                opacity: 1,
-                color: '#374151',
-                fillOpacity: 0.7
-            });
+            const numCompanies = city.companies.length;
+            
+            if (numCompanies === 1) {
+                layer.setStyle({
+                    fillColor: this.getCompanyColor(company),
+                    weight: 2,
+                    opacity: 1,
+                    color: '#374151',
+                    fillOpacity: 0.7
+                });
+            } else if (numCompanies === 2) {
+                layer.setStyle({
+                    fillColor: this.getCompanyColor(city.companies[0]),
+                    weight: 5,
+                    opacity: 1,
+                    color: this.getCompanyColor(city.companies[1]),
+                    fillOpacity: 0.7
+                });
+            } else {
+                layer.setStyle({
+                    fillColor: this.getCompanyColor(city.companies[0]),
+                    weight: 6,
+                    opacity: 1,
+                    color: '#fbbf24',
+                    fillOpacity: 0.75
+                });
+            }
         }
         
         this.saveToLocalStorage();
-        this.showToast(`✅ ${company} adicionado a ${cityName}`, 'success');
+        
+        const emoji = numCompanies > 1 ? '🎨' : '✅';
+        const suffix = numCompanies > 1 ? ` (${numCompanies} empresas)` : '';
+        this.showToast(`${emoji} ${company} adicionado a ${cityName}${suffix}`, 'success');
         this.logActivity('logCompanyAdded', cityName, company);
         window.dispatchEvent(new Event('cityDataChanged'));
+        
+        // 🎨 v3.2: Reabre dropdown para adicionar outra empresa
+        setTimeout(() => {
+            this.showCompanyDropdown(cityName);
+        }, 500);
     }
 
     createContextMenu() {
@@ -447,6 +543,7 @@ class GeoClientApp {
             padding: 8px;
             z-index: 10000;
             min-width: 200px;
+            max-width: 300px;
         `;
         document.body.appendChild(this.contextMenu);
         
@@ -459,23 +556,88 @@ class GeoClientApp {
         event.preventDefault();
         event.stopPropagation();
         
-        if (!this.markedCities[cityName]) return;
+        const cityData = this.markedCities[cityName];
+        if (!cityData || !cityData.companies || cityData.companies.length === 0) return;
         
-        // ✅ FIX BUG #11: Cria elemento via DOM (não innerHTML) para prevenir XSS
         this.contextMenu.innerHTML = '';
         
-        const button = document.createElement('div');
-        button.style.cssText = 'padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600;';
-        button.textContent = '🗑️ Remover Marcação';
+        // 🎨 v3.2: Menu diferenciado para múltiplas empresas
+        if (cityData.companies.length === 1) {
+            const button = document.createElement('div');
+            button.style.cssText = 'padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 600;';
+            button.textContent = '🗑️ Remover Marcação';
+            
+            button.addEventListener('click', () => {
+                if (confirm(`Remover ${cityName}?`)) {
+                    this.removeCity(cityName);
+                    this.contextMenu.style.display = 'none';
+                }
+            });
+            
+            this.contextMenu.appendChild(button);
+        } else {
+            const title = document.createElement('div');
+            title.style.cssText = 'padding: 8px 12px; font-weight: 700; color: #374151; border-bottom: 2px solid #f3f4f6; margin-bottom: 4px;';
+            title.textContent = `${cityName} (${cityData.companies.length})`;
+            this.contextMenu.appendChild(title);
+            
+            cityData.companies.forEach(company => {
+                const companyBtn = document.createElement('div');
+                companyBtn.style.cssText = `
+                    padding: 10px 12px;
+                    cursor: pointer;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    transition: background 0.15s;
+                `;
+                companyBtn.innerHTML = `
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${this.getCompanyColor(company)}"></div>
+                    <span style="flex: 1; font-weight: 600; color: #374151;">${company}</span>
+                    <span style="color: #ef4444; font-size: 18px;">×</span>
+                `;
+                
+                companyBtn.addEventListener('mouseenter', () => {
+                    companyBtn.style.background = '#fef2f2';
+                });
+                companyBtn.addEventListener('mouseleave', () => {
+                    companyBtn.style.background = 'transparent';
+                });
+                
+                companyBtn.addEventListener('click', () => {
+                    this.removeCompanyFromCity(cityName, company);
+                    this.contextMenu.style.display = 'none';
+                });
+                
+                this.contextMenu.appendChild(companyBtn);
+            });
+            
+            const divider = document.createElement('div');
+            divider.style.cssText = 'height: 2px; background: #f3f4f6; margin: 8px 0;';
+            this.contextMenu.appendChild(divider);
+            
+            const removeAllBtn = document.createElement('div');
+            removeAllBtn.style.cssText = 'padding: 12px; cursor: pointer; border-radius: 6px; color: #ef4444; font-weight: 700; text-align: center;';
+            removeAllBtn.textContent = '🗑️ Remover Todas';
+            
+            removeAllBtn.addEventListener('mouseenter', () => {
+                removeAllBtn.style.background = '#fef2f2';
+            });
+            removeAllBtn.addEventListener('mouseleave', () => {
+                removeAllBtn.style.background = 'transparent';
+            });
+            
+            removeAllBtn.addEventListener('click', () => {
+                if (confirm(`Remover todas as empresas de ${cityName}?`)) {
+                    this.removeCity(cityName);
+                    this.contextMenu.style.display = 'none';
+                }
+            });
+            
+            this.contextMenu.appendChild(removeAllBtn);
+        }
         
-        button.addEventListener('click', () => {
-            if (confirm(`Remover ${cityName}?`)) {
-                this.removeCity(cityName);
-                this.contextMenu.style.display = 'none';
-            }
-        });
-        
-        this.contextMenu.appendChild(button);
         this.contextMenu.style.display = 'block';
         this.contextMenu.style.left = event.pageX + 'px';
         this.contextMenu.style.top = event.pageY + 'px';
@@ -512,7 +674,8 @@ class GeoClientApp {
             content = `<div><b>${cityName}</b><br><small style="color: #9ca3af;">⚪ Disponível</small></div>`;
         } else {
             const color = this.getCompanyColor(cityData.companies[0]);
-            content = `<div style="border-bottom: 2px solid ${color}; padding-bottom: 8px; margin-bottom: 8px;"><b style="color: ${color};">${cityName}</b></div>`;
+            const countText = cityData.companies.length > 1 ? ` (${cityData.companies.length} empresas)` : '';
+            content = `<div style="border-bottom: 2px solid ${color}; padding-bottom: 8px; margin-bottom: 8px;"><b style="color: ${color};">${cityName}</b>${countText}</div>`;
             cityData.companies.forEach(company => {
                 const companyColor = this.getCompanyColor(company);
                 content += `<div style="background: ${companyColor}; color: white; padding: 6px 10px; margin: 4px 0; border-radius: 6px; font-weight: 600;">${company}</div>`;
@@ -522,16 +685,13 @@ class GeoClientApp {
         this.tooltip.innerHTML = content;
         this.tooltip.style.display = 'block';
         
-        // ✅ FIX BUG #13: Ajusta posição dinamicamente se sair da tela
         setTimeout(() => {
             const rect = this.tooltip.getBoundingClientRect();
             
-            // Ajusta horizontal se necessário
             if (rect.right > window.innerWidth - 10) {
                 this.tooltip.style.right = '10px';
             }
             
-            // Ajusta vertical se necessário
             if (rect.bottom > window.innerHeight - 10) {
                 this.tooltip.style.bottom = '10px';
             }
@@ -540,7 +700,6 @@ class GeoClientApp {
 
     hideTooltip() {
         this.tooltip.style.display = 'none';
-        // ✅ Reseta posição para padrão
         this.tooltip.style.right = '20px';
         this.tooltip.style.bottom = '80px';
     }
@@ -549,7 +708,6 @@ class GeoClientApp {
         const existingDropdown = document.getElementById('company-dropdown');
         if (existingDropdown) existingDropdown.remove();
         
-        // ✅ FIX BUG #12: Remove listener anterior se existir
         if (this.dropdownClickHandler) {
             document.removeEventListener('click', this.dropdownClickHandler);
         }
@@ -569,7 +727,6 @@ class GeoClientApp {
         `;
         document.body.appendChild(this.companyDropdown);
         
-        // ✅ FIX BUG #12: Armazena referência do listener para poder remover depois
         this.dropdownClickHandler = (e) => {
             if (this.companyDropdown.style.display === 'block' && 
                 !this.companyDropdown.contains(e.target)) {
@@ -592,8 +749,32 @@ class GeoClientApp {
             <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e5e7eb;">
                 <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1f2937;">${cityName}</h3>
                 <p style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280;">Selecione uma empresa</p>
-            </div>
         `;
+        
+        // 🎨 v3.2: Mostra empresas já adicionadas
+        if (cityData.companies && cityData.companies.length > 0) {
+            content += `
+                <div style="margin-top: 12px; padding: 10px; background: #f9fafb; border-radius: 6px;">
+                    <div style="font-size: 11px; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">✓ Já adicionadas:</div>
+            `;
+            cityData.companies.forEach(company => {
+                content += `
+                    <span style="
+                        display: inline-block;
+                        padding: 4px 8px;
+                        margin: 2px;
+                        background: ${this.getCompanyColor(company)};
+                        color: white;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        font-weight: 600;
+                    ">${company}</span>
+                `;
+            });
+            content += `</div>`;
+        }
+        
+        content += `</div>`;
         
         if (availableCompanies.length === 0) {
             content += `<p style="text-align: center; color: #9ca3af; padding: 12px;">Todas as empresas já foram adicionadas</p>`;
@@ -646,11 +827,9 @@ class GeoClientApp {
         
         this.companyDropdown.innerHTML = content;
         
-        // ✅ FIX BUG #16: Calcula altura REAL após renderizar
         this.companyDropdown.style.display = 'block';
-        this.companyDropdown.style.visibility = 'hidden'; // Invisível temporariamente
+        this.companyDropdown.style.visibility = 'hidden';
         
-        // Aguarda renderização
         setTimeout(() => {
             const rect = this.companyDropdown.getBoundingClientRect();
             const dropdownWidth = rect.width;
@@ -659,7 +838,6 @@ class GeoClientApp {
             let left = this.lastClickPosition.x - (dropdownWidth / 2);
             let top = this.lastClickPosition.y + 20;
             
-            // Ajustes de posição
             if (left < 10) left = 10;
             if (left + dropdownWidth > window.innerWidth - 10) {
                 left = window.innerWidth - dropdownWidth - 10;
@@ -670,7 +848,7 @@ class GeoClientApp {
             
             this.companyDropdown.style.left = left + 'px';
             this.companyDropdown.style.top = top + 'px';
-            this.companyDropdown.style.visibility = 'visible'; // Torna visível
+            this.companyDropdown.style.visibility = 'visible';
         }, 0);
     }
 
@@ -700,12 +878,10 @@ class GeoClientApp {
             c.id, c.name, c.municipality || '', c.company || '', c.segment || '', c.status
         ]);
         
-        // ✅ FIX BUG #14: Escapa caracteres especiais corretamente
         const escapeCsvCell = (cell) => {
             const str = String(cell);
-            // Se contém aspas, vírgulas ou quebras de linha, envolve em aspas e duplica aspas internas
             if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-                return `"${str.replace(/"/g, '""')}`;
+                return `"${str.replace(/"/g, '""}")`;
             }
             return `"${str}"`;
         };
@@ -802,7 +978,6 @@ class GeoClientApp {
                         this.markedCities = data.markedCities;
                     }
                 } else if (file.name.endsWith('.csv')) {
-                    // ✅ FIX BUG #15: Parser CSV correto que respeita RFC 4180
                     const lines = content.split('\n');
                     
                     const parseCsvLine = (line) => {
@@ -815,15 +990,12 @@ class GeoClientApp {
                             
                             if (char === '"') {
                                 if (inQuotes && line[i + 1] === '"') {
-                                    // Aspas duplas dentro de campo = aspas literal
                                     current += '"';
                                     i++;
                                 } else {
-                                    // Alterna estado de estar dentro/fora de aspas
                                     inQuotes = !inQuotes;
                                 }
                             } else if (char === ',' && !inQuotes) {
-                                // Vírgula fora de aspas = separador de campo
                                 result.push(current.trim());
                                 current = '';
                             } else {
@@ -868,7 +1040,6 @@ class GeoClientApp {
     }
 }
 
-// ✅ Error boundary para capturar erros fatais na inicialização
 document.addEventListener('DOMContentLoaded', () => {
     try {
         window.app = new GeoClientApp();
@@ -876,7 +1047,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
         console.error('❌ Erro fatal ao inicializar app:', error);
         
-        // Mostra mensagem amigável ao usuário
         document.body.innerHTML = `
             <div style="
                 display: flex;
