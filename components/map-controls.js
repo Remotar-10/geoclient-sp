@@ -12,7 +12,8 @@ class CustomMapControls extends HTMLElement {
         this.map = map;
         this.addZoomControls();
         this.addResetViewControl();
-        this.addLegendControl();
+        // ❌ Legenda removida
+        // this.addLegendControl();
     }
 
     addZoomControls() {
@@ -76,35 +77,6 @@ class CustomMapControls extends HTMLElement {
         });
 
         this.map.addControl(new resetControl());
-    }
-
-    addLegendControl() {
-        const legend = L.control({ position: 'bottomright' });
-
-        legend.onAdd = (map) => {
-            const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar legend-control');
-            div.innerHTML = `
-                <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid rgba(0,0,0,0.1);">
-                    <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #374151;">Legenda de Marcadores</h4>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <div style="width: 16px; height: 16px; background: #10b981; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>
-                        <span style="font-size: 12px; color: #1f2937; font-weight: 500;">Cliente Ativo</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 16px; height: 16px; background: #fbbf24; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>
-                        <span style="font-size: 12px; color: #1f2937; font-weight: 500;">Cliente Inativo</span>
-                    </div>
-                </div>
-            `;
-            
-            // Previne propagação de eventos
-            L.DomEvent.disableClickPropagation(div);
-            L.DomEvent.disableScrollPropagation(div);
-            
-            return div;
-        };
-
-        legend.addTo(this.map);
     }
 }
 
