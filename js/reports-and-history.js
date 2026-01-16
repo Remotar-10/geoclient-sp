@@ -1,6 +1,4 @@
-// 📄🔍 GeoClient SP - PDF Reports & Activity Log
-// v1.1 - Sistema de Relatórios PDF + Histórico de Atividades
-// 🔴 BUG FIX: Corrected dashboard modal ID
+// 📄🔍 GeoClient SP - PDF Reports & Activity Log v2.9
 
 class ReportsAndHistory {
     constructor(app) {
@@ -8,7 +6,7 @@ class ReportsAndHistory {
         this.activityLog = [];
         this.logModal = null;
         this.loadActivityLog();
-        console.log('✅ ReportsAndHistory initialized');
+        console.log('✅ ReportsAndHistory v2.9 initialized');
     }
 
     // 📋 ==================== ACTIVITY LOG ====================
@@ -104,7 +102,7 @@ class ReportsAndHistory {
         
         const typeIcons = {
             'city_marked': '📍',
-            'company_added': '🏢',
+            'company_added': '🏬',
             'company_removed': '🗑️',
             'export': '📥',
             'import': '📤',
@@ -330,13 +328,7 @@ class ReportsAndHistory {
             const { jsPDF } = jspdf;
             const loadingToast = this.showLoadingToast('📄 Gerando PDF...');
             
-            // 🔴 BUG FIX: Busca ID correto do dashboard
-            let dashboardElement = document.getElementById('dashboard-modal-professional');
-            
-            // Fallback para ID antigo (compatibilidade)
-            if (!dashboardElement) {
-                dashboardElement = document.getElementById('dashboard-modal');
-            }
+            const dashboardElement = document.getElementById('dashboard-modal-professional');
             
             if (!dashboardElement || dashboardElement.style.display === 'none') {
                 alert('⚠️ Abra o dashboard primeiro para exportar!');
@@ -446,4 +438,4 @@ class ReportsAndHistory {
 }
 
 window.ReportsAndHistory = ReportsAndHistory;
-console.log('✅ ReportsAndHistory v1.1 loaded - PDF Export Fixed');
+console.log('✅ ReportsAndHistory v2.9 loaded');
