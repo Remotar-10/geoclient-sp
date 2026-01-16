@@ -314,7 +314,7 @@
             color: #6b7280;
         }
         
-        /* 🔍 BUSCA DE CIDADES */
+        /* 🔍 BUSCA DE CIDADES (SIDEBAR) */
         .city-search-container {
             padding: 16px 20px;
             background: #f9fafb;
@@ -423,11 +423,143 @@
             font-size: 14px;
         }
         
-        /* Mobile adjustments */
+        /* 🌟 BUSCA FLUTUANTE NO MAPA (NOVA) */
+        .map-search-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 360px;
+            max-width: calc(100vw - 100px);
+        }
+        
+        .map-search-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+        
+        .map-search-wrapper.focused {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        
+        .map-search-box-floating {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 10px;
+        }
+        
+        .map-search-box-floating i {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+        
+        .map-search-input-floating {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            color: #374151;
+            background: transparent;
+        }
+        
+        .map-search-input-floating::placeholder {
+            color: #9ca3af;
+        }
+        
+        .map-search-clear-btn {
+            display: none;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            line-height: 1;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .map-search-clear-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .map-search-kbd {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            font-family: monospace;
+        }
+        
+        .map-search-results {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            border-top: 1px solid #f3f4f6;
+        }
+        
+        .map-search-results.active {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .map-search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s;
+        }
+        
+        .map-search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .map-search-result-item:hover {
+            background: #f9fafb;
+        }
+        
+        .map-search-result-item.selected {
+            background: #eff6ff;
+        }
+        
+        .map-search-no-results {
+            padding: 20px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        /* 📱 Mobile: Esconde busca flutuante */
         @media (max-width: 768px) {
+            .map-search-container {
+                display: none !important;
+            }
+            
             .sidebar {
                 width: 280px;
                 left: -280px;
+            }
+        }
+        
+        /* Tablet: Reduz largura */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .map-search-container {
+                width: 300px;
             }
         }
     </style>
@@ -441,6 +573,23 @@
 
     <!-- 🎨 Overlay (backdrop escuro) -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- 🔍 BUSCA FLUTUANTE NO MAPA (NOVA - Desktop) -->
+    <div class="map-search-container" id="map-search-container">
+        <div class="map-search-wrapper" id="map-search-wrapper">
+            <div class="map-search-box-floating">
+                <i data-feather="search"></i>
+                <input type="text" 
+                       class="map-search-input-floating" 
+                       id="map-search-input-floating"
+                       placeholder="Buscar cidade no mapa..."
+                       autocomplete="off">
+                <span class="map-search-kbd" id="map-search-kbd">Ctrl+K</span>
+                <button class="map-search-clear-btn" id="map-search-clear-btn">×</button>
+            </div>
+            <div class="map-search-results" id="map-search-results"></div>
+        </div>
+    </div>
 
     <!-- 📋 SIDEBAR RETRÁTIL -->
     <aside class="sidebar" id="sidebar">
@@ -497,7 +646,7 @@
                     <i data-feather="chevron-down" class="accordion-icon"></i>
                 </div>
                 <div class="accordion-content" id="content-navigation">
-                    <!-- 🔍 BUSCA DE CIDADES -->
+                    <!-- 🔍 BUSCA DE CIDADES (SIDEBAR) -->
                     <div class="city-search-container">
                         <div class="city-search-box">
                             <i data-feather="search"></i>
@@ -556,12 +705,12 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1737032700"></script>
-    <script src="components/map-controls.js?v=FORCE1737032700"></script>
-    <script src="js/activity-logger.js?v=FORCE1737032700"></script>
-    <script src="js/dashboard.js?v=FORCE1737032700"></script>
-    <script src="js/reports-and-history.js?v=FORCE1737032700"></script>
-    <script src="js/main.js?v=FORCE1737032700"></script>
+    <script src="data/clients.js?v=FORCE1737049800"></script>
+    <script src="components/map-controls.js?v=FORCE1737049800"></script>
+    <script src="js/activity-logger.js?v=FORCE1737049800"></script>
+    <script src="js/dashboard.js?v=FORCE1737049800"></script>
+    <script src="js/reports-and-history.js?v=FORCE1737049800"></script>
+    <script src="js/main.js?v=FORCE1737049800"></script>
 
     <script>
         feather.replace();
@@ -612,12 +761,12 @@
             });
         });
         
-        // 🔍 BUSCA DE CIDADES
+        // 🔍 BUSCA DE CIDADES (SIDEBAR)
         const searchInput = document.getElementById('city-search-input');
         const searchClearBtn = document.getElementById('search-clear-btn');
         const searchResults = document.getElementById('search-results');
         
-        function performCitySearch(query) {
+        function performCitySearch(query, resultsContainer) {
             if (!window.app || !window.app.cityLayers) {
                 console.warn('⚠️ App ainda não carregado');
                 return;
@@ -629,12 +778,12 @@
             ).slice(0, 8);
             
             if (matches.length === 0) {
-                searchResults.innerHTML = '<div class="search-no-results">🔍 Nenhuma cidade encontrada</div>';
-                searchResults.style.display = 'block';
-                return;
+                resultsContainer.innerHTML = '<div class="search-no-results">🔍 Nenhuma cidade encontrada</div>';
+                resultsContainer.style.display = 'block';
+                return matches;
             }
             
-            searchResults.innerHTML = matches.map(city => {
+            resultsContainer.innerHTML = matches.map(city => {
                 const cityData = window.app.markedCities[city];
                 let badge = '';
                 
@@ -652,7 +801,7 @@
                 `;
             }).join('');
             
-            searchResults.style.display = 'block';
+            resultsContainer.style.display = 'block';
             
             // Event listeners para resultados
             document.querySelectorAll('.search-result-item').forEach(item => {
@@ -661,6 +810,8 @@
                     selectCityFromSearch(cityName);
                 });
             });
+            
+            return matches;
         }
         
         function selectCityFromSearch(cityName) {
@@ -672,10 +823,17 @@
             const bounds = layer.getBounds();
             window.app.map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
             
-            // Limpa busca
+            // Limpa busca sidebar
             searchInput.value = '';
             searchClearBtn.style.display = 'none';
             searchResults.style.display = 'none';
+            
+            // Limpa busca flutuante
+            mapSearchInput.value = '';
+            mapSearchClearBtn.style.display = 'none';
+            mapSearchKbd.style.display = 'inline-flex';
+            mapSearchResults.classList.remove('active');
+            mapSearchWrapper.classList.remove('focused');
             
             // Fecha sidebar
             closeSidebar();
@@ -690,7 +848,7 @@
             searchClearBtn.style.display = query ? 'block' : 'none';
             
             if (query.length >= 2) {
-                performCitySearch(query);
+                performCitySearch(query, searchResults);
             } else {
                 searchResults.style.display = 'none';
             }
@@ -709,6 +867,166 @@
             searchClearBtn.style.display = 'none';
             searchResults.style.display = 'none';
             searchInput.focus();
+        });
+        
+        // 🌟 BUSCA FLUTUANTE NO MAPA (NOVA)
+        const mapSearchInput = document.getElementById('map-search-input-floating');
+        const mapSearchClearBtn = document.getElementById('map-search-clear-btn');
+        const mapSearchResults = document.getElementById('map-search-results');
+        const mapSearchWrapper = document.getElementById('map-search-wrapper');
+        const mapSearchKbd = document.getElementById('map-search-kbd');
+        let selectedResultIndex = -1;
+        let currentMatches = [];
+        
+        // Focus visual
+        mapSearchInput.addEventListener('focus', () => {
+            mapSearchWrapper.classList.add('focused');
+        });
+        
+        mapSearchInput.addEventListener('blur', () => {
+            // Delay para permitir clique nos resultados
+            setTimeout(() => {
+                if (!mapSearchInput.value) {
+                    mapSearchWrapper.classList.remove('focused');
+                }
+            }, 200);
+        });
+        
+        // Input
+        mapSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            // Mostra/esconde botões
+            if (query) {
+                mapSearchClearBtn.style.display = 'flex';
+                mapSearchKbd.style.display = 'none';
+            } else {
+                mapSearchClearBtn.style.display = 'none';
+                mapSearchKbd.style.display = 'inline-flex';
+            }
+            
+            // Busca
+            if (query.length >= 2) {
+                currentMatches = performMapSearch(query);
+                selectedResultIndex = -1;
+            } else {
+                mapSearchResults.classList.remove('active');
+                currentMatches = [];
+                selectedResultIndex = -1;
+            }
+        });
+        
+        function performMapSearch(query) {
+            if (!window.app || !window.app.cityLayers) return [];
+            
+            const allCities = Object.keys(window.app.cityLayers);
+            const matches = allCities.filter(city => 
+                city.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 10);
+            
+            if (matches.length === 0) {
+                mapSearchResults.innerHTML = '<div class="map-search-no-results">🔍 Nenhuma cidade encontrada</div>';
+                mapSearchResults.classList.add('active');
+                return [];
+            }
+            
+            mapSearchResults.innerHTML = matches.map((city, index) => {
+                const cityData = window.app.markedCities[city];
+                let badge = '';
+                
+                if (cityData && cityData.companies && cityData.companies.length > 0) {
+                    const company = cityData.companies[0];
+                    const color = window.app.getCompanyColor(company);
+                    badge = `<span class="search-result-badge" style="background: ${color};">${company}</span>`;
+                }
+                
+                return `
+                    <div class="map-search-result-item" data-city="${city}" data-index="${index}">
+                        <span class="search-result-name">${city}</span>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+            
+            mapSearchResults.classList.add('active');
+            
+            // Event listeners
+            document.querySelectorAll('.map-search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const cityName = item.dataset.city;
+                    selectCityFromSearch(cityName);
+                });
+            });
+            
+            return matches;
+        }
+        
+        // Navegação por teclado
+        mapSearchInput.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.map-search-result-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedResultIndex = Math.min(selectedResultIndex + 1, currentMatches.length - 1);
+                updateSelectedResult();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedResultIndex = Math.max(selectedResultIndex - 1, -1);
+                updateSelectedResult();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedResultIndex >= 0 && currentMatches[selectedResultIndex]) {
+                    selectCityFromSearch(currentMatches[selectedResultIndex]);
+                }
+            } else if (e.key === 'Escape') {
+                mapSearchInput.value = '';
+                mapSearchClearBtn.style.display = 'none';
+                mapSearchKbd.style.display = 'inline-flex';
+                mapSearchResults.classList.remove('active');
+                mapSearchWrapper.classList.remove('focused');
+                mapSearchInput.blur();
+            }
+        });
+        
+        function updateSelectedResult() {
+            const items = document.querySelectorAll('.map-search-result-item');
+            items.forEach((item, index) => {
+                if (index === selectedResultIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Botão limpar
+        mapSearchClearBtn.addEventListener('click', () => {
+            mapSearchInput.value = '';
+            mapSearchClearBtn.style.display = 'none';
+            mapSearchKbd.style.display = 'inline-flex';
+            mapSearchResults.classList.remove('active');
+            currentMatches = [];
+            selectedResultIndex = -1;
+            mapSearchInput.focus();
+        });
+        
+        // Atalho CTRL+K (ou CMD+K no Mac)
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                mapSearchInput.focus();
+            }
+        });
+        
+        // Fecha resultados ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('map-search-container').contains(e.target)) {
+                mapSearchResults.classList.remove('active');
+                if (!mapSearchInput.value) {
+                    mapSearchWrapper.classList.remove('focused');
+                }
+            }
         });
         
         // ✅ FIX BUG #1: Fecha sidebar APENAS em menu-items (não em company-item)
