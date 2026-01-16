@@ -423,14 +423,14 @@
             font-size: 14px;
         }
         
-        /* 🌟 BUSCA FLUTUANTE NO MAPA - z-index 1100 para ficar ACIMA dos controles de zoom */
+        /* 🌟 BUSCA FLUTUANTE - Movida para a ESQUERDA dos controles de zoom */
         .map-search-container {
             position: fixed;
             top: 20px;
-            right: 20px;
-            z-index: 1100; /* ✅ MAIOR que os controles de zoom (1000) */
+            right: 90px; /* ✅ 90px para dar espaço aos controles de zoom (que ficam em right: 10px) */
+            z-index: 1100;
             width: 360px;
-            max-width: calc(100vw - 100px);
+            max-width: calc(100vw - 180px); /* Ajustado para considerar espaço dos controles */
         }
         
         .map-search-wrapper {
@@ -556,10 +556,11 @@
             }
         }
         
-        /* Tablet: Reduz largura */
+        /* Tablet: Reduz largura e ajusta posição */
         @media (max-width: 1024px) and (min-width: 769px) {
             .map-search-container {
                 width: 300px;
+                right: 80px; /* Ajustado para tablets */
             }
         }
     </style>
@@ -574,7 +575,7 @@
     <!-- 🎨 Overlay (backdrop escuro) -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <!-- 🔍 BUSCA FLUTUANTE NO MAPA (NOVA - Desktop) -->
+    <!-- 🔍 BUSCA FLUTUANTE NO MAPA (À ESQUERDA DOS CONTROLES) -->
     <div class="map-search-container" id="map-search-container">
         <div class="map-search-wrapper" id="map-search-wrapper">
             <div class="map-search-box-floating">
@@ -705,12 +706,12 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1737051100"></script>
-    <script src="components/map-controls.js?v=FORCE1737051100"></script>
-    <script src="js/activity-logger.js?v=FORCE1737051100"></script>
-    <script src="js/dashboard.js?v=FORCE1737051100"></script>
-    <script src="js/reports-and-history.js?v=FORCE1737051100"></script>
-    <script src="js/main.js?v=FORCE1737051100"></script>
+    <script src="data/clients.js?v=FORCE1737051400"></script>
+    <script src="components/map-controls.js?v=FORCE1737051400"></script>
+    <script src="js/activity-logger.js?v=FORCE1737051400"></script>
+    <script src="js/dashboard.js?v=FORCE1737051400"></script>
+    <script src="js/reports-and-history.js?v=FORCE1737051400"></script>
+    <script src="js/main.js?v=FORCE1737051400"></script>
 
     <script>
         feather.replace();
