@@ -12,8 +12,6 @@ class CustomMapControls extends HTMLElement {
         this.map = map;
         this.addZoomControls();
         this.addResetViewControl();
-        // ❌ Legenda removida
-        // this.addLegendControl();
     }
 
     addZoomControls() {
@@ -24,7 +22,7 @@ class CustomMapControls extends HTMLElement {
     addResetViewControl() {
         const resetControl = L.Control.extend({
             options: {
-                position: 'topright'
+                position: 'bottomright' // ✅ Movido para parte de baixo, mesmo lado
             },
 
             onAdd: (map) => {
