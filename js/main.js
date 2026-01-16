@@ -1,8 +1,9 @@
-// GeoClient SP - Sistema de Gestão Territorial v3.2.1
-// 🎨 MÚLTIPLAS EMPRESAS: Visualização com bordas coloridas
+// GeoClient SP - Sistema de Gestão Territorial v3.3.0
+// 🎨 MÚLTIPLAS EMPRESAS: Visualização com bordas coloridas + badges
 // Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
 // ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
+// 🆕 Badges numéricos para cidades com múltiplas empresas
 // 🐛 ALL BUG FIXES: #8-#17 + SyntaxError linha 884
 
 class GeoClientApp {
@@ -16,6 +17,7 @@ class GeoClientApp {
         
         this.geoJsonLayer = null;
         this.cityLayers = {};
+        this.cityBadges = {}; // 🆕 v3.3: Armazena badges de contador
         this.contextMenu = null;
         this.tooltip = null;
         this.companyDropdown = null;
@@ -197,7 +199,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🚀 Inicializando GeoClient SP v3.2.1 (Multi-company borders)...');
+        console.log('🚀 Inicializando GeoClient SP v3.3.0 (Multi-company borders + badges)...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -211,7 +213,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v3.2.1 iniciado com sucesso!');
+            console.log('✅ GeoClient SP v3.3.0 iniciado com sucesso!');
         }, 100);
     }
 
@@ -242,6 +244,11 @@ class GeoClientApp {
                 minZoom: 6
             }).addTo(this.map);
             
+            // 🆕 v3.3: Listener para atualizar badges no zoom
+            this.map.on('zoomend', () => {
+                this.updateAllBadgesVisibility();
+            });
+            
             setTimeout(() => this.map.invalidateSize(), 250);
             this.loadMunicipalitiesBoundaries();
             
@@ -256,6 +263,100 @@ class GeoClientApp {
         if (mapControls && typeof mapControls.init === 'function') {
             mapControls.init(this.map);
         }
+    }
+
+    // 🆕 v3.3 ==================== COMPANY COUNTER BADGES ====================
+    
+    updateCityBadge(cityName) {
+        const cityData = this.markedCities[cityName];
+        const layer = this.cityLayers[cityName];
+        
+        if (!layer || !cityData || !cityData.companies) {
+            this.removeCityBadge(cityName);
+            return;
+        }
+        
+        const numCompanies = cityData.companies.length;
+        
+        // Remove badge se tem apenas 1 empresa
+        if (numCompanies < 2) {
+            this.removeCityBadge(cityName);
+            return;
+        }
+        
+        // Remove badge antigo se existir
+        this.removeCityBadge(cityName);
+        
+        // Calcula centro do polígono
+        const bounds = layer.getBounds();
+        const center = bounds.getCenter();
+        
+        // Define cor do badge
+        const badgeColor = numCompanies === 2 ? '#3b82f6' : '#fbbf24'; // Azul para 2, Dourado para 3+
+        
+        // Cria badge com divIcon
+        const badgeIcon = L.divIcon({
+            className: 'company-counter-badge',
+            html: `
+                <div style="
+                    background: ${badgeColor};
+                    color: white;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 700;
+                    font-size: 14px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                    border: 2px solid white;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                ">${numCompanies}</div>
+            `,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+        });
+        
+        // Cria marker
+        const badge = L.marker(center, {
+            icon: badgeIcon,
+            interactive: false, // Não interfere nos cliques
+            zIndexOffset: 1000
+        });
+        
+        // Controla visibilidade por zoom
+        const currentZoom = this.map.getZoom();
+        if (currentZoom >= 8) {
+            badge.addTo(this.map);
+        }
+        
+        // Armazena referência
+        this.cityBadges[cityName] = badge;
+    }
+    
+    removeCityBadge(cityName) {
+        if (this.cityBadges[cityName]) {
+            this.map.removeLayer(this.cityBadges[cityName]);
+            delete this.cityBadges[cityName];
+        }
+    }
+    
+    updateAllBadgesVisibility() {
+        const currentZoom = this.map.getZoom();
+        
+        Object.entries(this.cityBadges).forEach(([cityName, badge]) => {
+            if (currentZoom >= 8) {
+                if (!this.map.hasLayer(badge)) {
+                    badge.addTo(this.map);
+                }
+            } else {
+                if (this.map.hasLayer(badge)) {
+                    this.map.removeLayer(badge);
+                }
+            }
+        });
     }
 
     loadMunicipalitiesBoundaries() {
@@ -276,6 +377,11 @@ class GeoClientApp {
                 if (this.geoJsonLayer) {
                     this.map.removeLayer(this.geoJsonLayer);
                 }
+                
+                // 🆕 v3.3: Limpa badges antigos
+                Object.keys(this.cityBadges).forEach(cityName => {
+                    this.removeCityBadge(cityName);
+                });
                 
                 this.geoJsonLayer = L.geoJSON(municipalitiesData, {
                     style: (feature) => {
@@ -327,6 +433,9 @@ class GeoClientApp {
                     onEachFeature: (feature, layer) => {
                         const name = this.getMunicipalityName(feature);
                         this.cityLayers[name] = layer;
+                        
+                        // 🆕 v3.3: Cria badge se necessário
+                        this.updateCityBadge(name);
                         
                         layer.on('mouseover', () => {
                             const cityData = this.markedCities[name];
@@ -403,6 +512,10 @@ class GeoClientApp {
             color: '#6b7280',
             fillOpacity: 0.2
         });
+        
+        // 🆕 v3.3: Remove badge
+        this.removeCityBadge(name);
+        
         this.saveToLocalStorage();
         this.showToast(`🗑️ ${name} removido`, 'info');
         this.logActivity('logCityRemoved', name);
@@ -449,6 +562,9 @@ class GeoClientApp {
                     });
                 }
             }
+            
+            // 🆕 v3.3: Atualiza badge
+            this.updateCityBadge(cityName);
             
             this.saveToLocalStorage();
             this.showToast(`🗑️ ${companyToRemove} removido de ${cityName}`, 'info');
@@ -513,6 +629,9 @@ class GeoClientApp {
                 });
             }
         }
+        
+        // 🆕 v3.3: Atualiza badge
+        this.updateCityBadge(cityName);
         
         this.saveToLocalStorage();
         
