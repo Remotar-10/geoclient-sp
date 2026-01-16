@@ -1,13 +1,13 @@
-// 📊 GeoClient SP - Dashboard Professional v2.1
-// ✅ COMPATÍVEL COM MAIN.JS V3.0.1
-// 🐛 FIX: Mostra todas as 6 empresas (incluindo LUBMULTI)
+// 📊 GeoClient SP - Dashboard Professional v2.9
+// ✅ COMPATÍVEL COM MAIN.JS V2.9
+// ✅ Apenas 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
 
 class Dashboard {
     constructor(app) {
         this.app = app;
         this.modal = null;
         this.charts = {};
-        console.log('✅ Dashboard v2.1 initialized');
+        console.log('✅ Dashboard v2.9 initialized');
     }
 
     showDashboard() {
@@ -73,8 +73,8 @@ class Dashboard {
         const totalCities = Object.keys(cities).length;
         const totalClients = clients.length;
         
-        // 🐛 FIX: Inicializa TODAS as 6 empresas com 0
-        const allCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA', 'LUBMULTI'];
+        // ✅ Inicializa APENAS as 5 empresas do main.js
+        const allCompanies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
         const clientsByCompany = {};
         allCompanies.forEach(company => {
             clientsByCompany[company] = 0;
@@ -99,7 +99,7 @@ class Dashboard {
         const activeClients = clients.filter(c => c.status === 'active').length;
         const inactiveClients = clients.filter(c => c.status === 'inactive').length;
         
-        // 🐛 FIX: Inicializa TODAS as 6 empresas com 0 cidades
+        // ✅ Inicializa APENAS as 5 empresas com 0 cidades
         const citiesByCompany = {};
         allCompanies.forEach(company => {
             citiesByCompany[company] = 0;
@@ -231,7 +231,7 @@ class Dashboard {
                     
                     <!-- TABELA DE TODAS AS EMPRESAS -->
                     <div style="background: #f9fafb; padding: 28px; border-radius: 16px; border: 2px solid #e5e7eb; margin-bottom: 32px;">
-                        <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🏬 Distribuição por Empresa (Todas as 6)</h3>
+                        <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700; color: #1f2937;">🏬 Distribuição por Empresa (5 Empresas)</h3>
                         <div style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
                                 <thead>
@@ -248,14 +248,13 @@ class Dashboard {
                                         const percentage = stats.totalClients > 0 ? Math.round((count / stats.totalClients) * 100) : 0;
                                         const bgColor = index % 2 === 0 ? 'white' : '#f9fafb';
                                         
-                                        // Cores das empresas
+                                        // Cores das empresas (mesmas do main.js)
                                         const companyColors = {
                                             'CDO': '#ef4444',
                                             'SUPORTE': '#3b82f6',
                                             'WAUX': '#10b981',
                                             'MONTEBELLO': '#f59e0b',
-                                            'HIRATA': '#8b5cf6',
-                                            'LUBMULTI': '#6b7280'
+                                            'HIRATA': '#8b5cf6'
                                         };
                                         const companyColor = companyColors[company] || '#6b7280';
                                         
@@ -343,11 +342,10 @@ class Dashboard {
             'SUPORTE': '#3b82f6',
             'WAUX': '#10b981',
             'MONTEBELLO': '#f59e0b',
-            'HIRATA': '#8b5cf6',
-            'LUBMULTI': '#6b7280'
+            'HIRATA': '#8b5cf6'
         };
         
-        // GRÁFICO 1: Pizza - Clientes por Empresa (TODAS as 6)
+        // GRÁFICO 1: Pizza - Clientes por Empresa (APENAS 5 empresas)
         const chartClientsCompany = document.getElementById('chart-clients-by-company');
         if (chartClientsCompany) {
             const ctx1 = chartClientsCompany.getContext('2d');
@@ -449,4 +447,4 @@ class Dashboard {
 }
 
 window.Dashboard = Dashboard;
-console.log('✅ Dashboard v2.1 loaded - FIX: Mostra todas as 6 empresas (incluindo LUBMULTI)');
+console.log('✅ Dashboard v2.9 loaded - Apenas 5 empresas (CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA)');
