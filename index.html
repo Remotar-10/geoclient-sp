@@ -64,7 +64,7 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            z-index: 1001;
+            z-index: 1002;
             background: white;
             border: none;
             width: 48px;
@@ -96,7 +96,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 1001;
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -114,7 +114,7 @@
             width: 320px;
             height: 100%;
             background: white;
-            z-index: 1001;
+            z-index: 1002;
             box-shadow: 2px 0 12px rgba(0,0,0,0.1);
             transition: left 0.3s ease;
             overflow-y: auto;
@@ -423,12 +423,12 @@
             font-size: 14px;
         }
         
-        /* 🌟 BUSCA FLUTUANTE NO MAPA (NOVA) */
+        /* 🌟 BUSCA FLUTUANTE NO MAPA - z-index 1100 para ficar ACIMA dos controles de zoom */
         .map-search-container {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 1000;
+            z-index: 1100; /* ✅ MAIOR que os controles de zoom (1000) */
             width: 360px;
             max-width: calc(100vw - 100px);
         }
@@ -705,12 +705,12 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1737049800"></script>
-    <script src="components/map-controls.js?v=FORCE1737049800"></script>
-    <script src="js/activity-logger.js?v=FORCE1737049800"></script>
-    <script src="js/dashboard.js?v=FORCE1737049800"></script>
-    <script src="js/reports-and-history.js?v=FORCE1737049800"></script>
-    <script src="js/main.js?v=FORCE1737049800"></script>
+    <script src="data/clients.js?v=FORCE1737051100"></script>
+    <script src="components/map-controls.js?v=FORCE1737051100"></script>
+    <script src="js/activity-logger.js?v=FORCE1737051100"></script>
+    <script src="js/dashboard.js?v=FORCE1737051100"></script>
+    <script src="js/reports-and-history.js?v=FORCE1737051100"></script>
+    <script src="js/main.js?v=FORCE1737051100"></script>
 
     <script>
         feather.replace();
