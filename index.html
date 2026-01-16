@@ -26,7 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Local styles -->
-    <link rel="stylesheet" href="style.css?v=FORCE1736974000">
+    <link rel="stylesheet" href="style.css?v=FORCE1737032700">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -48,7 +48,6 @@
         }
         
         .leaflet-control-attribution { font-size: 10px; }
-        .company-marker { border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         
         /* ✅ SIDEBAR RETRÁTIL */
         .sidebar-toggle {
@@ -548,13 +547,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/clients.js?v=FORCE1736974000"></script>
-    <script src="components/map-controls.js?v=FORCE1736974000"></script>
-    <script src="js/activity-logger.js?v=FORCE1736974000"></script>
-    <script src="js/dashboard.js?v=FORCE1736974000"></script>
-    <script src="js/reports-and-history.js?v=FORCE1736974000"></script>
-    <script src="js/main.js?v=FORCE1736974000"></script>
-    <script src="js/auto-backup.js?v=FORCE1736974000"></script>
+    <script src="data/clients.js?v=FORCE1737032700"></script>
+    <script src="components/map-controls.js?v=FORCE1737032700"></script>
+    <script src="js/activity-logger.js?v=FORCE1737032700"></script>
+    <script src="js/dashboard.js?v=FORCE1737032700"></script>
+    <script src="js/reports-and-history.js?v=FORCE1737032700"></script>
+    <script src="js/main.js?v=FORCE1737032700"></script>
+    <script src="js/auto-backup.js?v=FORCE1737032700"></script>
 
     <script>
         feather.replace();
@@ -815,6 +814,23 @@
             
             updateSidebarStats();
             
+            // ✅ Hook para atualizar stats quando cidades são adicionadas/removidas
+            // Intercepta métodos DEPOIS que window.app existe
+            const originalAddCompany = window.app.addCompanyToCity;
+            const originalRemoveCity = window.app.removeCity;
+            
+            window.app.addCompanyToCity = function(...args) {
+                const result = originalAddCompany.apply(this, args);
+                updateSidebarStats();
+                return result;
+            };
+            
+            window.app.removeCity = function(...args) {
+                const result = originalRemoveCity.apply(this, args);
+                updateSidebarStats();
+                return result;
+            };
+            
             setTimeout(() => {
                 if (window.app && window.app.map) {
                     window.app.map.invalidateSize();
@@ -823,29 +839,13 @@
             }, 500);
             
             feather.replace();
-            console.log('🎉 GeoClient SP v3.3.1 - Contagem de empresas corrigida! ✅');
+            console.log('🧹 GeoClient SP v3.4.0 - Código limpo! ✅');
         }
         
         document.addEventListener('DOMContentLoaded', initializeSystem);
         
         // Atualiza stats quando dados mudam
         window.addEventListener('clientsDataUpdated', updateSidebarStats);
-        
-        // ✅ Atualiza stats quando cidade é adicionada/removida
-        if (window.app) {
-            const originalAddCompany = window.app.addCompanyToCity;
-            const originalRemoveCity = window.app.removeCity;
-            
-            window.app.addCompanyToCity = function(...args) {
-                originalAddCompany.apply(this, args);
-                updateSidebarStats();
-            };
-            
-            window.app.removeCity = function(...args) {
-                originalRemoveCity.apply(this, args);
-                updateSidebarStats();
-            };
-        }
     </script>
 </body>
 </html>
