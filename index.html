@@ -215,7 +215,7 @@
         }
         
         .accordion-content.active {
-            max-height: 1500px;
+            max-height: 2000px;
         }
         
         /* 📊 PREMIUM STATS v3.5.0 */
@@ -404,6 +404,113 @@
             font-size: 13px;
             color: #111827;
             font-weight: 600;
+        }
+        
+        /* 💾 v3.6.0: PREMIUM DATA CARDS */
+        .data-section {
+            padding: 20px;
+        }
+        
+        .data-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        
+        .data-card:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .data-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .data-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .data-card-icon.import {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .data-card-icon.export {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .data-card-title {
+            flex: 1;
+        }
+        
+        .data-card-title-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        
+        .data-card-subtitle {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        .data-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .data-btn {
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .data-btn:hover {
+            background: #f9fafb;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .data-btn-icon {
+            font-size: 16px;
+        }
+        
+        .data-btn-label {
+            flex: 1;
+        }
+        
+        .data-btn-count {
+            font-size: 11px;
+            padding: 2px 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            color: #6b7280;
         }
         
         /* Menu items */
@@ -1054,19 +1161,62 @@
                 </div>
             </div>
 
-            <!-- 💾 DADOS -->
+            <!-- 💾 DADOS PREMIUM v3.6.0 -->
             <div class="accordion-section">
                 <div class="accordion-header" data-section="data">
                     <span class="accordion-title">💾 Dados</span>
                     <i data-feather="chevron-down" class="accordion-icon"></i>
                 </div>
                 <div class="accordion-content" id="content-data">
-                    <ul class="sidebar-menu">
-                        <li><button class="sidebar-menu-item" id="menu-import"><i data-feather="upload"></i> Importar CSV/JSON</button></li>
-                        <li><button class="sidebar-menu-item" id="menu-export-csv"><i data-feather="download"></i> Exportar CSV</button></li>
-                        <li><button class="sidebar-menu-item" id="menu-export-json"><i data-feather="code"></i> Exportar JSON</button></li>
-                        <li><button class="sidebar-menu-item" id="menu-export-pdf"><i data-feather="file-text"></i> Exportar PDF</button></li>
-                    </ul>
+                    <div class="data-section">
+                        <!-- IMPORTAÇÃO CARD -->
+                        <div class="data-card">
+                            <div class="data-card-header">
+                                <div class="data-card-icon import">📥</div>
+                                <div class="data-card-title">
+                                    <div class="data-card-title-text">Importação</div>
+                                    <div class="data-card-subtitle" id="last-import-time">Nunca importado</div>
+                                </div>
+                            </div>
+                            <div class="data-card-body">
+                                <button class="data-btn" id="menu-import">
+                                    <span class="data-btn-icon">📁</span>
+                                    <span class="data-btn-label">Importar CSV/JSON</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- EXPORTAÇÃO CARD -->
+                        <div class="data-card">
+                            <div class="data-card-header">
+                                <div class="data-card-icon export">📤</div>
+                                <div class="data-card-title">
+                                    <div class="data-card-title-text">Exportação</div>
+                                    <div class="data-card-subtitle" id="last-export-time">Nunca exportado</div>
+                                </div>
+                            </div>
+                            <div class="data-card-body">
+                                <button class="data-btn" id="menu-export-csv">
+                                    <span class="data-btn-icon">📊</span>
+                                    <span class="data-btn-label">CSV Clientes</span>
+                                    <span class="data-btn-count" id="export-csv-count">0</span>
+                                </button>
+                                <button class="data-btn" id="menu-export-cities">
+                                    <span class="data-btn-icon">🏙️</span>
+                                    <span class="data-btn-label">CSV Cidades</span>
+                                    <span class="data-btn-count" id="export-cities-count">0</span>
+                                </button>
+                                <button class="data-btn" id="menu-export-json">
+                                    <span class="data-btn-icon">💾</span>
+                                    <span class="data-btn-label">JSON Completo</span>
+                                </button>
+                                <button class="data-btn" id="menu-export-pdf">
+                                    <span class="data-btn-icon">📄</span>
+                                    <span class="data-btn-label">PDF Dashboard</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1482,6 +1632,9 @@
             // 🕐 Atualiza última atividade
             updateLastActivity();
             
+            // 💾 v3.6.0: Atualiza contadores de exportação
+            updateDataCounts();
+            
             const companiesList = document.getElementById('companies-list');
             companiesList.innerHTML = companies.map(company => {
                 const count = companyCounts[company];
@@ -1503,6 +1656,17 @@
                     closeSidebar();
                 });
             });
+        }
+        
+        // 💾 v3.6.0: Atualiza contadores da aba Dados
+        function updateDataCounts() {
+            if (!window.app) return;
+            
+            const clientsCount = (window.app.clients || []).length;
+            const citiesCount = Object.keys(window.app.markedCities || {}).length;
+            
+            document.getElementById('export-csv-count').textContent = clientsCount;
+            document.getElementById('export-cities-count').textContent = citiesCount;
         }
         
         // 📊 Mini Chart Renderer
@@ -1606,12 +1770,73 @@
             document.getElementById('last-activity-time').textContent = timeText;
         }
         
+        // 💾 v3.6.0: NOVA FUNÇÃO - Exportar Cidades CSV
+        function exportCitiesCSV() {
+            if (!window.app) {
+                console.error('App não inicializado');
+                return;
+            }
+            
+            const markedCities = window.app.markedCities || {};
+            const citiesArray = Object.entries(markedCities)
+                .filter(([_, data]) => data.companies && data.companies.length > 0)
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([city, data]) => ({
+                    cidade: city,
+                    empresas: data.companies.join(', '),
+                    total: data.companies.length
+                }));
+            
+            if (citiesArray.length === 0) {
+                window.app.showToast('❌ Nenhuma cidade para exportar', 'warning');
+                return;
+            }
+            
+            const headers = ['Cidade', 'Empresas', 'Total Empresas'];
+            const rows = citiesArray.map(c => [c.cidade, c.empresas, c.total]);
+            
+            const escapeCsvCell = (cell) => {
+                const str = String(cell);
+                if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return `"${str}"`;
+            };
+            
+            const csv = [headers, ...rows]
+                .map(row => row.map(escapeCsvCell).join(','))
+                .join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `geoclient-cidades-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            window.app.showToast(`📥 ${citiesArray.length} cidades exportadas!`, 'success');
+            
+            // Atualiza timestamp
+            localStorage.setItem('geoclient-last-export', new Date().toISOString());
+            document.getElementById('last-export-time').textContent = 'Agora mesmo';
+            
+            console.log('📤 Cidades exportadas:', citiesArray.length);
+        }
+        
         // 🎯 Menu actions
         document.getElementById('menu-dashboard')?.addEventListener('click', () => window.dashboard?.showDashboard?.());
         document.getElementById('menu-history')?.addEventListener('click', () => window.reportsAndHistory?.showActivityLog?.());
         document.getElementById('menu-import')?.addEventListener('click', () => window.app?.showImportModal?.());
-        document.getElementById('menu-export-csv')?.addEventListener('click', () => window.app?.exportCSV?.());
-        document.getElementById('menu-export-json')?.addEventListener('click', () => window.app?.exportJSON?.());
+        document.getElementById('menu-export-csv')?.addEventListener('click', () => {
+            window.app?.exportCSV?.();
+            localStorage.setItem('geoclient-last-export', new Date().toISOString());
+            document.getElementById('last-export-time').textContent = 'Agora mesmo';
+        });
+        document.getElementById('menu-export-cities')?.addEventListener('click', exportCitiesCSV);
+        document.getElementById('menu-export-json')?.addEventListener('click', () => {
+            window.app?.exportJSON?.();
+            localStorage.setItem('geoclient-last-export', new Date().toISOString());
+            document.getElementById('last-export-time').textContent = 'Agora mesmo';
+        });
         document.getElementById('menu-export-pdf')?.addEventListener('click', () => window.reportsAndHistory?.exportDashboardToPDF?.());
         
         // 🎯 v3.4.0: NOVOS BOTÕES DE AÇÃO
@@ -1653,6 +1878,20 @@
             }
             
             updateSidebarStats();
+            
+            // 💾 v3.6.0: Carrega timestamps salvos
+            const lastImport = localStorage.getItem('geoclient-last-import');
+            const lastExport = localStorage.getItem('geoclient-last-export');
+            
+            if (lastImport) {
+                const date = new Date(lastImport);
+                document.getElementById('last-import-time').textContent = date.toLocaleString('pt-BR');
+            }
+            
+            if (lastExport) {
+                const date = new Date(lastExport);
+                document.getElementById('last-export-time').textContent = date.toLocaleString('pt-BR');
+            }
             
             window.addEventListener('cityDataChanged', () => {
                 updateSidebarStats();
