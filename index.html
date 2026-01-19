@@ -872,7 +872,7 @@
                 </div>
             </div>
 
-            <!-- ⚙️ AÇÕES -->
+            <!-- ⚙️ AÇÕES (NOVO v3.4.0) -->
             <div class="accordion-section">
                 <div class="accordion-header" data-section="actions">
                     <span class="accordion-title">⚙️ Ações</span>
@@ -880,6 +880,9 @@
                 </div>
                 <div class="accordion-content" id="content-actions">
                     <ul class="sidebar-menu">
+                        <li><button class="sidebar-menu-item" id="menu-reset-map" style="color: #3b82f6;"><i data-feather="rotate-ccw"></i> Resetar Visualização</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-copy-list" style="color: #10b981;"><i data-feather="copy"></i> Copiar Lista de Cidades</button></li>
+                        <li><button class="sidebar-menu-item" id="menu-quick-backup" style="color: #8b5cf6;"><i data-feather="save"></i> Backup Rápido</button></li>
                         <li><button class="sidebar-menu-item" id="menu-clear" style="color: #dc2626;"><i data-feather="trash-2"></i> Limpar Dados</button></li>
                     </ul>
                 </div>
@@ -1268,6 +1271,11 @@
         document.getElementById('menu-export-csv')?.addEventListener('click', () => window.app?.exportCSV?.());
         document.getElementById('menu-export-json')?.addEventListener('click', () => window.app?.exportJSON?.());
         document.getElementById('menu-export-pdf')?.addEventListener('click', () => window.reportsAndHistory?.exportDashboardToPDF?.());
+        
+        // 🎯 v3.4.0: NOVOS BOTÕES DE AÇÃO
+        document.getElementById('menu-reset-map')?.addEventListener('click', () => window.app?.resetMapView?.());
+        document.getElementById('menu-copy-list')?.addEventListener('click', () => window.app?.copyCitiesList?.());
+        document.getElementById('menu-quick-backup')?.addEventListener('click', () => window.app?.quickBackup?.());
         document.getElementById('menu-clear')?.addEventListener('click', () => window.app?.clearAllData?.());
         
         // ⏳ Aguarda app carregar
