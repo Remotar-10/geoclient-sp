@@ -1,9 +1,10 @@
-// GeoClient SP - Sistema de Gestão Territorial v3.3.0
+// GeoClient SP - Sistema de Gestão Territorial v3.4.0
 // 🎨 MÚLTIPLAS EMPRESAS: Visualização com bordas coloridas + badges
 // Sistema de cliques: 1 clique = Zoom 1x + Dropdown | Seleciona empresa = Marca cidade
 // ✅ Activity Logger integrado
 // ✅ 5 empresas: CDO, SUPORTE, WAUX, MONTEBELLO, HIRATA
 // 🆕 Badges numéricos para cidades com múltiplas empresas
+// 🎯 NOVO v3.4: Quick Actions (Reset Mapa, Copiar Lista, Backup Rápido)
 // 🐛 ALL BUG FIXES: #8-#17 + SyntaxError linha 884
 
 class GeoClientApp {
@@ -43,6 +44,128 @@ class GeoClientApp {
         if (window.activityLogger && typeof window.activityLogger[method] === 'function') {
             window.activityLogger[method](...args);
         }
+    }
+
+    // 🎯 v3.4 ==================== QUICK ACTIONS ====================
+    
+    // 🔄 ACTION 1: Reset Mapa
+    resetMapView() {
+        if (!this.map) {
+            this.showToast('❌ Mapa não inicializado', 'error');
+            return;
+        }
+        
+        this.map.flyTo(this.initialView.center, this.initialView.zoom, {
+            duration: 1.2,
+            easeLinearity: 0.25
+        });
+        
+        this.showToast('🔄 Visualização resetada!', 'success');
+        this.logActivity('logAction', 'Reset Mapa');
+        console.log('🔄 Mapa resetado para posição inicial');
+    }
+    
+    // 📋 ACTION 2: Copiar Lista de Cidades
+    copyCitiesList() {
+        const occupiedCities = Object.entries(this.markedCities)
+            .filter(([_, data]) => data.companies && data.companies.length > 0)
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([city, data]) => {
+                const companies = data.companies.join(', ');
+                return `${city} (${companies})`;
+            });
+        
+        if (occupiedCities.length === 0) {
+            this.showToast('⚠️ Nenhuma cidade ocupada para copiar', 'warning');
+            return;
+        }
+        
+        const text = occupiedCities.join('\n');
+        
+        // Usa API moderna de clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    this.showToast(`📋 ${occupiedCities.length} cidades copiadas!`, 'success');
+                    this.logActivity('logAction', 'Copiar Lista', occupiedCities.length);
+                    console.log('📋 Lista copiada:', text);
+                })
+                .catch(err => {
+                    console.error('❌ Erro ao copiar:', err);
+                    this.fallbackCopyToClipboard(text);
+                });
+        } else {
+            this.fallbackCopyToClipboard(text);
+        }
+    }
+    
+    // Fallback para navegadores antigos
+    fallbackCopyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '0';
+        textarea.style.left = '0';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+            const success = document.execCommand('copy');
+            if (success) {
+                const count = text.split('\n').length;
+                this.showToast(`📋 ${count} cidades copiadas!`, 'success');
+                this.logActivity('logAction', 'Copiar Lista (fallback)', count);
+            } else {
+                this.showToast('❌ Erro ao copiar', 'error');
+            }
+        } catch (err) {
+            console.error('❌ Fallback copy failed:', err);
+            this.showToast('❌ Navegador não suporta cópia automática', 'error');
+        }
+        
+        document.body.removeChild(textarea);
+    }
+    
+    // 💾 ACTION 3: Backup Rápido
+    quickBackup() {
+        const now = new Date();
+        const timestamp = now.toISOString()
+            .replace('T', '-')
+            .replace(/:/g, 'h')
+            .split('.')[0]
+            .replace(/-/g, (match, offset) => offset < 10 ? '-' : '_')
+            .slice(0, -3); // Remove segundos
+        
+        const data = {
+            backupDate: now.toISOString(),
+            appVersion: '3.4.0',
+            clients: this.clients,
+            markedCities: this.markedCities,
+            occupiedCities: this.occupiedCities,
+            stats: {
+                totalCities: Object.keys(this.markedCities).length,
+                totalClients: this.clients.length,
+                companies: this.availableCompanies
+            }
+        };
+        
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        
+        // Formato: geoclient-backup-2026-01-19-15h52.json
+        const formattedDate = now.toISOString().split('T')[0];
+        const formattedTime = now.toTimeString().split(' ')[0].slice(0, 5).replace(':', 'h');
+        link.download = `geoclient-backup-${formattedDate}-${formattedTime}.json`;
+        
+        link.click();
+        URL.revokeObjectURL(link.href);
+        
+        this.showToast('💾 Backup criado com sucesso!', 'success');
+        this.logActivity('logAction', 'Backup Rápido', data.stats.totalCities);
+        console.log('💾 Backup salvo:', link.download);
     }
 
     // 💾 ==================== LOCALSTORAGE ====================
@@ -199,7 +322,7 @@ class GeoClientApp {
     }
 
     init() {
-        console.log('🚀 Inicializando GeoClient SP v3.3.0 (Multi-company borders + badges)...');
+        console.log('🚀 Inicializando GeoClient SP v3.4.0 (Quick Actions)...');
         
         const mapElement = document.getElementById('map');
         if (!mapElement) {
@@ -213,7 +336,7 @@ class GeoClientApp {
             this.createTooltip();
             this.createCompanyDropdown();
             this.initMapControls();
-            console.log('✅ GeoClient SP v3.3.0 iniciado com sucesso!');
+            console.log('✅ GeoClient SP v3.4.0 iniciado com sucesso!');
         }, 100);
     }
 
