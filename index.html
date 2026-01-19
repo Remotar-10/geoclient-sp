@@ -215,37 +215,195 @@
         }
         
         .accordion-content.active {
-            max-height: 1000px;
+            max-height: 1500px;
         }
         
-        /* Stats dentro da sidebar */
+        /* 📊 PREMIUM STATS v3.5.0 */
         .sidebar-stats {
             padding: 20px;
         }
         
         .stat-card {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 18px;
             margin-bottom: 12px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* Card gradientes */
+        .stat-card.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
         
         .stat-card-title {
-            font-size: 13px;
-            color: #6b7280;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-bottom: 8px;
         }
         
         .stat-card-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #111827;
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            line-height: 1;
         }
         
         .stat-card-label {
-            font-size: 12px;
-            color: #9ca3af;
+            font-size: 13px;
+            opacity: 0.85;
             margin-top: 4px;
+        }
+        
+        /* Barra de progresso */
+        .stat-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .stat-progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+        
+        /* Líder card */
+        .leader-card {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .leader-card-title {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .leader-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .leader-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .leader-text {
+            flex: 1;
+        }
+        
+        .leader-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        
+        .leader-count {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        /* Mini chart container */
+        .mini-chart-container {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .mini-chart-title {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .mini-chart-canvas {
+            width: 100px !important;
+            height: 100px !important;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        /* Activity card */
+        .activity-card {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .activity-icon {
+            width: 28px;
+            height: 28px;
+            background: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .activity-text {
+            flex: 1;
+        }
+        
+        .activity-label {
+            font-size: 10px;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 13px;
+            color: #111827;
+            font-weight: 600;
         }
         
         /* Menu items */
@@ -792,7 +950,7 @@
 
         <!-- Content -->
         <div class="sidebar-content">
-            <!-- 📊 ESTATÍSTICAS (Aberta por padrão) -->
+            <!-- 📊 ESTATÍSTICAS PREMIUM v3.5.0 -->
             <div class="accordion-section">
                 <div class="accordion-header active" data-section="stats">
                     <span class="accordion-title">📊 Estatísticas</span>
@@ -800,18 +958,58 @@
                 </div>
                 <div class="accordion-content active" id="content-stats">
                     <div class="sidebar-stats">
-                        <div class="stat-card">
+                        <!-- Total SP -->
+                        <div class="stat-card primary">
                             <div class="stat-card-title">Total de Municípios</div>
                             <div class="stat-card-value">645</div>
                             <div class="stat-card-label">Estado de São Paulo</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-card-title">Com Empresa</div>
+                        
+                        <!-- Com Empresa (com % e barra) -->
+                        <div class="stat-card success">
+                            <div class="stat-card-title">Ocupadas</div>
                             <div class="stat-card-value" id="stat-with-company">0</div>
+                            <div class="stat-card-label" id="stat-occupation-percent">0% de ocupação</div>
+                            <div class="stat-progress-bar">
+                                <div class="stat-progress-fill" id="stat-progress-fill" style="width: 0%"></div>
+                            </div>
                         </div>
-                        <div class="stat-card">
+                        
+                        <!-- Disponíveis -->
+                        <div class="stat-card warning">
                             <div class="stat-card-title">Disponíveis</div>
                             <div class="stat-card-value" id="stat-available">645</div>
+                            <div class="stat-card-label" id="stat-available-percent">100% livres</div>
+                            <div class="stat-progress-bar">
+                                <div class="stat-progress-fill" id="stat-available-fill" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empresa Líder -->
+                        <div class="leader-card" id="leader-card">
+                            <div class="leader-card-title">🏆 Empresa Líder</div>
+                            <div class="leader-info">
+                                <div class="leader-badge" id="leader-badge" style="background: #6b7280;">-</div>
+                                <div class="leader-text">
+                                    <div class="leader-name" id="leader-name">Nenhuma</div>
+                                    <div class="leader-count" id="leader-count">0 cidades</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mini Chart -->
+                        <div class="mini-chart-container">
+                            <div class="mini-chart-title">Distribuição</div>
+                            <canvas id="mini-stats-chart" class="mini-chart-canvas"></canvas>
+                        </div>
+                        
+                        <!-- Última Atividade -->
+                        <div class="activity-card">
+                            <div class="activity-icon">🕐</div>
+                            <div class="activity-text">
+                                <div class="activity-label">Última Atividade</div>
+                                <div class="activity-time" id="last-activity-time">Nenhuma</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -872,7 +1070,7 @@
                 </div>
             </div>
 
-            <!-- ⚙️ AÇÕES (NOVO v3.4.0) -->
+            <!-- ⚙️ AÇÕES -->
             <div class="accordion-section">
                 <div class="accordion-header" data-section="actions">
                     <span class="accordion-title">⚙️ Ações</span>
@@ -907,6 +1105,9 @@
 
     <script>
         feather.replace();
+        
+        // 📊 v3.5.0: Mini Chart Stats
+        let miniStatsChart = null;
         
         // 🎨 SIDEBAR TOGGLE
         const sidebar = document.getElementById('sidebar');
@@ -948,6 +1149,11 @@
                 if (!isActive) {
                     header.classList.add('active');
                     content.classList.add('active');
+                    
+                    // 📊 Rerender mini chart quando abrir stats
+                    if (section === 'stats') {
+                        setTimeout(() => renderMiniStatsChart(), 100);
+                    }
                 }
             });
         });
@@ -1209,15 +1415,28 @@
             item.addEventListener('click', closeSidebar);
         });
         
-        // 📊 Atualiza estatísticas
+        // 📊 v3.5.0: PREMIUM STATS UPDATE
         function updateSidebarStats() {
             if (!window.app) return;
             
             const markedCitiesCount = Object.keys(window.app.markedCities || {}).length;
             const availableCitiesCount = 645 - markedCitiesCount;
+            const occupationPercent = Math.round((markedCitiesCount / 645) * 100);
+            const availablePercent = 100 - occupationPercent;
             
+            // Atualiza contadores
             document.getElementById('stat-with-company').textContent = markedCitiesCount;
             document.getElementById('stat-available').textContent = availableCitiesCount;
+            
+            // Atualiza porcentagens
+            document.getElementById('stat-occupation-percent').textContent = `${occupationPercent}% de ocupação`;
+            document.getElementById('stat-available-percent').textContent = `${availablePercent}% livres`;
+            
+            // Atualiza barras de progresso com animação
+            setTimeout(() => {
+                document.getElementById('stat-progress-fill').style.width = `${occupationPercent}%`;
+                document.getElementById('stat-available-fill').style.width = `${availablePercent}%`;
+            }, 100);
             
             const companies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
             const colors = {
@@ -1241,6 +1460,28 @@
                 }
             });
             
+            // 🏆 Atualiza empresa líder
+            const sortedCompanies = Object.entries(companyCounts).sort((a, b) => b[1] - a[1]);
+            const [leaderName, leaderCount] = sortedCompanies[0];
+            
+            if (leaderCount > 0) {
+                document.getElementById('leader-name').textContent = leaderName;
+                document.getElementById('leader-count').textContent = `${leaderCount} cidades`;
+                document.getElementById('leader-badge').style.background = colors[leaderName];
+                document.getElementById('leader-badge').textContent = leaderName.substring(0, 2).toUpperCase();
+            } else {
+                document.getElementById('leader-name').textContent = 'Nenhuma';
+                document.getElementById('leader-count').textContent = '0 cidades';
+                document.getElementById('leader-badge').style.background = '#6b7280';
+                document.getElementById('leader-badge').textContent = '-';
+            }
+            
+            // 📊 Atualiza mini chart
+            renderMiniStatsChart();
+            
+            // 🕐 Atualiza última atividade
+            updateLastActivity();
+            
             const companiesList = document.getElementById('companies-list');
             companiesList.innerHTML = companies.map(company => {
                 const count = companyCounts[company];
@@ -1262,6 +1503,107 @@
                     closeSidebar();
                 });
             });
+        }
+        
+        // 📊 Mini Chart Renderer
+        function renderMiniStatsChart() {
+            if (typeof Chart === 'undefined' || !window.app) {
+                console.warn('⚠️ Chart.js ou App não carregado');
+                return;
+            }
+            
+            const canvas = document.getElementById('mini-stats-chart');
+            if (!canvas) return;
+            
+            const companies = ['CDO', 'SUPORTE', 'WAUX', 'MONTEBELLO', 'HIRATA'];
+            const colors = {
+                'CDO': '#ef4444',
+                'SUPORTE': '#3b82f6',
+                'WAUX': '#10b981',
+                'MONTEBELLO': '#f59e0b',
+                'HIRATA': '#8b5cf6'
+            };
+            
+            const companyCounts = {};
+            companies.forEach(company => companyCounts[company] = 0);
+            
+            Object.values(window.app.markedCities || {}).forEach(cityData => {
+                if (cityData.companies && cityData.companies.length > 0) {
+                    cityData.companies.forEach(company => {
+                        if (companyCounts.hasOwnProperty(company)) {
+                            companyCounts[company]++;
+                        }
+                    });
+                }
+            });
+            
+            // Destroy chart anterior
+            if (miniStatsChart) {
+                miniStatsChart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            miniStatsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: companies,
+                    datasets: [{
+                        data: Object.values(companyCounts),
+                        backgroundColor: companies.map(c => colors[c]),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            padding: 8,
+                            titleFont: { size: 11, weight: '700' },
+                            bodyFont: { size: 10 },
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 🕐 Atualiza última atividade
+        function updateLastActivity() {
+            if (!window.activityLogger || !window.activityLogger.getLastActivity) {
+                document.getElementById('last-activity-time').textContent = 'Nenhuma';
+                return;
+            }
+            
+            const lastActivity = window.activityLogger.getLastActivity();
+            if (!lastActivity) {
+                document.getElementById('last-activity-time').textContent = 'Nenhuma';
+                return;
+            }
+            
+            const timestamp = new Date(lastActivity.timestamp);
+            const now = new Date();
+            const diffMs = now - timestamp;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            let timeText;
+            if (diffMins < 1) {
+                timeText = 'Agora';
+            } else if (diffMins < 60) {
+                timeText = `Há ${diffMins} min${diffMins > 1 ? 's' : ''}`;
+            } else {
+                const diffHours = Math.floor(diffMins / 60);
+                timeText = `Há ${diffHours}h${diffMins % 60 > 0 ? ` ${diffMins % 60}min` : ''}`;
+            }
+            
+            document.getElementById('last-activity-time').textContent = timeText;
         }
         
         // 🎯 Menu actions
@@ -1318,6 +1660,9 @@
                     window.companyFilter.updateCounts();
                 }
             });
+            
+            // 🕐 Atualiza última atividade a cada minuto
+            setInterval(updateLastActivity, 60000);
             
             setTimeout(() => {
                 if (window.app && window.app.map) {
