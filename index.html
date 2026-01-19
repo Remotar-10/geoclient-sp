@@ -215,7 +215,7 @@
         }
         
         .accordion-content.active {
-            max-height: 2000px;
+            max-height: 2500px;
         }
         
         /* 📊 PREMIUM STATS v3.5.0 */
@@ -511,6 +511,227 @@
             background: #f3f4f6;
             border-radius: 4px;
             color: #6b7280;
+        }
+        
+        /* 📍 v3.7.0: PREMIUM NAVIGATION */
+        .nav-section {
+            padding: 20px;
+        }
+        
+        .nav-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .nav-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .nav-card-icon {
+            font-size: 18px;
+        }
+        
+        .nav-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-card-count {
+            margin-left: auto;
+            font-size: 11px;
+            padding: 2px 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        /* Cidades recentes */
+        .recent-city-item {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            border: 2px solid transparent;
+        }
+        
+        .recent-city-item:hover {
+            background: #f9fafb;
+            border-color: #e5e7eb;
+        }
+        
+        .recent-city-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .recent-city-meta {
+            font-size: 11px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .recent-city-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .recent-empty {
+            text-align: center;
+            padding: 20px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        
+        /* Atalhos rápidos */
+        .shortcut-btn {
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .shortcut-btn:hover {
+            background: #f9fafb;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateX(4px);
+        }
+        
+        .shortcut-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        /* Regiões */
+        .region-btn {
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .region-btn:hover {
+            background: #f9fafb;
+            border-color: #10b981;
+            transform: scale(1.02);
+        }
+        
+        .region-icon {
+            font-size: 20px;
+        }
+        
+        .region-label {
+            flex: 1;
+        }
+        
+        .region-count {
+            font-size: 11px;
+            padding: 3px 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        /* Toggle layers */
+        .layer-toggle {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+            user-select: none;
+        }
+        
+        .layer-toggle:hover {
+            background: #f9fafb;
+        }
+        
+        .layer-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .layer-toggle.active .layer-checkbox {
+            background: #10b981;
+            border-color: #10b981;
+        }
+        
+        .layer-checkmark {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .layer-toggle.active .layer-checkmark {
+            display: block;
+        }
+        
+        .layer-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            flex: 1;
         }
         
         /* Menu items */
@@ -1133,14 +1354,14 @@
                 </div>
             </div>
 
-            <!-- 📍 NAVEGAÇÃO (COM BUSCA) -->
+            <!-- 📍 NAVEGAÇÃO PREMIUM v3.7.0 -->
             <div class="accordion-section">
                 <div class="accordion-header" data-section="navigation">
                     <span class="accordion-title">📍 Navegação</span>
                     <i data-feather="chevron-down" class="accordion-icon"></i>
                 </div>
                 <div class="accordion-content" id="content-navigation">
-                    <!-- 🔍 BUSCA DE CIDADES (SIDEBAR) -->
+                    <!-- 🔍 BUSCA DE CIDADES -->
                     <div class="city-search-container">
                         <div class="city-search-box">
                             <i data-feather="search"></i>
@@ -1154,10 +1375,103 @@
                         <div class="search-results" id="search-results"></div>
                     </div>
                     
-                    <ul class="sidebar-menu">
-                        <li><button class="sidebar-menu-item" id="menu-dashboard"><i data-feather="bar-chart-2"></i> Dashboard</button></li>
-                        <li><button class="sidebar-menu-item" id="menu-history"><i data-feather="clock"></i> Histórico</button></li>
-                    </ul>
+                    <div class="nav-section">
+                        <!-- ATALHOS RÁPIDOS -->
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span class="nav-card-icon">🎯</span>
+                                <span class="nav-card-title">Atalhos Rápidos</span>
+                            </div>
+                            <button class="shortcut-btn" id="shortcut-dashboard">
+                                <div class="shortcut-icon" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">📊</div>
+                                <span>Dashboard</span>
+                            </button>
+                            <button class="shortcut-btn" id="shortcut-history">
+                                <div class="shortcut-icon" style="background: linear-gradient(135deg, #10b981, #059669);">📜</div>
+                                <span>Histórico</span>
+                            </button>
+                            <button class="shortcut-btn" id="shortcut-reset">
+                                <div class="shortcut-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🗺️</div>
+                                <span>Resetar Mapa</span>
+                            </button>
+                            <button class="shortcut-btn" id="shortcut-list">
+                                <div class="shortcut-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">📋</div>
+                                <span>Copiar Lista</span>
+                            </button>
+                        </div>
+                        
+                        <!-- CIDADES RECENTES -->
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span class="nav-card-icon">🌟</span>
+                                <span class="nav-card-title">Recentes</span>
+                                <span class="nav-card-count" id="recent-count">0</span>
+                            </div>
+                            <div id="recent-cities-list">
+                                <div class="recent-empty">🔍 Nenhuma cidade visitada ainda</div>
+                            </div>
+                        </div>
+                        
+                        <!-- NAVEGAÇÃO GEOGRÁFICA -->
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span class="nav-card-icon">🗺️</span>
+                                <span class="nav-card-title">Regiões</span>
+                            </div>
+                            <button class="region-btn" data-region="metropolitana">
+                                <span class="region-icon">📍</span>
+                                <span class="region-label">Região Metropolitana</span>
+                                <span class="region-count">89</span>
+                            </button>
+                            <button class="region-btn" data-region="litoral">
+                                <span class="region-icon">🏖️</span>
+                                <span class="region-label">Litoral</span>
+                                <span class="region-count">39</span>
+                            </button>
+                            <button class="region-btn" data-region="interior">
+                                <span class="region-icon">🌳</span>
+                                <span class="region-label">Interior</span>
+                                <span class="region-count">487</span>
+                            </button>
+                            <button class="region-btn" data-region="vale">
+                                <span class="region-icon">🏔️</span>
+                                <span class="region-label">Vale do Paraíba</span>
+                                <span class="region-count">39</span>
+                            </button>
+                        </div>
+                        
+                        <!-- CAMADAS DO MAPA -->
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span class="nav-card-icon">👁️</span>
+                                <span class="nav-card-title">Camadas</span>
+                            </div>
+                            <div class="layer-toggle active" data-layer="occupied">
+                                <div class="layer-checkbox">
+                                    <span class="layer-checkmark">✓</span>
+                                </div>
+                                <span class="layer-label">Cidades Ocupadas</span>
+                            </div>
+                            <div class="layer-toggle active" data-layer="available">
+                                <div class="layer-checkbox">
+                                    <span class="layer-checkmark">✓</span>
+                                </div>
+                                <span class="layer-label">Cidades Disponíveis</span>
+                            </div>
+                            <div class="layer-toggle active" data-layer="badges">
+                                <div class="layer-checkbox">
+                                    <span class="layer-checkmark">✓</span>
+                                </div>
+                                <span class="layer-label">Badges Contador</span>
+                            </div>
+                            <div class="layer-toggle" data-layer="labels">
+                                <div class="layer-checkbox">
+                                    <span class="layer-checkmark">✓</span>
+                                </div>
+                                <span class="layer-label">Rótulos das Cidades</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1252,6 +1566,8 @@
     <script src="js/reports-and-history.js?v=FORCE1737052800"></script>
     <script src="js/company-filter.js?v=FORCE1737052800"></script>
     <script src="js/main.js?v=FORCE1737052800"></script>
+
+    <script src="js/navigation.js?v=FORCE1737318800"></script>
 
     <script>
         feather.replace();
@@ -1378,6 +1694,11 @@
             mapSearchKbd.style.display = 'inline-flex';
             mapSearchResults.classList.remove('active');
             mapSearchWrapper.classList.remove('focused');
+            
+            // 📍 v3.7.0: Adiciona às recentes
+            if (window.navigationManager) {
+                window.navigationManager.addRecentCity(cityName);
+            }
             
             closeSidebar();
             
@@ -1875,6 +2196,11 @@
             // ⭐ NOVO v5.0: Inicializa filtro de empresa
             if (typeof CompanyFilter !== 'undefined') {
                 window.companyFilter = new CompanyFilter(window.app);
+            }
+            
+            // 📍 NOVO v3.7.0: Inicializa navegação premium
+            if (typeof NavigationManager !== 'undefined') {
+                window.navigationManager = new NavigationManager(window.app);
             }
             
             updateSidebarStats();
