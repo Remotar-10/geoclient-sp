@@ -1,7 +1,7 @@
 /**
  * 🚀 GeoClient SP - Main Application
  * @module app
- * @version 4.2.0
+ * @version 4.2.1
  * @description Main application class orchestrating all modules
  */
 
@@ -15,6 +15,7 @@ import { getDashboardManager } from './dashboard-manager.js';
 import { getReportsManager } from './reports-manager.js';
 import { getCompaniesManager } from './companies-manager.js';
 import { getNavigationManager } from './navigation-manager.js';
+import { getSearchManager } from './search-manager.js';
 import { getEventBus, EVENT_TYPES } from './events.js';
 import { toast } from './toast.js';
 
@@ -36,7 +37,8 @@ export class GeoClientApp {
     this.dashboardManager = null;
     this.reportsManager = null;
     this.companiesManager = null;
-    this.navigationManager = null; // ⭐ NEW
+    this.navigationManager = null;
+    this.searchManager = null; // ⭐ NEW
     
     // State
     this.isInitialized = false;
@@ -79,19 +81,22 @@ export class GeoClientApp {
       // 7. Initialize Reports Manager
       this.reportsManager = getReportsManager(this.mapManager, this.storageManager);
       
-      // 8. ⭐ Initialize Navigation Manager (NEW)
+      // 8. Initialize Navigation Manager
       this.navigationManager = getNavigationManager(this.mapManager, this.storageManager);
       
-      // 9. Setup event listeners FIRST
+      // 9. ⭐ Initialize Search Manager (NEW)
+      this.searchManager = getSearchManager(this.mapManager, this.storageManager);
+      
+      // 10. Setup event listeners FIRST
       this.setupEventListeners();
       
-      // 10. Setup city click handlers
+      // 11. Setup city click handlers
       this.setupCityHandlers();
       
-      // 11. Restore saved data
+      // 12. Restore saved data
       this.restoreData();
       
-      // 12. Render all UI components
+      // 13. Render all UI components
       this.renderAllUI();
       
       this.isInitialized = true;
@@ -140,7 +145,7 @@ export class GeoClientApp {
       console.log('✅ Companies list rendered');
     }
     
-    // ⭐ Render navigation components (NEW)
+    // Render navigation components
     if (this.navigationManager) {
       this.navigationManager.renderRecentCities();
       this.navigationManager.renderRegionButtons();
@@ -154,6 +159,9 @@ export class GeoClientApp {
       this.uiManager.updateCitiesList();
       console.log('✅ Cities list updated');
     }
+    
+    // ⭐ Search is auto-initialized
+    console.log('✅ Search initialized');
   }
 
   /**
