@@ -1,7 +1,2 @@
-Force rebuild at: Wed Jan 14 2026 14:43:00 GMT-0300
-
-This file exists only to trigger GitHub Pages to rebuild and clear cache.
-The map-controls.js file should now load the updated version with:
-- Reset zoom button in TOP RIGHT position
-- Button below the +/- zoom controls
-- Home icon properly displayed
+Last rebuild: 2026-01-20 14:43:00 -03:00
+Reason: Force GitHub Pages to recognize index-es6.html
