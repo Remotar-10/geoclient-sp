@@ -1,295 +1,238 @@
 /**
- * 🎨 GEOCLIENT SP - SIDEBAR STYLES v4.0.0
- * 
- * Sidebar Components:
- * - Sidebar container retrátil
- * - Header com logo e close button
- * - Accordion sections
- * - Menu items
- * - Overlay backdrop
- * - Toggle button flutuante
- * - Responsividade mobile
- * 
- * @author GeoClient Team
- * @version 4.0.0
- * @date 2026-01-20
+ * GeoClient SP - Sidebar Styles
+ * Navigation and sidebar components
  */
 
-/* ========================================
-   📱 SIDEBAR TOGGLE BUTTON
-======================================== */
-
-.sidebar-toggle {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: calc(var(--z-sticky) + 1);
-    width: 48px;
-    height: 48px;
+.sidebar {
+    width: 320px;
     background: white;
-    border: none;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    cursor: pointer;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    z-index: 100;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+}
+
+.sidebar.collapsed .sidebar-text,
+.sidebar.collapsed .tab-text,
+.sidebar.collapsed .sidebar-content {
+    display: none;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all var(--transition-base);
+    justify-content: space-between;
+}
+
+.sidebar-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-icon {
+    font-size: 24px;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
 }
 
 .sidebar-toggle:hover {
-    background: var(--color-primary);
-    transform: scale(1.05);
+    background: #f3f4f6;
 }
 
-.sidebar-toggle:hover svg {
-    color: white;
+/* Navigation */
+.sidebar-nav {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px;
 }
 
-.sidebar-toggle svg {
-    width: 24px;
-    height: 24px;
-    color: var(--color-gray-700);
-    transition: color var(--transition-fast);
-}
-
-/* ========================================
-   🎨 SIDEBAR OVERLAY
-======================================== */
-
-.sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
+.nav-tab {
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: var(--z-overlay);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-base);
-    backdrop-filter: blur(2px);
-}
-
-.sidebar-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* ========================================
-   📋 SIDEBAR CONTAINER
-======================================== */
-
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: -400px;
-    width: 100%;
-    max-width: 400px;
-    height: 100%;
-    background: white;
-    box-shadow: var(--shadow-xl);
-    z-index: calc(var(--z-overlay) + 1);
-    display: flex;
-    flex-direction: column;
-    transition: left var(--transition-base);
-}
-
-.sidebar.active {
-    left: 0;
-}
-
-/* ========================================
-   📌 SIDEBAR HEADER
-======================================== */
-
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-header h1 {
-    font-size: var(--font-xl);
-    font-weight: 700;
-    color: white;
-}
-
-.sidebar-close {
-    width: 36px;
-    height: 36px;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 16px;
+    background: none;
     border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
+    gap: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.2s;
+    margin-bottom: 4px;
 }
 
-.sidebar-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
+.nav-tab:hover {
+    background: #f3f4f6;
+    color: #1f2937;
 }
 
-.sidebar-close svg {
-    width: 20px;
-    height: 20px;
+.nav-tab.active {
+    background: #3b82f6;
     color: white;
 }
 
-/* ========================================
-   📜 SIDEBAR CONTENT
-======================================== */
+.tab-icon {
+    font-size: 20px;
+}
 
+/* Sidebar Content */
 .sidebar-content {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-md);
+    padding: 20px;
 }
 
-/* ========================================
-   🎯 ACCORDION SECTIONS
-======================================== */
-
-.accordion-section {
-    margin-bottom: var(--spacing-sm);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--color-gray-50);
-    transition: all var(--transition-fast);
+.tab-panel {
+    display: none;
 }
 
-.accordion-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-md);
-    background: white;
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    user-select: none;
+.tab-panel.active {
+    display: block;
 }
 
-.accordion-header:hover {
-    background: var(--color-gray-50);
-    border-color: var(--color-primary);
-}
-
-.accordion-header.active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: white;
-}
-
-.accordion-title {
-    font-size: var(--font-base);
+.tab-panel h2 {
+    font-size: 18px;
     font-weight: 600;
-    transition: color var(--transition-fast);
+    color: #1f2937;
+    margin-bottom: 16px;
 }
 
-.accordion-icon {
-    width: 20px;
-    height: 20px;
-    transition: transform var(--transition-base);
+.tab-panel h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.accordion-header.active .accordion-icon {
-    transform: rotate(180deg);
+/* Search Box */
+.search-box {
+    margin-bottom: 20px;
 }
 
-.accordion-header.active .accordion-title {
-    color: white;
-}
-
-/* ========================================
-   📄 ACCORDION CONTENT
-======================================== */
-
-.accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height var(--transition-slow);
-    background: white;
-}
-
-.accordion-content.active {
-    max-height: 2000px;
-    padding: var(--spacing-md);
-    border: 1px solid var(--color-gray-200);
-    border-top: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-
-/* ========================================
-   📋 SIDEBAR MENU
-======================================== */
-
-.sidebar-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar-menu li {
-    margin-bottom: var(--spacing-sm);
-}
-
-.sidebar-menu-item {
+.search-input {
     width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.quick-filters {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background: white;
-    border: 1px solid var(--color-gray-200);
-    border-radius: var(--radius-md);
-    font-size: var(--font-sm);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-filter {
+    padding: 6px 12px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition-fast);
-    text-align: left;
+    transition: all 0.2s;
 }
 
-.sidebar-menu-item:hover {
-    background: var(--color-gray-50);
-    border-color: currentColor;
-    transform: translateX(4px);
+.quick-filter:hover {
+    background: #e5e7eb;
 }
 
-.sidebar-menu-item svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
+.quick-filter.active {
+    background: #3b82f6;
+    color: white;
 }
 
-/* ========================================
-   📱 RESPONSIVIDADE
-======================================== */
-
-@media (max-width: 480px) {
-    .sidebar {
-        max-width: 100%;
-        left: -100%;
-    }
-    
-    .sidebar-toggle {
-        top: 12px;
-        left: 12px;
-        width: 44px;
-        height: 44px;
-    }
+/* Cities List */
+.cities-list {
+    margin-top: 20px;
 }
 
+#marked-cities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.city-item {
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+    font-size: 14px;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.version-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.version-badge {
+    padding: 2px 8px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .sidebar {
-        max-width: 90%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        z-index: 1000;
+        transform: translateX(-100%);
+    }
+    
+    .sidebar:not(.collapsed) {
+        transform: translateX(0);
+        box-shadow: 2px 0 8px rgba(0,0,0,0.1);
     }
 }

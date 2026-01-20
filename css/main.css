@@ -1,0 +1,117 @@
+/**
+ * GeoClient SP - Main Styles
+ * Core layout and map container
+ */
+
+/* Reset and Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow: hidden;
+}
+
+/* App Container */
+#app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Map Container */
+.map-container {
+    width: 100%;
+    height: 100%;
+    background: #f3f4f6;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Map Controls */
+.map-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.map-control-btn {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.2s;
+}
+
+.map-control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.map-control-btn:active {
+    transform: translateY(0);
+}
+
+/* Leaflet Overrides */
+.leaflet-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.leaflet-popup-content {
+    margin: 12px 16px;
+    font-size: 14px;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .map-controls {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .map-control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+}
