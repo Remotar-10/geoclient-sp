@@ -60,7 +60,7 @@
         
         /* Sidebar Override */
         .sidebar {
-            width: 320px;
+            width: 340px;
             height: 100vh;
             background: white;
             border-right: 1px solid #e5e7eb;
@@ -70,9 +70,54 @@
             overflow: hidden;
         }
         
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 2px solid #f3f4f6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .sidebar-icon {
+            font-size: 28px;
+        }
+        
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
+        }
+        
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .version-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        .version-badge {
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
         
         /* Main Content */
@@ -127,6 +172,43 @@
             gap: 10px;
         }
         
+        /* Search Box at Top */
+        .search-box-top {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            padding-left: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-input-wrapper {
+            position: relative;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 16px;
+        }
+        
         /* Accordion styles */
         .accordion-section {
             border-bottom: 1px solid #e5e7eb;
@@ -136,7 +218,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px;
+            padding: 16px 20px;
             cursor: pointer;
             transition: all 0.2s;
             user-select: none;
@@ -175,7 +257,7 @@
         }
         
         .accordion-content-inner {
-            padding: 16px;
+            padding: 16px 20px;
         }
         
         /* Stat Cards */
@@ -193,9 +275,9 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         
-        .stat-card.primary { border-color: #3b82f6; }
-        .stat-card.success { border-color: #10b981; }
-        .stat-card.warning { border-color: #f59e0b; }
+        .stat-card.primary { border-color: #667eea; background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%); }
+        .stat-card.success { border-color: #10b981; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+        .stat-card.warning { border-color: #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
         
         .stat-card-title {
             font-size: 0.75rem;
@@ -215,12 +297,12 @@
         
         .stat-card-label {
             font-size: 0.875rem;
-            color: #9ca3af;
+            color: #6b7280;
         }
         
         .stat-progress-bar {
             height: 6px;
-            background: #f3f4f6;
+            background: rgba(0,0,0,0.05);
             border-radius: 3px;
             overflow: hidden;
             margin-top: 8px;
@@ -228,7 +310,7 @@
         
         .stat-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(90deg, #667eea, #764ba2);
             transition: width 0.5s ease;
             width: 0;
         }
@@ -342,12 +424,12 @@
         }
         
         .region-count {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
         }
         
         /* Layer Toggle */
@@ -378,8 +460,8 @@
         }
         
         .layer-toggle.active .layer-checkbox {
-            background: #3b82f6;
-            border-color: #3b82f6;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
         }
         
         .layer-checkmark {
@@ -415,8 +497,8 @@
         }
         
         .data-btn:hover {
-            border-color: #3b82f6;
-            background: #f0f9ff;
+            border-color: #667eea;
+            background: #f0f4ff;
         }
         
         .data-btn-icon {
@@ -429,12 +511,19 @@
         }
         
         .data-btn-count {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+            font-size: 0.875rem;
         }
     </style>
 </head>
@@ -453,6 +542,18 @@
                     <span class="sidebar-icon">🗺️</span>
                     <span class="sidebar-text">GeoClient SP</span>
                 </h1>
+            </div>
+            
+            <!-- Search Box at Top -->
+            <div class="search-box-top">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" 
+                           id="city-search" 
+                           class="search-input" 
+                           placeholder="Buscar cidade..." 
+                           autocomplete="off">
+                </div>
             </div>
 
             <div class="sidebar-content">
@@ -502,7 +603,7 @@
                     </div>
                     <div class="accordion-content" id="content-companies">
                         <div class="accordion-content-inner" id="companies-list">
-                            <!-- Will be populated dynamically -->
+                            <div class="empty-state">🏭 Nenhuma empresa cadastrada</div>
                         </div>
                     </div>
                 </div>
@@ -677,6 +778,7 @@
 
             setupAccordion();
             setupUIListeners(app);
+            setupSearch(app);
             updateStats(app);
             renderCompanies(app);
             
@@ -713,6 +815,19 @@
                 });
             });
         }
+        
+        function setupSearch(app) {
+            const searchInput = document.getElementById('city-search');
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length >= 2 && app.searchManager) {
+                    const results = app.searchManager.search(query);
+                    console.log(`🔍 Busca: "${query}" - ${results.length} resultados`);
+                }
+            });
+        }
 
         function setupUIListeners(app) {
             document.getElementById('reset-view')?.addEventListener('click', () => app.resetMapView());
@@ -722,7 +837,11 @@
             document.getElementById('btn-import')?.addEventListener('click', () => app.showImportModal());
             document.getElementById('btn-export-csv')?.addEventListener('click', () => app.exportCSV());
             document.getElementById('btn-export-json')?.addEventListener('click', () => app.exportJSON());
-            document.getElementById('btn-clear')?.addEventListener('click', () => app.clearAllData());
+            document.getElementById('btn-clear')?.addEventListener('click', () => {
+                if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?')) {
+                    app.clearAllData();
+                }
+            });
             
             document.querySelectorAll('.layer-toggle').forEach(toggle => {
                 toggle.addEventListener('click', () => {
@@ -776,7 +895,7 @@
             const container = document.getElementById('companies-list');
             
             if (totalMarked === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 20px;">🏭 Nenhuma empresa cadastrada</div>';
+                container.innerHTML = '<div class="empty-state">🏭 Nenhuma empresa cadastrada</div>';
                 return;
             }
             
@@ -791,7 +910,7 @@
                                 </div>
                                 <div class="company-details">
                                     <div class="company-name">${name}</div>
-                                    <div class="company-count">${data.count} cidades</div>
+                                    <div class="company-count">${data.count} ${data.count === 1 ? 'cidade' : 'cidades'}</div>
                                 </div>
                             </div>
                             <div class="company-percentage">${percent}%</div>
