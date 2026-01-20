@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GeoClient SP v4.1.0 - Sistema de mapeamento e gestão de clientes no estado de São Paulo">
+    <meta name="author" content="GeoClient Team">
+    <title>GeoClient SP v4.1.0 - ES6 Modules</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="" />
+    
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/toast.css">
+    
+    <style>
+        /* Loading screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-version {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Main content hidden until loaded */
+        #app-container {
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+
+        #app-container.loaded {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-logo">🗺️</div>
+        <div class="loading-text">GeoClient SP</div>
+        <div class="loading-version">v4.1.0 - ES6 Modules</div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app-container">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">
+                    <span class="sidebar-icon">🗺️</span>
+                    <span class="sidebar-text">GeoClient SP</span>
+                </h1>
+                <button id="sidebar-toggle" class="sidebar-toggle" title="Minimizar sidebar">
+                    <span>◀</span>
+                </button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="sidebar-nav">
+                <button class="nav-tab active" data-tab="map">
+                    <span class="tab-icon">🗺️</span>
+                    <span class="tab-text">Mapa</span>
+                </button>
+                <button class="nav-tab" data-tab="dashboard">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-text">Dashboard</span>
+                </button>
+                <button class="nav-tab" data-tab="companies">
+                    <span class="tab-icon">🏢</span>
+                    <span class="tab-text">Empresas</span>
+                </button>
+                <button class="nav-tab" data-tab="reports">
+                    <span class="tab-icon">📄</span>
+                    <span class="tab-text">Relatórios</span>
+                </button>
+                <button class="nav-tab" data-tab="settings">
+                    <span class="tab-icon">⚙️</span>
+                    <span class="tab-text">Configurações</span>
+                </button>
+            </nav>
+
+            <!-- Tab Content Panels -->
+            <div class="sidebar-content">
+                <!-- Map Tab (default) -->
+                <div id="tab-map" class="tab-panel active">
+                    <div class="search-box">
+                        <input type="text" 
+                               id="city-search" 
+                               placeholder="Buscar cidade..." 
+                               class="search-input">
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>Filtros Rápidos</h3>
+                        <div id="quick-filters" class="quick-filters">
+                            <!-- Populated by FilterManager -->
+                        </div>
+                    </div>
+
+                    <div class="cities-list">
+                        <h3>Cidades Marcadas</h3>
+                        <div id="marked-cities-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-panel">
+                    <h2>Dashboard</h2>
+                    <div id="dashboard-stats">
+                        <!-- Populated by DashboardManager -->
+                    </div>
+                </div>
+
+                <!-- Companies Tab -->
+                <div id="tab-companies" class="tab-panel">
+                    <h2>Empresas</h2>
+                    <div id="companies-list">
+                        <!-- Populated by CompaniesManager -->
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="tab-reports" class="tab-panel">
+                    <h2>Relatórios</h2>
+                    <div id="reports-templates">
+                        <!-- Populated by ReportsManager -->
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="tab-settings" class="tab-panel">
+                    <h2>Configurações</h2>
+                    <div id="settings-panel">
+                        <p>Configurações em desenvolvimento...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="version-info">
+                    <span id="app-version">v4.1.0</span>
+                    <span class="version-badge">ES6</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Map Container -->
+        <main id="main-content" class="main-content">
+            <div id="map" class="map-container"></div>
+
+            <!-- Map Controls -->
+            <div class="map-controls">
+                <button id="reset-view" class="map-control-btn" title="Resetar visualização">
+                    <span>🎯</span>
+                </button>
+                <button id="export-data" class="map-control-btn" title="Exportar dados">
+                    <span>💾</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Container (injected by toast.js) -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+
+    <!-- Main ES6 Module -->
+    <script type="module">
+        // Import main orchestrator
+        import { initializeApp, getApp, getManagers } from './js/main-es6.js';
+
+        // Wait for geoclient:ready event
+        window.addEventListener('geoclient:ready', (event) => {
+            const app = event.detail.app;
+            
+            // Hide loading screen
+            const loadingScreen = document.getElementById('loading-screen');
+            const appContainer = document.getElementById('app-container');
+            
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                appContainer.classList.add('loaded');
+            }, 500);
+
+            // Setup UI event listeners
+            setupUIListeners(app);
+            
+            console.log('🎉 GeoClient SP ready!', app);
+        });
+
+        /**
+         * Setup UI event listeners
+         */
+        function setupUIListeners(app) {
+            // Sidebar toggle
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.toggle('collapsed');
+                });
+            }
+
+            // Tab navigation
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    
+                    // Update active states
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding panel
+                    document.querySelectorAll('.tab-panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    document.getElementById(`tab-${tabId}`).classList.add('active');
+                });
+            });
+
+            // Reset view button
+            const resetBtn = document.getElementById('reset-view');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    app.resetMapView();
+                });
+            }
+
+            // Export button
+            const exportBtn = document.getElementById('export-data');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', () => {
+                    app.exportJSON();
+                });
+            }
+
+            // City search
+            const searchInput = document.getElementById('city-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value;
+                    const results = app.searchCities(query);
+                    console.log('Search results:', results);
+                    // TODO: Update UI with results
+                });
+            }
+        }
+    </script>
+
+    <!-- Fallback for non-ES6 browsers -->
+    <script nomodule>
+        document.getElementById('loading-screen').innerHTML = `
+            <div style="text-align: center; color: white; padding: 40px;">
+                <h2>⚠️ Navegador Não Suportado</h2>
+                <p>Este aplicativo requer um navegador moderno com suporte a ES6 Modules.</p>
+                <p>Por favor, atualize seu navegador ou use:</p>
+                <ul style="list-style: none; padding: 0;">
+                    <li>✅ Chrome 61+</li>
+                    <li>✅ Firefox 60+</li>
+                    <li>✅ Safari 11+</li>
+                    <li>✅ Edge 79+</li>
+                </ul>
+                <p style="margin-top: 20px;">
+                    <a href="index.html" style="color: white; text-decoration: underline;">
+                        Usar versão legada (index.html)
+                    </a>
+                </p>
+            </div>
+        `;
+    </script>
+</body>
+</html>
