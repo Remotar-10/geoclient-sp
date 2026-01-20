@@ -1,39 +1,62 @@
 /**
- * 🎨 SIDEBAR STYLES v4.0.0
- * Sidebar retrátil + accordion + overlay
+ * 🎨 GEOCLIENT SP - SIDEBAR STYLES v4.0.0
+ * 
+ * Sidebar Components:
+ * - Sidebar container retrátil
+ * - Header com logo e close button
+ * - Accordion sections
+ * - Menu items
+ * - Overlay backdrop
+ * - Toggle button flutuante
+ * - Responsividade mobile
+ * 
+ * @author GeoClient Team
+ * @version 4.0.0
+ * @date 2026-01-20
  */
 
-/* TOGGLE BUTTON */
+/* ========================================
+   📱 SIDEBAR TOGGLE BUTTON
+======================================== */
+
 .sidebar-toggle {
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 1002;
-    background: white;
-    border: none;
+    z-index: calc(var(--z-sticky) + 1);
     width: 48px;
     height: 48px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 }
 
 .sidebar-toggle:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background: var(--color-primary);
     transform: scale(1.05);
 }
 
-.sidebar-toggle i {
-    width: 24px;
-    height: 24px;
-    color: #374151;
+.sidebar-toggle:hover svg {
+    color: white;
 }
 
-/* OVERLAY */
+.sidebar-toggle svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-gray-700);
+    transition: color var(--transition-fast);
+}
+
+/* ========================================
+   🎨 SIDEBAR OVERLAY
+======================================== */
+
 .sidebar-overlay {
     position: fixed;
     top: 0;
@@ -41,10 +64,11 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1001;
+    z-index: var(--z-overlay);
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
+    backdrop-filter: blur(2px);
 }
 
 .sidebar-overlay.active {
@@ -52,155 +76,220 @@
     visibility: visible;
 }
 
-/* SIDEBAR */
+/* ========================================
+   📋 SIDEBAR CONTAINER
+======================================== */
+
 .sidebar {
     position: fixed;
     top: 0;
-    left: -320px;
-    width: 320px;
+    left: -400px;
+    width: 100%;
+    max-width: 400px;
     height: 100%;
     background: white;
-    z-index: 1002;
-    box-shadow: 2px 0 12px rgba(0,0,0,0.1);
-    transition: left 0.3s ease;
-    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    z-index: calc(var(--z-overlay) + 1);
     display: flex;
     flex-direction: column;
+    transition: left var(--transition-base);
 }
 
 .sidebar.active {
     left: 0;
 }
 
+/* ========================================
+   📌 SIDEBAR HEADER
+======================================== */
+
 .sidebar-header {
-    padding: 24px 20px;
-    border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-header h1 {
-    font-size: 20px;
+    font-size: var(--font-xl);
     font-weight: 700;
+    color: white;
 }
 
 .sidebar-close {
-    background: transparent;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    color: white;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    width: 32px;
-    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    transition: background 0.2s;
+    transition: all var(--transition-fast);
 }
 
 .sidebar-close:hover {
     background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
 }
 
-.sidebar-close i {
+.sidebar-close svg {
     width: 20px;
     height: 20px;
+    color: white;
 }
+
+/* ========================================
+   📜 SIDEBAR CONTENT
+======================================== */
 
 .sidebar-content {
     flex: 1;
-    padding: 0;
+    overflow-y: auto;
+    padding: var(--spacing-md);
 }
 
-/* ACCORDION */
+/* ========================================
+   🎯 ACCORDION SECTIONS
+======================================== */
+
 .accordion-section {
-    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: var(--spacing-sm);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-gray-50);
+    transition: all var(--transition-fast);
 }
 
 .accordion-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    cursor: pointer;
+    padding: var(--spacing-md);
     background: white;
-    transition: background 0.15s;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
     user-select: none;
 }
 
 .accordion-header:hover {
-    background: #f9fafb;
+    background: var(--color-gray-50);
+    border-color: var(--color-primary);
+}
+
+.accordion-header.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
 }
 
 .accordion-title {
-    display: flex;
-    align-items: center;
-    font-size: 15px;
+    font-size: var(--font-base);
     font-weight: 600;
-    color: #374151;
+    transition: color var(--transition-fast);
 }
 
 .accordion-icon {
     width: 20px;
     height: 20px;
-    color: #6b7280;
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-base);
 }
 
 .accordion-header.active .accordion-icon {
     transform: rotate(180deg);
 }
 
+.accordion-header.active .accordion-title {
+    color: white;
+}
+
+/* ========================================
+   📄 ACCORDION CONTENT
+======================================== */
+
 .accordion-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: max-height var(--transition-slow);
+    background: white;
 }
 
 .accordion-content.active {
-    max-height: 2500px;
+    max-height: 2000px;
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-gray-200);
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
-/* MENU ITEMS */
+/* ========================================
+   📋 SIDEBAR MENU
+======================================== */
+
 .sidebar-menu {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
+.sidebar-menu li {
+    margin-bottom: var(--spacing-sm);
+}
+
 .sidebar-menu-item {
+    width: 100%;
     display: flex;
     align-items: center;
-    padding: 14px 20px;
-    cursor: pointer;
-    transition: background 0.15s;
-    border: none;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
     background: white;
-    width: 100%;
-    text-align: left;
-    color: #374151;
-    font-size: 15px;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
     font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
 }
 
 .sidebar-menu-item:hover {
-    background: #f3f4f6;
+    background: var(--color-gray-50);
+    border-color: currentColor;
+    transform: translateX(4px);
 }
 
-.sidebar-menu-item i {
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-    color: #6b7280;
+.sidebar-menu-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
-/* MOBILE */
+/* ========================================
+   📱 RESPONSIVIDADE
+======================================== */
+
+@media (max-width: 480px) {
+    .sidebar {
+        max-width: 100%;
+        left: -100%;
+    }
+    
+    .sidebar-toggle {
+        top: 12px;
+        left: 12px;
+        width: 44px;
+        height: 44px;
+    }
+}
+
 @media (max-width: 768px) {
     .sidebar {
-        width: 280px;
-        left: -280px;
+        max-width: 90%;
     }
 }

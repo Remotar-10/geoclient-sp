@@ -1,225 +1,335 @@
 /**
- * 📍 NAVIGATION STYLES v4.0.0
- * Aba Navegação premium (v3.7.0)
+ * 📍 GEOCLIENT SP - NAVIGATION STYLES v4.0.0
+ * 
+ * Navigation Premium Components (v3.7.0):
+ * - City search box
+ * - Search results dropdown
+ * - Shortcuts rápidos
+ * - Recent cities list
+ * - Region buttons
+ * - Layer toggles
+ * - Nav cards
+ * 
+ * @author GeoClient Team
+ * @version 4.0.0
+ * @date 2026-01-20
  */
 
-.nav-section {
-    padding: 20px;
+/* ========================================
+   🔍 CITY SEARCH BOX
+======================================== */
+
+.city-search-container {
+    margin-bottom: var(--spacing-lg);
 }
 
-/* NAV CARDS */
-.nav-card {
+.city-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
     background: white;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.city-search-box:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.city-search-box svg {
+    width: 20px;
+    height: 20px;
+    color: var(--color-gray-400);
+    flex-shrink: 0;
+}
+
+.city-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: var(--font-base);
+    color: var(--color-gray-900);
+    background: transparent;
+}
+
+.city-search-input::placeholder {
+    color: var(--color-gray-400);
+}
+
+.search-clear-btn {
+    width: 24px;
+    height: 24px;
+    background: var(--color-gray-200);
+    border: none;
+    border-radius: var(--radius-full);
+    color: var(--color-gray-600);
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.search-clear-btn:hover {
+    background: var(--color-gray-300);
+}
+
+/* ========================================
+   📋 SEARCH RESULTS
+======================================== */
+
+.search-results {
+    display: none;
+    margin-top: var(--spacing-sm);
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.search-result-item:hover {
+    background: var(--color-gray-50);
+}
+
+.search-result-name {
+    font-size: var(--font-sm);
+    color: var(--color-gray-900);
+}
+
+.search-result-badge {
+    padding: 4px 8px;
+    background: var(--color-primary);
+    color: white;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+}
+
+.search-no-results {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--color-gray-500);
+    font-size: var(--font-sm);
+}
+
+/* ========================================
+   🎯 NAV SECTION & CARDS
+======================================== */
+
+.nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.nav-card {
+    padding: var(--spacing-lg);
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-gray-200);
 }
 
 .nav-card-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f3f4f6;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
 }
 
 .nav-card-icon {
-    font-size: 18px;
+    font-size: var(--font-xl);
 }
 
 .nav-card-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #111827;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: var(--font-base);
+    font-weight: 600;
+    color: var(--color-gray-900);
 }
 
 .nav-card-count {
-    margin-left: auto;
-    font-size: 11px;
-    padding: 2px 8px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    color: #6b7280;
-    font-weight: 600;
-}
-
-/* CIDADES RECENTES */
-.recent-city-item {
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 8px;
-    border: 2px solid transparent;
-}
-
-.recent-city-item:hover {
-    background: #f9fafb;
-    border-color: #e5e7eb;
-}
-
-.recent-city-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.recent-city-meta {
-    font-size: 11px;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.recent-city-badge {
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-    font-weight: 600;
+    padding: 4px 8px;
+    background: var(--color-primary);
     color: white;
+    font-size: var(--font-xs);
+    font-weight: 700;
+    border-radius: var(--radius-md);
 }
 
-.recent-empty {
-    text-align: center;
-    padding: 20px;
-    color: #9ca3af;
-    font-size: 13px;
-}
+/* ========================================
+   🎯 SHORTCUT BUTTONS
+======================================== */
 
-/* ATALHOS RÁPIDOS */
 .shortcut-btn {
-    padding: 12px 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    text-align: left;
-    transition: all 0.2s;
+    width: 100%;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--spacing-sm);
+}
+
+.shortcut-btn:last-child {
+    margin-bottom: 0;
 }
 
 .shortcut-btn:hover {
-    background: #f9fafb;
-    border-color: #3b82f6;
-    color: #3b82f6;
+    background: white;
+    border-color: var(--color-primary);
     transform: translateX(4px);
 }
 
 .shortcut-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: var(--font-lg);
     flex-shrink: 0;
 }
 
-/* REGIÕES */
+/* ========================================
+   🌟 RECENT CITIES
+======================================== */
+
+.recent-empty {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--color-gray-500);
+    font-size: var(--font-sm);
+}
+
+/* ========================================
+   🗺️ REGION BUTTONS
+======================================== */
+
 .region-btn {
-    padding: 12px 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    text-align: left;
-    transition: all 0.2s;
+    width: 100%;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--spacing-sm);
+}
+
+.region-btn:last-child {
+    margin-bottom: 0;
 }
 
 .region-btn:hover {
-    background: #f9fafb;
-    border-color: #10b981;
-    transform: scale(1.02);
+    background: white;
+    border-color: var(--color-primary);
+    transform: translateX(4px);
 }
 
 .region-icon {
-    font-size: 20px;
+    font-size: var(--font-lg);
+    margin-right: var(--spacing-sm);
 }
 
 .region-label {
     flex: 1;
+    font-size: var(--font-sm);
+    font-weight: 500;
 }
 
 .region-count {
-    font-size: 11px;
-    padding: 3px 8px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    color: #6b7280;
-    font-weight: 600;
+    padding: 4px 8px;
+    background: var(--color-gray-200);
+    color: var(--color-gray-700);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    border-radius: var(--radius-md);
 }
 
-/* LAYERS TOGGLE */
+/* ========================================
+   👁️ LAYER TOGGLES
+======================================== */
+
 .layer-toggle {
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
-    user-select: none;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--spacing-sm);
+}
+
+.layer-toggle:last-child {
+    margin-bottom: 0;
 }
 
 .layer-toggle:hover {
-    background: #f9fafb;
+    background: var(--color-gray-100);
+}
+
+.layer-toggle.active {
+    background: rgba(59, 130, 246, 0.1);
 }
 
 .layer-checkbox {
     width: 20px;
     height: 20px;
-    border: 2px solid #d1d5db;
-    border-radius: 4px;
+    background: white;
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
+    transition: all var(--transition-fast);
 }
 
 .layer-toggle.active .layer-checkbox {
-    background: #10b981;
-    border-color: #10b981;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .layer-checkmark {
     color: white;
-    font-size: 14px;
-    font-weight: bold;
-    display: none;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
 }
 
 .layer-toggle.active .layer-checkmark {
-    display: block;
+    opacity: 1;
 }
 
 .layer-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: #374151;
     flex: 1;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--color-gray-700);
 }
