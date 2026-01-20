@@ -392,7 +392,7 @@
             color: #374151;
         }
         
-        .shortcut-btn, .region-btn {
+        .shortcut-btn, .region-btn, .action-btn {
             width: 100%;
             padding: 12px;
             margin-bottom: 8px;
@@ -408,7 +408,7 @@
             gap: 10px;
         }
         
-        .shortcut-btn:hover, .region-btn:hover {
+        .shortcut-btn:hover, .region-btn:hover, .action-btn:hover {
             background: #f3f4f6;
             transform: translateX(4px);
         }
@@ -525,6 +525,34 @@
             padding: 20px;
             font-size: 0.875rem;
         }
+        
+        /* Action Button Variants */
+        .action-btn.danger {
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+        .action-btn.danger:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+        
+        .action-btn.success {
+            border: 2px solid #10b981;
+            color: #10b981;
+        }
+        .action-btn.success:hover {
+            background: #f0fdf4;
+            border-color: #059669;
+        }
+        
+        .action-btn.primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        .action-btn.primary:hover {
+            background: #f0f4ff;
+            border-color: #5568d3;
+        }
     </style>
 </head>
 <body>
@@ -565,14 +593,12 @@
                     </div>
                     <div class="accordion-content active" id="content-stats">
                         <div class="accordion-content-inner">
-                            <!-- Total SP -->
                             <div class="stat-card primary">
                                 <div class="stat-card-title">Total de Municípios</div>
                                 <div class="stat-card-value">645</div>
                                 <div class="stat-card-label">Estado de São Paulo</div>
                             </div>
                             
-                            <!-- Com Empresa -->
                             <div class="stat-card success">
                                 <div class="stat-card-title">Ocupadas</div>
                                 <div class="stat-card-value" id="stat-occupied">0</div>
@@ -582,7 +608,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Disponíveis -->
                             <div class="stat-card warning">
                                 <div class="stat-card-title">Disponíveis</div>
                                 <div class="stat-card-value" id="stat-available">645</div>
@@ -608,6 +633,42 @@
                     </div>
                 </div>
 
+                <!-- ⚙️ AÇÕES -->
+                <div class="accordion-section">
+                    <div class="accordion-header" data-section="actions">
+                        <span class="accordion-title">⚙️ Ações</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content" id="content-actions">
+                        <div class="accordion-content-inner">
+                            <button class="action-btn primary" id="action-reset-view">
+                                <span>🎯</span>
+                                <span>Resetar Visualização</span>
+                            </button>
+                            <button class="action-btn primary" id="action-copy-list">
+                                <span>📋</span>
+                                <span>Copiar Lista de Cidades</span>
+                            </button>
+                            <button class="action-btn success" id="action-export-csv">
+                                <span>📊</span>
+                                <span>Exportar CSV</span>
+                            </button>
+                            <button class="action-btn success" id="action-export-json">
+                                <span>💾</span>
+                                <span>Exportar JSON</span>
+                            </button>
+                            <button class="action-btn primary" id="action-import">
+                                <span>📁</span>
+                                <span>Importar Dados</span>
+                            </button>
+                            <button class="action-btn danger" id="action-clear">
+                                <span>🗑️</span>
+                                <span>Limpar Todos os Dados</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 🧭 NAVEGAÇÃO -->
                 <div class="accordion-section">
                     <div class="accordion-header" data-section="navigation">
@@ -616,20 +677,6 @@
                     </div>
                     <div class="accordion-content" id="content-navigation">
                         <div class="accordion-content-inner">
-                            <!-- Atalhos Rápidos -->
-                            <div class="nav-card">
-                                <div class="nav-card-header">
-                                    <span>🎯</span>
-                                    <span>Atalhos Rápidos</span>
-                                </div>
-                                <button class="shortcut-btn" id="shortcut-reset">
-                                    <span>🗺️</span> Resetar Mapa
-                                </button>
-                                <button class="shortcut-btn" id="shortcut-list">
-                                    <span>📋</span> Copiar Lista
-                                </button>
-                            </div>
-                            
                             <!-- Regiões -->
                             <div class="nav-card">
                                 <div class="nav-card-header">
@@ -803,12 +850,6 @@
                         header.classList.remove('active');
                         content.classList.remove('active');
                     } else {
-                        accordionHeaders.forEach(h => {
-                            h.classList.remove('active');
-                            const c = document.getElementById(`content-${h.dataset.section}`);
-                            c.classList.remove('active');
-                        });
-                        
                         header.classList.add('active');
                         content.classList.add('active');
                     }
@@ -830,10 +871,23 @@
         }
 
         function setupUIListeners(app) {
+            // Map Controls
             document.getElementById('reset-view')?.addEventListener('click', () => app.resetMapView());
             document.getElementById('export-data')?.addEventListener('click', () => app.exportJSON());
-            document.getElementById('shortcut-reset')?.addEventListener('click', () => app.resetMapView());
-            document.getElementById('shortcut-list')?.addEventListener('click', () => app.copyCitiesList());
+            
+            // Actions Section
+            document.getElementById('action-reset-view')?.addEventListener('click', () => app.resetMapView());
+            document.getElementById('action-copy-list')?.addEventListener('click', () => app.copyCitiesList());
+            document.getElementById('action-export-csv')?.addEventListener('click', () => app.exportCSV());
+            document.getElementById('action-export-json')?.addEventListener('click', () => app.exportJSON());
+            document.getElementById('action-import')?.addEventListener('click', () => app.showImportModal());
+            document.getElementById('action-clear')?.addEventListener('click', () => {
+                if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nEsta ação não pode ser desfeita!')) {
+                    app.clearAllData();
+                }
+            });
+            
+            // Data Section (Legacy)
             document.getElementById('btn-import')?.addEventListener('click', () => app.showImportModal());
             document.getElementById('btn-export-csv')?.addEventListener('click', () => app.exportCSV());
             document.getElementById('btn-export-json')?.addEventListener('click', () => app.exportJSON());
@@ -843,6 +897,7 @@
                 }
             });
             
+            // Layer Toggles
             document.querySelectorAll('.layer-toggle').forEach(toggle => {
                 toggle.addEventListener('click', () => {
                     toggle.classList.toggle('active');
