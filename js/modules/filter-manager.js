@@ -21,8 +21,14 @@ export class FilterManager {
       noCompanies: false
     };
     
-    this.initUI();
     console.log('🔍 FilterManager initialized');
+  }
+
+  /**
+   * Render filters (public method)
+   */
+  renderFilters() {
+    this.initUI();
   }
 
   /**
@@ -30,7 +36,10 @@ export class FilterManager {
    */
   initUI() {
     const container = document.getElementById('quick-filters');
-    if (!container) return;
+    if (!container) {
+      console.warn('⚠️ Filter container not found');
+      return;
+    }
 
     // Clear existing
     container.innerHTML = '';
@@ -45,7 +54,7 @@ export class FilterManager {
       label.className = 'filter-checkbox';
       label.innerHTML = `
         <input type="checkbox" value="${company.name}" data-filter-type="company">
-        <span class="filter-label" style="color: ${company.color}">
+        <span class="filter-label">
           <span class="filter-dot" style="background: ${company.color}"></span>
           ${company.displayName}
         </span>
@@ -82,6 +91,8 @@ export class FilterManager {
 
     // Setup event listeners
     this.setupFilterListeners();
+    
+    console.log('✅ Filters rendered');
   }
 
   /**
@@ -123,7 +134,8 @@ export class FilterManager {
 
     this.mapManager.geoJsonLayer.eachLayer((layer) => {
       const cityName = layer.feature.properties.name;
-      const cityCompanies = markedCities[cityName] || [];
+      const cityData = markedCities[cityName] || { companies: [] };
+      const cityCompanies = cityData.companies || [];
       let show = true;
 
       // Filter by company
