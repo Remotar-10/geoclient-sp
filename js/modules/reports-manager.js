@@ -1,335 +1,301 @@
 /**
- * 📊 GeoClient SP - Reports Manager
+ * 📄 GeoClient SP - Reports Manager
  * @module reports-manager
- * @version 4.1.0
- * @description Report generation and export system
+ * @version 1.0.0
+ * @description Manages report generation and exports
  */
 
-import { getEventBus, EVENT_TYPES } from './events.js';
-import { getStorageManager } from './storage-manager.js';
-import { getActivityManager } from './activity-manager.js';
-import { getDashboardManager } from './dashboard-manager.js';
-import { dateTime } from './utils.js';
-import { VERSION } from './config.js';
+import { COMPANIES, STATS } from './config.js';
 import { toast } from './toast.js';
 
 /**
- * ReportsManager class for generating reports
+ * ReportsManager Class
  */
 export class ReportsManager {
-  constructor() {
-    this.eventBus = getEventBus();
-    this.storageManager = getStorageManager();
-    this.activityManager = getActivityManager();
-    this.dashboardManager = getDashboardManager();
-    this.reportTemplates = {};
+  constructor(mapManager, storageManager) {
+    this.mapManager = mapManager;
+    this.storageManager = storageManager;
     
-    this.initializeDefaultTemplates();
-    
-    console.log('📊 ReportsManager initialized');
+    this.initUI();
+    console.log('📄 ReportsManager initialized');
   }
 
   /**
-   * Initialize default report templates
+   * Initialize reports UI
    */
-  initializeDefaultTemplates() {
-    this.reportTemplates = {
-      summary: {
-        name: 'Relatório Sumário',
-        description: 'Visão geral de cidades e empresas',
-        generator: () => this.generateSummaryReport()
-      },
-      detailed: {
-        name: 'Relatório Detalhado',
-        description: 'Informações completas por cidade',
-        generator: () => this.generateDetailedReport()
-      },
-      companies: {
-        name: 'Relatório de Empresas',
-        description: 'Distribuição e cobertura por empresa',
-        generator: () => this.generateCompaniesReport()
-      },
-      activities: {
-        name: 'Log de Atividades',
-        description: 'Histórico de ações realizadas',
-        generator: () => this.generateActivitiesReport()
-      }
-    };
+  initUI() {
+    const container = document.getElementById('reports-templates');
+    if (!container) return;
+
+    container.innerHTML = this.renderReports();
+    this.setupEventListeners();
   }
 
   /**
-   * Generate summary report
-   * @returns {Object} Report data
+   * Render reports HTML
+   * @returns {string} HTML
    */
-  generateSummaryReport() {
-    const stats = this.dashboardManager.getStatistics();
-    const summary = this.dashboardManager.getSummary();
-    const topCities = this.dashboardManager.getTopCities(10);
+  renderReports() {
+    return `
+      <div class="reports-container">
+        <div class="report-section">
+          <h3>📊 Relatórios Disponíveis</h3>
+          
+          <div class="report-card">
+            <div class="report-header">
+              <span class="report-icon">🏛️</span>
+              <h4>Relatório de Cidades</h4>
+            </div>
+            <p>Lista completa de cidades marcadas com empresas</p>
+            <button class="btn btn-primary" data-report="cities-csv">
+              💾 Exportar CSV
+            </button>
+            <button class="btn btn-secondary" data-report="cities-json">
+              💾 Exportar JSON
+            </button>
+          </div>
 
-    return {
-      type: 'summary',
-      title: 'Relatório Sumário - GeoClient SP',
-      generatedAt: dateTime.now(),
-      version: VERSION.app,
-      summary,
-      statistics: stats,
-      topCities,
-      coverage: this.dashboardManager.getCompanyCoverage()
-    };
+          <div class="report-card">
+            <div class="report-header">
+              <span class="report-icon">🏭</span>
+              <h4>Relatório por Empresa</h4>
+            </div>
+            <p>Cidades agrupadas por empresa</p>
+            <button class="btn btn-primary" data-report="companies-csv">
+              💾 Exportar CSV
+            </button>
+          </div>
+
+          <div class="report-card">
+            <div class="report-header">
+              <span class="report-icon">📈</span>
+              <h4>Relatório Estatístico</h4>
+            </div>
+            <p>Estatísticas gerais e gráficos</p>
+            <button class="btn btn-primary" data-report="statistics-pdf">
+              📝 Gerar PDF
+            </button>
+          </div>
+
+          <div class="report-card">
+            <div class="report-header">
+              <span class="report-icon">✅</span>
+              <h4>Cidades Disponíveis</h4>
+            </div>
+            <p>Lista de cidades sem empresas marcadas</p>
+            <button class="btn btn-success" data-report="available-csv">
+              💾 Exportar CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <h3>🕰️ Exportações Rápidas</h3>
+          
+          <div class="quick-export-buttons">
+            <button class="btn btn-outline" data-quick="backup">
+              💾 Backup Completo (JSON)
+            </button>
+            <button class="btn btn-outline" data-quick="import">
+              📂 Importar Dados
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   /**
-   * Generate detailed report
-   * @returns {Object} Report data
+   * Setup event listeners
    */
-  generateDetailedReport() {
-    const markedCities = this.storageManager.loadMarkedCities();
-    const clients = this.storageManager.loadClients();
-
-    const cityDetails = Object.entries(markedCities).map(([cityName, cityData]) => ({
-      city: cityName,
-      companies: cityData.companies || [],
-      companiesCount: cityData.companies ? cityData.companies.length : 0,
-      clients: clients.filter(c => c.city === cityName).length
-    })).sort((a, b) => a.city.localeCompare(b.city));
-
-    return {
-      type: 'detailed',
-      title: 'Relatório Detalhado - GeoClient SP',
-      generatedAt: dateTime.now(),
-      version: VERSION.app,
-      totalCities: cityDetails.length,
-      cities: cityDetails
-    };
-  }
-
-  /**
-   * Generate companies report
-   * @returns {Object} Report data
-   */
-  generateCompaniesReport() {
-    const stats = this.dashboardManager.getStatistics();
-    const coverage = this.dashboardManager.getCompanyCoverage();
-
-    const companiesData = Object.entries(coverage).map(([_, data]) => ({
-      name: data.name,
-      cities: data.cities,
-      percentage: data.percentage,
-      color: data.color
-    })).sort((a, b) => b.cities - a.cities);
-
-    return {
-      type: 'companies',
-      title: 'Relatório de Empresas - GeoClient SP',
-      generatedAt: dateTime.now(),
-      version: VERSION.app,
-      totalCompanies: stats.companies.active,
-      companies: companiesData
-    };
-  }
-
-  /**
-   * Generate activities report
-   * @param {number} days - Days to include
-   * @returns {Object} Report data
-   */
-  generateActivitiesReport(days = 30) {
-    const activities = this.activityManager.getActivities();
-    const trends = this.dashboardManager.getActivityTrends(days);
-    const stats = this.activityManager.getStatistics();
-
-    const endDate = new Date();
-    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
-    
-    const filteredActivities = activities.filter(activity => {
-      const activityDate = new Date(activity.timestamp);
-      return activityDate >= startDate && activityDate <= endDate;
+  setupEventListeners() {
+    // Report buttons
+    document.querySelectorAll('[data-report]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const reportType = e.target.dataset.report;
+        this.generateReport(reportType);
+      });
     });
 
-    return {
-      type: 'activities',
-      title: `Log de Atividades - Últimos ${days} dias`,
-      generatedAt: dateTime.now(),
-      version: VERSION.app,
-      period: {
-        start: dateTime.format(startDate),
-        end: dateTime.format(endDate),
-        days
-      },
-      statistics: stats,
-      trends,
-      activities: filteredActivities
-    };
+    // Quick export buttons
+    document.querySelectorAll('[data-quick]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = e.target.dataset.quick;
+        if (action === 'backup') {
+          this.exportBackup();
+        } else if (action === 'import') {
+          this.importData();
+        }
+      });
+    });
   }
 
   /**
-   * Export report as JSON
+   * Generate report
    * @param {string} reportType - Report type
-   * @returns {Blob} JSON blob
    */
-  exportJSON(reportType) {
-    const template = this.reportTemplates[reportType];
-    
-    if (!template) {
-      toast.error('Template de relatório não encontrado');
-      return null;
-    }
-
-    const reportData = template.generator();
-    const json = JSON.stringify(reportData, null, 2);
-    
-    this.eventBus.emit(EVENT_TYPES.REPORT_GENERATED, { type: reportType, format: 'json' });
-    toast.success('Relatório JSON gerado!');
-    
-    return new Blob([json], { type: 'application/json' });
-  }
-
-  /**
-   * Export report as CSV
-   * @param {string} reportType - Report type
-   * @returns {Blob} CSV blob
-   */
-  exportCSV(reportType) {
-    const template = this.reportTemplates[reportType];
-    
-    if (!template) {
-      toast.error('Template de relatório não encontrado');
-      return null;
-    }
-
-    const reportData = template.generator();
-    let csv = '';
-
-    // Generate CSV based on report type
+  generateReport(reportType) {
     switch (reportType) {
-      case 'summary':
-        csv = this.generateSummaryCSV(reportData);
+      case 'cities-csv':
+        this.exportCitiesCSV();
         break;
-      case 'detailed':
-        csv = this.generateDetailedCSV(reportData);
+      case 'cities-json':
+        this.exportCitiesJSON();
         break;
-      case 'companies':
-        csv = this.generateCompaniesCSV(reportData);
+      case 'companies-csv':
+        this.exportCompaniesByCompany();
         break;
-      case 'activities':
-        csv = this.generateActivitiesCSV(reportData);
+      case 'statistics-pdf':
+        this.exportStatisticsPDF();
+        break;
+      case 'available-csv':
+        this.exportAvailableCities();
         break;
       default:
-        csv = JSON.stringify(reportData);
+        toast.warning('Relatório não implementado');
     }
+  }
 
-    this.eventBus.emit(EVENT_TYPES.REPORT_GENERATED, { type: reportType, format: 'csv' });
-    toast.success('Relatório CSV gerado!');
+  /**
+   * Export cities as CSV
+   */
+  exportCitiesCSV() {
+    const markedCities = this.mapManager.getMarkedCities();
+    let csv = 'Cidade,Empresas,Quantidade\n';
+
+    Object.entries(markedCities).forEach(([city, companies]) => {
+      csv += `"${city}","${companies.join(', ')}",${companies.length}\n`;
+    });
+
+    this.downloadFile(csv, 'cidades-marcadas.csv', 'text/csv');
+    toast.success('CSV de cidades exportado!');
+  }
+
+  /**
+   * Export cities as JSON
+   */
+  exportCitiesJSON() {
+    const markedCities = this.mapManager.getMarkedCities();
+    const data = {
+      exportDate: new Date().toISOString(),
+      totalCities: Object.keys(markedCities).length,
+      cities: markedCities
+    };
+
+    this.downloadFile(
+      JSON.stringify(data, null, 2),
+      'cidades-marcadas.json',
+      'application/json'
+    );
+    toast.success('JSON de cidades exportado!');
+  }
+
+  /**
+   * Export companies grouped by company
+   */
+  exportCompaniesByCompany() {
+    const markedCities = this.mapManager.getMarkedCities();
+    const byCompany = {};
+
+    // Group by company
+    Object.entries(markedCities).forEach(([city, companies]) => {
+      companies.forEach(company => {
+        if (!byCompany[company]) {
+          byCompany[company] = [];
+        }
+        byCompany[company].push(city);
+      });
+    });
+
+    // Generate CSV
+    let csv = 'Empresa,Cidade\n';
+    Object.entries(byCompany).forEach(([company, cities]) => {
+      cities.forEach(city => {
+        csv += `"${company}","${city}"\n`;
+      });
+    });
+
+    this.downloadFile(csv, 'relatorio-por-empresa.csv', 'text/csv');
+    toast.success('Relatório por empresa exportado!');
+  }
+
+  /**
+   * Export statistics as PDF (placeholder)
+   */
+  exportStatisticsPDF() {
+    toast.warning('Exportação PDF em desenvolvimento');
+    // TODO: Implement PDF generation
+  }
+
+  /**
+   * Export available cities
+   */
+  exportAvailableCities() {
+    const markedCities = this.mapManager.getMarkedCities();
+    const allCities = this.mapManager.getAllCities();
     
-    return new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  }
+    const available = allCities.filter(city => !markedCities[city]);
 
-  /**
-   * Generate summary CSV
-   * @param {Object} data - Report data
-   * @returns {string} CSV string
-   */
-  generateSummaryCSV(data) {
-    const rows = [
-      ['GeoClient SP - Relatório Sumário'],
-      ['Gerado em', data.generatedAt],
-      [''],
-      ['Métrica', 'Valor'],
-      ['Cidades Marcadas', data.statistics.cities.total],
-      ['Empresas Ativas', data.statistics.companies.active],
-      ['Clientes Cadastrados', data.statistics.clients.total],
-      ['Atividades Hoje', data.statistics.activities.today],
-      [''],
-      ['Top 10 Cidades'],
-      ['Cidade', 'Empresas', 'Total']
-    ];
-
-    data.topCities.forEach(city => {
-      rows.push([city.city, city.companies.join(', '), city.companiesCount]);
+    let csv = 'Cidade\n';
+    available.forEach(city => {
+      csv += `"${city}"\n`;
     });
 
-    return rows.map(row => 
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
+    this.downloadFile(csv, 'cidades-disponiveis.csv', 'text/csv');
+    toast.success(`${available.length} cidades disponíveis exportadas!`);
   }
 
   /**
-   * Generate detailed CSV
-   * @param {Object} data - Report data
-   * @returns {string} CSV string
+   * Export full backup
    */
-  generateDetailedCSV(data) {
-    const rows = [
-      ['Cidade', 'Empresas', 'Total Empresas', 'Clientes']
-    ];
-
-    data.cities.forEach(city => {
-      rows.push([
-        city.city,
-        city.companies.join(', '),
-        city.companiesCount,
-        city.clients
-      ]);
-    });
-
-    return rows.map(row => 
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
+  exportBackup() {
+    const data = this.storageManager.exportAllData();
+    this.downloadFile(
+      JSON.stringify(data, null, 2),
+      `geoclient-backup-${new Date().toISOString().split('T')[0]}.json`,
+      'application/json'
+    );
+    toast.success('Backup completo exportado!');
   }
 
   /**
-   * Generate companies CSV
-   * @param {Object} data - Report data
-   * @returns {string} CSV string
+   * Import data from file
    */
-  generateCompaniesCSV(data) {
-    const rows = [
-      ['Empresa', 'Cidades', 'Cobertura (%)', 'Cor']
-    ];
+  importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    data.companies.forEach(company => {
-      rows.push([
-        company.name,
-        company.cities,
-        company.percentage,
-        company.color
-      ]);
-    });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          this.storageManager.importData(data);
+          toast.success('Dados importados com sucesso!');
+          window.location.reload();
+        } catch (error) {
+          console.error('Import error:', error);
+          toast.error('Erro ao importar dados');
+        }
+      };
+      reader.readAsText(file);
+    };
 
-    return rows.map(row => 
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
+    input.click();
   }
 
   /**
-   * Generate activities CSV
-   * @param {Object} data - Report data
-   * @returns {string} CSV string
-   */
-  generateActivitiesCSV(data) {
-    const rows = [
-      ['Data/Hora', 'Tipo', 'Mensagem']
-    ];
-
-    data.activities.forEach(activity => {
-      rows.push([
-        dateTime.format(activity.timestamp),
-        activity.type,
-        activity.message
-      ]);
-    });
-
-    return rows.map(row => 
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
-  }
-
-  /**
-   * Download blob as file
-   * @param {Blob} blob - Blob to download
+   * Download file helper
+   * @param {string} content - File content
    * @param {string} filename - Filename
+   * @param {string} mimeType - MIME type
    */
-  downloadBlob(blob, filename) {
+  downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -337,64 +303,15 @@ export class ReportsManager {
     link.click();
     URL.revokeObjectURL(url);
   }
-
-  /**
-   * Generate and download report
-   * @param {string} reportType - Report type
-   * @param {string} format - Export format (json, csv)
-   */
-  generateAndDownload(reportType, format = 'json') {
-    const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `geoclient-${reportType}-${timestamp}.${format}`;
-
-    let blob;
-    if (format === 'json') {
-      blob = this.exportJSON(reportType);
-    } else if (format === 'csv') {
-      blob = this.exportCSV(reportType);
-    }
-
-    if (blob) {
-      this.downloadBlob(blob, filename);
-      console.log(`📊 Report downloaded: ${filename}`);
-    }
-  }
-
-  /**
-   * Get available report templates
-   * @returns {Array} Array of templates
-   */
-  getTemplates() {
-    return Object.entries(this.reportTemplates).map(([id, template]) => ({
-      id,
-      name: template.name,
-      description: template.description
-    }));
-  }
-
-  /**
-   * Schedule report (placeholder for future implementation)
-   * @param {string} reportType - Report type
-   * @param {string} schedule - Cron expression or interval
-   */
-  scheduleReport(reportType, schedule) {
-    console.log(`📊 Report scheduled: ${reportType} at ${schedule}`);
-    toast.info('Agendamento de relatórios em desenvolvimento');
-    // TODO: Implement scheduling logic
-  }
 }
 
-// Export singleton instance
-let reportsManagerInstance = null;
+let instance = null;
 
-export function getReportsManager() {
-  if (!reportsManagerInstance) {
-    reportsManagerInstance = new ReportsManager();
+export function getReportsManager(mapManager, storageManager) {
+  if (!instance && mapManager && storageManager) {
+    instance = new ReportsManager(mapManager, storageManager);
   }
-  return reportsManagerInstance;
+  return instance;
 }
 
-export default {
-  ReportsManager,
-  getReportsManager
-};
+export default ReportsManager;
