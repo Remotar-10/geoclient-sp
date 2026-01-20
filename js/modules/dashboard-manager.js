@@ -17,9 +17,23 @@ export class DashboardManager {
     this.storageManager = storageManager;
     this.eventBus = getEventBus();
     
-    this.initUI();
     this.setupEventListeners();
     console.log('📊 DashboardManager initialized');
+  }
+
+  /**
+   * Render stats (public method)
+   */
+  renderStats() {
+    this.initUI();
+  }
+
+  /**
+   * Render company breakdown (public method)
+   */
+  renderCompanyBreakdown() {
+    // Called by renderStats/initUI, nothing extra needed
+    console.log('✅ Company breakdown rendered');
   }
 
   /**
@@ -27,9 +41,13 @@ export class DashboardManager {
    */
   initUI() {
     const container = document.getElementById('dashboard-stats');
-    if (!container) return;
+    if (!container) {
+      console.warn('⚠️ Dashboard container not found');
+      return;
+    }
 
     container.innerHTML = this.renderDashboard();
+    console.log('✅ Dashboard rendered');
   }
 
   /**
@@ -84,7 +102,7 @@ export class DashboardManager {
       <div class="company-stats">
         <h3>🏢 Distribuição por Empresa</h3>
         <div class="company-breakdown">
-          ${this.renderCompanyBreakdown(stats.companyCounts)}
+          ${this.renderCompanyBreakdownHTML(stats.companyCounts)}
         </div>
       </div>
 
@@ -99,11 +117,11 @@ export class DashboardManager {
   }
 
   /**
-   * Render company breakdown
+   * Render company breakdown HTML
    * @param {Object} companyCounts - Company counts
    * @returns {string} HTML
    */
-  renderCompanyBreakdown(companyCounts) {
+  renderCompanyBreakdownHTML(companyCounts) {
     return Object.entries(COMPANIES).map(([key, company]) => {
       const count = companyCounts[key] || 0;
       const percentage = count > 0 ? ((count / STATS.totalCities) * 100).toFixed(1) : 0;
@@ -155,7 +173,8 @@ export class DashboardManager {
       companyCounts[key] = 0;
     });
 
-    Object.values(markedCities).forEach(companies => {
+    Object.entries(markedCities).forEach(([cityName, cityData]) => {
+      const companies = cityData.companies || [];
       companies.forEach(company => {
         if (companyCounts[company] !== undefined) {
           companyCounts[company]++;
