@@ -1,12 +1,13 @@
 /**
  * 🧭 GeoClient SP - Navigation Manager Module
  * @module navigation-manager
- * @version 1.0.0
+ * @version 1.0.1
  * @description Manages navigation, recent cities, regions, and map layers
  */
 
 import { getEventBus, EVENT_TYPES } from './events.js';
 import { toast } from './toast.js';
+import { COMPANIES } from './config.js';
 
 let instance = null;
 
@@ -58,6 +59,16 @@ export class NavigationManager {
     this.init();
     
     console.log('🧭 NavigationManager initialized');
+  }
+  
+  /**
+   * Get company color from config
+   * @param {string} companyName
+   * @returns {string}
+   */
+  getCompanyColor(companyName) {
+    const company = Object.values(COMPANIES).find(c => c.name === companyName);
+    return company?.color || '#6b7280';
   }
   
   /**
@@ -169,7 +180,7 @@ export class NavigationManager {
     const html = this.recentCities.map(city => {
       const relativeTime = this.getRelativeTime(city.timestamp);
       const companiesBadges = city.companies.map(company => {
-        const color = this.mapManager.getCompanyColor(company);
+        const color = this.getCompanyColor(company);
         return `<span class="recent-city-badge" style="background: ${color};">${company}</span>`;
       }).join('');
       
