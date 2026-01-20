@@ -82,7 +82,6 @@ export const STATS = {
 // 💾 STORAGE KEYS
 export const STORAGE_KEYS = {
   markedCities: 'geoclient-marked-cities',
-  clients: 'geoclient-clients',
   activities: 'geoclient-activities',
   settings: 'geoclient-settings',
   lastImport: 'geoclient-last-import',
@@ -111,9 +110,6 @@ export const ACTIVITY_TYPES = {
   CITY_REMOVED: 'city_removed',
   COMPANY_ADDED: 'company_added',
   COMPANY_REMOVED: 'company_removed',
-  CLIENT_ADDED: 'client_added',
-  CLIENT_UPDATED: 'client_updated',
-  CLIENT_DELETED: 'client_deleted',
   EXPORT_CSV: 'export_csv',
   EXPORT_JSON: 'export_json',
   EXPORT_PDF: 'export_pdf',
@@ -141,9 +137,7 @@ export const TIMING = {
 
 // 📁 FILE PATHS
 export const PATHS = {
-  // ✅ NOW WORKS! municipios-sp.geojson removed from Git LFS
   geoJson: 'data/municipios-sp.geojson',
-  clients: 'data/clients.js',
   cssBase: 'css/base.css',
   modules: 'js/modules/'
 };
