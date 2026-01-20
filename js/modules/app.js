@@ -10,6 +10,9 @@ import { MapManager } from './map-manager.js';
 import { StorageManager } from './storage-manager.js';
 import { ActivityManager } from './activity-manager.js';
 import { getUIManager } from './ui-manager.js';
+import { getFilterManager } from './filter-manager.js';
+import { getDashboardManager } from './dashboard-manager.js';
+import { getReportsManager } from './reports-manager.js';
 import { getEventBus, EVENT_TYPES } from './events.js';
 import { toast } from './toast.js';
 
@@ -26,6 +29,9 @@ export class GeoClientApp {
     this.storageManager = new StorageManager();
     this.activityManager = new ActivityManager();
     this.uiManager = null; // Will be initialized after map loads
+    this.filterManager = null;
+    this.dashboardManager = null;
+    this.reportsManager = null;
     
     // State
     this.isInitialized = false;
@@ -55,16 +61,25 @@ export class GeoClientApp {
       // 3. Initialize UI Manager (after map is ready)
       this.uiManager = getUIManager(this.mapManager);
       
-      // 4. Setup city click handlers
+      // 4. Initialize Filter Manager
+      this.filterManager = getFilterManager(this.mapManager);
+      
+      // 5. Initialize Dashboard Manager
+      this.dashboardManager = getDashboardManager(this.mapManager, this.storageManager);
+      
+      // 6. Initialize Reports Manager
+      this.reportsManager = getReportsManager(this.mapManager, this.storageManager);
+      
+      // 7. Setup city click handlers
       this.setupCityHandlers();
       
-      // 5. Restore saved data
+      // 8. Restore saved data
       this.restoreData();
       
-      // 6. Setup event listeners
+      // 9. Setup event listeners
       this.setupEventListeners();
       
-      // 7. Update UI
+      // 10. Update UI
       this.uiManager.updateCitiesList();
       
       this.isInitialized = true;
@@ -123,6 +138,9 @@ export class GeoClientApp {
       if (this.uiManager) {
         this.uiManager.updateCitiesList();
       }
+      if (this.dashboardManager) {
+        this.dashboardManager.update();
+      }
     });
 
     // City marked
@@ -131,6 +149,9 @@ export class GeoClientApp {
       this.saveData();
       if (this.uiManager) {
         this.uiManager.updateCitiesList();
+      }
+      if (this.dashboardManager) {
+        this.dashboardManager.update();
       }
     });
 
@@ -141,6 +162,9 @@ export class GeoClientApp {
       if (this.uiManager) {
         this.uiManager.updateCitiesList();
       }
+      if (this.dashboardManager) {
+        this.dashboardManager.update();
+      }
     });
   }
 
@@ -149,7 +173,7 @@ export class GeoClientApp {
    * @param {Object} data - Click event data
    */
   handleCityClick(data) {
-    console.log('🖱️ City clicked:', data.cityName);
+    console.log('🖘️ City clicked:', data.cityName);
     // UIManager handles the actual popup display
   }
 
@@ -253,6 +277,15 @@ export class GeoClientApp {
   }
 
   /**
+   * Import data from file
+   */
+  importData() {
+    if (this.reportsManager) {
+      this.reportsManager.importData();
+    }
+  }
+
+  /**
    * Clear all data
    */
   clearAllData() {
@@ -262,6 +295,9 @@ export class GeoClientApp {
       this.activityManager.clearActivities();
       if (this.uiManager) {
         this.uiManager.updateCitiesList();
+      }
+      if (this.dashboardManager) {
+        this.dashboardManager.update();
       }
       toast.warning('Dados limpos!');
     }
