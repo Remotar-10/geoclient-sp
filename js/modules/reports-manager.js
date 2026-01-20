@@ -16,8 +16,14 @@ export class ReportsManager {
     this.mapManager = mapManager;
     this.storageManager = storageManager;
     
-    this.initUI();
     console.log('📄 ReportsManager initialized');
+  }
+
+  /**
+   * Render reports (public method)
+   */
+  renderReports() {
+    this.initUI();
   }
 
   /**
@@ -25,17 +31,21 @@ export class ReportsManager {
    */
   initUI() {
     const container = document.getElementById('reports-templates');
-    if (!container) return;
+    if (!container) {
+      console.warn('⚠️ Reports container not found');
+      return;
+    }
 
-    container.innerHTML = this.renderReports();
+    container.innerHTML = this.renderReportsHTML();
     this.setupEventListeners();
+    console.log('✅ Reports rendered');
   }
 
   /**
    * Render reports HTML
    * @returns {string} HTML
    */
-  renderReports() {
+  renderReportsHTML() {
     return `
       <div class="reports-container">
         <div class="report-section">
@@ -163,7 +173,8 @@ export class ReportsManager {
     const markedCities = this.mapManager.getMarkedCities();
     let csv = 'Cidade,Empresas,Quantidade\n';
 
-    Object.entries(markedCities).forEach(([city, companies]) => {
+    Object.entries(markedCities).forEach(([city, cityData]) => {
+      const companies = cityData.companies || [];
       csv += `"${city}","${companies.join(', ')}",${companies.length}\n`;
     });
 
@@ -198,7 +209,8 @@ export class ReportsManager {
     const byCompany = {};
 
     // Group by company
-    Object.entries(markedCities).forEach(([city, companies]) => {
+    Object.entries(markedCities).forEach(([city, cityData]) => {
+      const companies = cityData.companies || [];
       companies.forEach(company => {
         if (!byCompany[company]) {
           byCompany[company] = [];
