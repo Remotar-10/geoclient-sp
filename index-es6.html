@@ -115,7 +115,7 @@
                     </div>
                 </div>
 
-                <!-- Navigation Tab (NEW) -->
+                <!-- Navigation Tab -->
                 <div id="tab-navigation" class="tab-panel">
                     <h2>🧭 Navegação</h2>
                     
@@ -196,6 +196,7 @@
             crossorigin=""></script>
 
     <script type="module" src="js/test-diagnostics.js"></script>
+    <script type="module" src="js/bug-checker.js"></script>
 
     <script type="module">
         import { initializeApp, getApp, getManagers } from './js/main-es6.js';
@@ -211,7 +212,10 @@
                 appContainer.classList.add('loaded');
                 
                 setTimeout(() => {
-                    console.log('%c🔧 TIP: Digite diagnose() para testar o sistema', 'color: #8b5cf6; font-size: 14px; font-weight: bold');
+                    console.log('%c🔧 COMANDOS DISPONÍVEIS:', 'color: #8b5cf6; font-size: 14px; font-weight: bold');
+                    console.log('%c  • diagnose()   - Testes rápidos do sistema', 'color: #6b7280');
+                    console.log('%c  • checkBugs()  - Verificação completa de bugs', 'color: #6b7280');
+                    console.log('%c  • help()       - Lista todos os comandos', 'color: #6b7280');
                 }, 1000);
             }, 500);
 
