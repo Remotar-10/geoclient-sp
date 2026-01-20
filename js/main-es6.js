@@ -20,7 +20,6 @@ import GeoClientApp from './modules/app.js';
 
 // Auxiliaries
 import { DashboardManager, getDashboardManager } from './modules/dashboard-manager.js';
-import { NavigationManager, getNavigationManager } from './modules/navigation-manager.js';
 import { CompaniesManager, getCompaniesManager } from './modules/companies-manager.js';
 import { FilterManager, getFilterManager } from './modules/filter-manager.js';
 import { ReportsManager, getReportsManager } from './modules/reports-manager.js';
@@ -80,7 +79,7 @@ function setupGlobalEventListeners() {
   });
 
   eventBus.on(EVENT_TYPES.CITY_MARKED, (data) => {
-    console.log('🏙️ City marked:', data);
+    console.log('🏛️ City marked:', data);
   });
 
   eventBus.on(EVENT_TYPES.REPORT_GENERATED, (data) => {
@@ -105,7 +104,6 @@ export function getManagers() {
     storage: getStorageManager(),
     activity: getActivityManager(),
     dashboard: getDashboardManager(),
-    navigation: getNavigationManager(),
     companies: getCompaniesManager(),
     filter: getFilterManager(),
     reports: getReportsManager()
@@ -146,7 +144,6 @@ if (typeof window !== 'undefined') {
       ActivityManager,
       MapManager,
       DashboardManager,
-      NavigationManager,
       CompaniesManager,
       FilterManager,
       ReportsManager
@@ -157,7 +154,6 @@ if (typeof window !== 'undefined') {
       getStorageManager,
       getActivityManager,
       getDashboardManager,
-      getNavigationManager,
       getCompaniesManager,
       getFilterManager,
       getReportsManager
@@ -230,7 +226,6 @@ export default {
   ActivityManager,
   MapManager,
   DashboardManager,
-  NavigationManager,
   CompaniesManager,
   FilterManager,
   ReportsManager,
@@ -239,7 +234,6 @@ export default {
   getStorageManager,
   getActivityManager,
   getDashboardManager,
-  getNavigationManager,
   getCompaniesManager,
   getFilterManager,
   getReportsManager,
