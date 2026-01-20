@@ -116,13 +116,16 @@ jobs:
           echo "📦 Building optimized artifact..."
           mkdir -p _site
           
-          # Copy essential files from root
-          echo "📋 Copying core files..."
-          cp index.html _site/ 2>/dev/null || true
+          # Copy ALL HTML files from root (including index-es6.html)
+          echo "📋 Copying ALL HTML files..."
+          cp *.html _site/ 2>/dev/null || true
+          
+          # Copy essential files
+          echo "📋 Copying essential files..."
           cp .nojekyll _site/ 2>/dev/null || true
           cp README.md _site/ 2>/dev/null || true
           
-          # ✅ FIX: Copy CSS files from root (style.css)
+          # Copy CSS files from root (style.css)
           echo "🎨 Copying CSS files from root..."
           cp *.css _site/ 2>/dev/null || true
           
@@ -144,7 +147,9 @@ jobs:
           echo "✅ Artifact built successfully!"
           echo "📦 Artifact contents:"
           du -sh _site
-          echo "📊 Files in root:"
+          echo "📊 HTML files deployed:"
+          ls -lah _site/*.html 2>/dev/null || echo "No HTML files found"
+          echo "🎨 CSS files in root:"
           ls -lah _site/*.css 2>/dev/null || echo "No CSS files in root"
           echo "📄 GeoJSON in artifact:"
           du -sh _site/data/municipios-sp.geojson 2>/dev/null || echo "GeoJSON not found"
