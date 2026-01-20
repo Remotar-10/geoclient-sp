@@ -77,9 +77,9 @@ export class UIManager {
     });
 
     // Emit event
-    this.eventBus.emit(EVENT_TYPES.CITY_CLICKED, { cityName, companies });
+    this.eventBus.emit(EVENT_TYPES.CITY_CLICKED, { city: cityName, companies });
     
-    console.log(`🏙️ City clicked: ${cityName}`, companies);
+    console.log(`🏛️ City clicked: ${cityName}`, companies);
   }
 
   /**
