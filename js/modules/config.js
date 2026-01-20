@@ -141,7 +141,9 @@ export const TIMING = {
 
 // 📁 FILE PATHS
 export const PATHS = {
-  geoJson: 'data/municipios-sp.geojson',
+  // Use sp.json instead of municipios-sp.geojson (LFS file)
+  // GitHub Pages doesn't serve LFS files properly
+  geoJson: 'data/sp.json',
   clients: 'data/clients.js',
   cssBase: 'css/base.css',
   modules: 'js/modules/'
@@ -192,7 +194,7 @@ export const ENV = {
   isLocal: location.protocol === 'file:'
 };
 
-// 📝 Feature flags (for gradual rollout)
+// 📏 Feature flags (for gradual rollout)
 export const FEATURES = {
   ES6_MODULES: true,
   DARK_MODE: false, // v4.2.0
