@@ -141,10 +141,8 @@ export const TIMING = {
 
 // 📁 FILE PATHS
 export const PATHS = {
-  // ✅ CORRECTED: Use sp.json (2.2 MB) - has all 645 cities
-  // ❌ sp-municipalities.json only has 23 cities
-  // ❌ municipios-sp.geojson is in LFS (doesn't work on GitHub Pages)
-  geoJson: 'data/sp.json',
+  // ✅ CORRECTED: Use municipios-sp.geojson (2MB optimized) - has all 645 cities
+  geoJson: 'data/municipios-sp.geojson',
   clients: 'data/clients.js',
   cssBase: 'css/base.css',
   modules: 'js/modules/'
