@@ -9,6 +9,7 @@ import { VERSION, PATHS } from './config.js';
 import { MapManager } from './map-manager.js';
 import { StorageManager } from './storage-manager.js';
 import { ActivityManager } from './activity-manager.js';
+import { getUIManager } from './ui-manager.js';
 import { getEventBus, EVENT_TYPES } from './events.js';
 import { toast } from './toast.js';
 
@@ -24,6 +25,7 @@ export class GeoClientApp {
     this.mapManager = new MapManager(options.mapElementId || 'map');
     this.storageManager = new StorageManager();
     this.activityManager = new ActivityManager();
+    this.uiManager = null; // Will be initialized after map loads
     
     // State
     this.isInitialized = false;
@@ -50,11 +52,20 @@ export class GeoClientApp {
       // 2. Load GeoJSON
       await this.mapManager.loadGeoJSON(PATHS.geoJson);
       
-      // 3. Restore saved data
+      // 3. Initialize UI Manager (after map is ready)
+      this.uiManager = getUIManager(this.mapManager);
+      
+      // 4. Setup city click handlers
+      this.setupCityHandlers();
+      
+      // 5. Restore saved data
       this.restoreData();
       
-      // 4. Setup event listeners
+      // 6. Setup event listeners
       this.setupEventListeners();
+      
+      // 7. Update UI
+      this.uiManager.updateCitiesList();
       
       this.isInitialized = true;
       
@@ -69,6 +80,21 @@ export class GeoClientApp {
       toast.error('Erro ao inicializar aplicação');
       throw error;
     }
+  }
+
+  /**
+   * Setup city click handlers with UIManager
+   */
+  setupCityHandlers() {
+    // Iterate through all city layers and setup handlers
+    this.mapManager.geoJsonLayer.eachLayer((layer) => {
+      const feature = layer.feature;
+      if (feature && feature.properties && feature.properties.name) {
+        this.uiManager.setupCityClickHandler(layer, feature);
+      }
+    });
+    
+    console.log('🎯 City click handlers setup complete');
   }
 
   /**
@@ -94,18 +120,27 @@ export class GeoClientApp {
     // Data changed - auto-save
     this.eventBus.on(EVENT_TYPES.DATA_CHANGED, () => {
       this.saveData();
+      if (this.uiManager) {
+        this.uiManager.updateCitiesList();
+      }
     });
 
     // City marked
     this.eventBus.on(EVENT_TYPES.CITY_MARKED, (data) => {
       this.activityManager.log('city_marked', data);
       this.saveData();
+      if (this.uiManager) {
+        this.uiManager.updateCitiesList();
+      }
     });
 
     // Company removed
     this.eventBus.on(EVENT_TYPES.COMPANY_REMOVED, (data) => {
       this.activityManager.log('company_removed', data);
       this.saveData();
+      if (this.uiManager) {
+        this.uiManager.updateCitiesList();
+      }
     });
   }
 
@@ -114,8 +149,8 @@ export class GeoClientApp {
    * @param {Object} data - Click event data
    */
   handleCityClick(data) {
-    console.log('🖱️ City clicked:', data.city);
-    // This will be extended by UI managers
+    console.log('🖱️ City clicked:', data.cityName);
+    // UIManager handles the actual popup display
   }
 
   /**
@@ -225,6 +260,9 @@ export class GeoClientApp {
       this.storageManager.clearAllData();
       this.mapManager.setMarkedCities({});
       this.activityManager.clearActivities();
+      if (this.uiManager) {
+        this.uiManager.updateCitiesList();
+      }
       toast.warning('Dados limpos!');
     }
   }
