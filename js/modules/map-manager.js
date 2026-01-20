@@ -198,6 +198,40 @@ export class MapManager {
   }
 
   /**
+   * Reset layer style to default (used by UIManager)
+   * @param {Object} layer - Leaflet layer
+   */
+  resetLayerStyle(layer) {
+    if (this.geoJsonLayer) {
+      this.geoJsonLayer.resetStyle(layer);
+    }
+  }
+
+  /**
+   * Update city display (style + tooltip)
+   * @param {string} cityName - City name
+   */
+  updateCityDisplay(cityName) {
+    this.updateCityStyle(cityName);
+    this.eventBus.emit(EVENT_TYPES.DATA_CHANGED);
+  }
+
+  /**
+   * Open popup for city (used by UIManager)
+   * @param {string} cityName - City name
+   * @param {Object} latlng - Leaflet latlng object
+   */
+  openCityPopup(cityName, latlng) {
+    // This is handled by UIManager's popup system
+    // Just emit event for coordination
+    this.eventBus.emit(EVENT_TYPES.CITY_CLICKED, { 
+      city: cityName, 
+      latlng,
+      layer: this.cityLayers[cityName]
+    });
+  }
+
+  /**
    * Mark city with company
    * @param {string} cityName - City name
    * @param {string} company - Company name
