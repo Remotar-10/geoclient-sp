@@ -1,7 +1,7 @@
 /**
  * 🚀 GeoClient SP - Main Application
  * @module app
- * @version 4.1.1
+ * @version 4.2.0
  * @description Main application class orchestrating all modules
  */
 
@@ -14,6 +14,7 @@ import { getFilterManager } from './filter-manager.js';
 import { getDashboardManager } from './dashboard-manager.js';
 import { getReportsManager } from './reports-manager.js';
 import { getCompaniesManager } from './companies-manager.js';
+import { getNavigationManager } from './navigation-manager.js';
 import { getEventBus, EVENT_TYPES } from './events.js';
 import { toast } from './toast.js';
 
@@ -30,11 +31,12 @@ export class GeoClientApp {
     this.mapManager = new MapManager(options.mapElementId || 'map');
     this.storageManager = new StorageManager();
     this.activityManager = new ActivityManager();
-    this.uiManager = null; // Will be initialized after map loads
+    this.uiManager = null;
     this.filterManager = null;
     this.dashboardManager = null;
     this.reportsManager = null;
     this.companiesManager = null;
+    this.navigationManager = null; // ⭐ NEW
     
     // State
     this.isInitialized = false;
@@ -62,7 +64,7 @@ export class GeoClientApp {
       // 2. Load GeoJSON
       await this.mapManager.loadGeoJSON(PATHS.geoJson);
       
-      // 3. Initialize UI Manager (after map is ready)
+      // 3. Initialize UI Manager
       this.uiManager = getUIManager(this.mapManager);
       
       // 4. Initialize Companies Manager
@@ -77,16 +79,19 @@ export class GeoClientApp {
       // 7. Initialize Reports Manager
       this.reportsManager = getReportsManager(this.mapManager, this.storageManager);
       
-      // 8. Setup event listeners FIRST (before any data operations)
+      // 8. ⭐ Initialize Navigation Manager (NEW)
+      this.navigationManager = getNavigationManager(this.mapManager, this.storageManager);
+      
+      // 9. Setup event listeners FIRST
       this.setupEventListeners();
       
-      // 9. Setup city click handlers
+      // 10. Setup city click handlers
       this.setupCityHandlers();
       
-      // 10. Restore saved data
+      // 11. Restore saved data
       this.restoreData();
       
-      // 11. Render all UI components
+      // 12. Render all UI components
       this.renderAllUI();
       
       this.isInitialized = true;
@@ -135,6 +140,15 @@ export class GeoClientApp {
       console.log('✅ Companies list rendered');
     }
     
+    // ⭐ Render navigation components (NEW)
+    if (this.navigationManager) {
+      this.navigationManager.renderRecentCities();
+      this.navigationManager.renderRegionButtons();
+      this.navigationManager.renderLayerToggles();
+      this.navigationManager.setupShortcuts();
+      console.log('✅ Navigation rendered');
+    }
+    
     // Update cities list
     if (this.uiManager) {
       this.uiManager.updateCitiesList();
@@ -178,10 +192,9 @@ export class GeoClientApp {
   }
 
   /**
-   * Setup city click handlers with UIManager
+   * Setup city click handlers
    */
   setupCityHandlers() {
-    // Iterate through all city layers and setup handlers
     this.mapManager.geoJsonLayer.eachLayer((layer) => {
       const feature = layer.feature;
       if (feature && feature.properties && feature.properties.name) {
@@ -196,32 +209,27 @@ export class GeoClientApp {
    * Restore data from localStorage
    */
   restoreData() {
-    // Restore marked cities
     const markedCities = this.storageManager.loadMarkedCities();
     this.mapManager.setMarkedCities(markedCities);
-    
     console.log(`💾 ${Object.keys(markedCities).length} cidades restauradas`);
   }
 
   /**
-   * Setup event listeners for cross-module communication
+   * Setup event listeners
    */
   setupEventListeners() {
     console.log('📡 Setting up event listeners...');
     
-    // City clicked
     this.eventBus.on(EVENT_TYPES.CITY_CLICKED, (data) => {
       this.handleCityClick(data);
     });
 
-    // Data changed - auto-save and update all UI
     this.eventBus.on(EVENT_TYPES.DATA_CHANGED, () => {
       if (this.debug) console.log('🔄 DATA_CHANGED event received');
       this.saveData();
       this.updateAllUI();
     });
 
-    // City marked
     this.eventBus.on(EVENT_TYPES.CITY_MARKED, (data) => {
       if (this.debug) console.log('🏛️ CITY_MARKED event received:', data);
       this.activityManager.log('city_marked', data);
@@ -229,7 +237,6 @@ export class GeoClientApp {
       this.updateAllUI();
     });
 
-    // Company added - CRITICAL: Sync MapManager
     this.eventBus.on(EVENT_TYPES.COMPANY_ADDED, (data) => {
       console.log('✅ COMPANY_ADDED event received:', data);
       this.syncMapWithStorage(data.city);
@@ -237,7 +244,6 @@ export class GeoClientApp {
       this.updateAllUI();
     });
 
-    // Company removed - CRITICAL: Sync MapManager
     this.eventBus.on(EVENT_TYPES.COMPANY_REMOVED, (data) => {
       console.log('✅ COMPANY_REMOVED event received:', data);
       this.syncMapWithStorage(data.city);
@@ -249,34 +255,30 @@ export class GeoClientApp {
   }
 
   /**
-   * Sync MapManager with Storage data (CRITICAL METHOD)
-   * @param {string} cityName - City to sync (optional, syncs all if not provided)
+   * Sync MapManager with Storage
+   * @param {string} cityName
    */
   syncMapWithStorage(cityName = null) {
     if (this.syncInProgress) {
-      console.warn('⚠️ Sync already in progress, skipping');
+      console.warn('⚠️ Sync already in progress');
       return;
     }
     
     this.syncInProgress = true;
     
     try {
-      // Load fresh data from storage
       const markedCities = this.storageManager.loadMarkedCities();
       
       if (this.debug) {
         console.log('🔄 Syncing map with storage:', markedCities);
       }
       
-      // Update MapManager
       this.mapManager.setMarkedCities(markedCities);
       
-      // Update specific city or all cities
       if (cityName) {
         this.mapManager.updateCityStyle(cityName);
         console.log(`🎨 City style updated: ${cityName}`);
       } else {
-        // Update all cities
         Object.keys(markedCities).forEach(city => {
           this.mapManager.updateCityStyle(city);
         });
@@ -303,78 +305,47 @@ export class GeoClientApp {
     if (this.companiesManager) {
       this.renderCompaniesList();
     }
+    if (this.navigationManager) {
+      this.navigationManager.applyLayerStates();
+    }
   }
 
-  /**
-   * Handle city click event
-   * @param {Object} data - Click event data
-   */
   handleCityClick(data) {
     if (this.debug) {
       console.log('🖱️ City clicked:', data.city);
     }
-    // UIManager handles the actual popup display
   }
 
-  /**
-   * Save all data to localStorage
-   */
   saveData() {
     const markedCities = this.mapManager.getMarkedCities();
     this.storageManager.saveMarkedCities(markedCities);
   }
 
-  /**
-   * Mark city with company
-   * @param {string} cityName - City name
-   * @param {string} company - Company name
-   */
   markCity(cityName, company) {
     this.mapManager.markCity(cityName, company);
     this.saveData();
     toast.success(`${company} adicionada em ${cityName}`);
   }
 
-  /**
-   * Remove company from city
-   * @param {string} cityName - City name
-   * @param {string} company - Company name
-   */
   removeCompany(cityName, company) {
     this.mapManager.removeCompanyFromCity(cityName, company);
     this.saveData();
     toast.info(`${company} removida de ${cityName}`);
   }
 
-  /**
-   * Search cities
-   * @param {string} query - Search query
-   * @returns {Array} Matching cities
-   */
   searchCities(query) {
     return this.mapManager.searchCities(query);
   }
 
-  /**
-   * Zoom to city
-   * @param {string} cityName - City name
-   */
   zoomToCity(cityName) {
     this.mapManager.zoomToCity(cityName);
   }
 
-  /**
-   * Reset map view
-   */
   resetMapView() {
     this.mapManager.resetView();
     toast.info('Mapa resetado');
   }
 
-  /**
-   * Get application statistics
-   * @returns {Object} Statistics
-   */
   getStatistics() {
     return {
       ...this.mapManager.getStatistics(),
@@ -383,29 +354,18 @@ export class GeoClientApp {
     };
   }
 
-  /**
-   * Export data as JSON
-   */
   exportJSON() {
     const blob = this.storageManager.exportJSON();
     this.downloadBlob(blob, `geoclient-sp-${new Date().toISOString().split('T')[0]}.json`);
     toast.success('JSON exportado!');
   }
 
-  /**
-   * Export cities as CSV
-   */
   exportCitiesCSV() {
     const blob = this.storageManager.exportCitiesCSV();
     this.downloadBlob(blob, `geoclient-cities-${new Date().toISOString().split('T')[0]}.csv`);
     toast.success('CSV de cidades exportado!');
   }
 
-  /**
-   * Helper to download blob
-   * @param {Blob} blob - Blob to download
-   * @param {string} filename - Filename
-   */
   downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -415,48 +375,35 @@ export class GeoClientApp {
     URL.revokeObjectURL(url);
   }
 
-  /**
-   * Import data from file
-   */
   importData() {
     if (this.reportsManager) {
       this.reportsManager.importData();
     }
   }
 
-  /**
-   * Clear all data
-   */
   clearAllData() {
     if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?')) {
       this.storageManager.clearAllData();
       this.mapManager.setMarkedCities({});
       this.activityManager.clearActivities();
+      if (this.navigationManager) {
+        this.navigationManager.clearRecentCities();
+      }
       this.updateAllUI();
       toast.warning('Dados limpos!');
     }
   }
 
-  /**
-   * Enable debug mode
-   */
   enableDebug() {
     this.debug = true;
     console.log('🐞 Debug mode enabled');
   }
 
-  /**
-   * Disable debug mode
-   */
   disableDebug() {
     this.debug = false;
     console.log('✅ Debug mode disabled');
   }
 
-  /**
-   * Get version info
-   * @returns {Object} Version information
-   */
   getVersion() {
     return {
       app: VERSION.app,
