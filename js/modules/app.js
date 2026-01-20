@@ -223,17 +223,33 @@ export class GeoClientApp {
       this.updateAllUI();
     });
 
-    // Company removed
-    this.eventBus.on(EVENT_TYPES.COMPANY_REMOVED, (data) => {
-      this.activityManager.log('company_removed', data);
-      this.saveData();
+    // Company added - CRITICAL: Sync MapManager
+    this.eventBus.on(EVENT_TYPES.COMPANY_ADDED, (data) => {
+      console.log('✅ Company added event received:', data);
+      
+      // Update MapManager with fresh data from storage
+      const markedCities = this.storageManager.loadMarkedCities();
+      this.mapManager.setMarkedCities(markedCities);
+      
+      // Update specific city display
+      this.mapManager.updateCityStyle(data.city);
+      
+      this.activityManager.log('company_added', data);
       this.updateAllUI();
     });
 
-    // Company added
-    this.eventBus.on(EVENT_TYPES.COMPANY_ADDED, (data) => {
-      this.activityManager.log('company_added', data);
-      this.saveData();
+    // Company removed - CRITICAL: Sync MapManager
+    this.eventBus.on(EVENT_TYPES.COMPANY_REMOVED, (data) => {
+      console.log('✅ Company removed event received:', data);
+      
+      // Update MapManager with fresh data from storage
+      const markedCities = this.storageManager.loadMarkedCities();
+      this.mapManager.setMarkedCities(markedCities);
+      
+      // Update specific city display
+      this.mapManager.updateCityStyle(data.city);
+      
+      this.activityManager.log('company_removed', data);
       this.updateAllUI();
     });
   }
