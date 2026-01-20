@@ -5,7 +5,7 @@
  * @description Centralized localStorage management with auto-save and validation
  */
 
-import { storage, dateTime, misc } from './utils.js';
+import { storage, dateTime } from './utils.js';
 import { STORAGE_KEYS, VERSION } from './config.js';
 import { getEventBus, EVENT_TYPES } from './events.js';
 
@@ -74,61 +74,6 @@ export class StorageManager {
     } catch (error) {
       console.error('❌ Erro ao carregar cidades:', error);
       return {};
-    }
-  }
-
-  // ==================== CLIENTS ====================
-
-  /**
-   * Save clients to localStorage
-   * @param {Array} clients - Array of client objects
-   * @returns {boolean} Success status
-   */
-  saveClients(clients) {
-    try {
-      const data = {
-        version: VERSION.app,
-        timestamp: dateTime.now(),
-        clients: clients
-      };
-      
-      const success = storage.set(STORAGE_KEYS.clients, data);
-      
-      if (success) {
-        console.log(`💾 ${clients.length} clientes salvos`);
-        this.eventBus.emit(EVENT_TYPES.DATA_SAVED, { type: 'clients', count: clients.length });
-      }
-      
-      return success;
-    } catch (error) {
-      console.error('❌ Erro ao salvar clientes:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Load clients from localStorage
-   * @returns {Array} Array of clients or empty array
-   */
-  loadClients() {
-    try {
-      const data = storage.get(STORAGE_KEYS.clients);
-      
-      if (!data) {
-        console.log('💾 Nenhum cliente salvo encontrado');
-        return [];
-      }
-
-      // Handle legacy format
-      const clients = data.clients || data;
-      
-      console.log(`💾 ${clients.length} clientes restaurados`);
-      this.eventBus.emit(EVENT_TYPES.DATA_LOADED, { type: 'clients', count: clients.length });
-      
-      return Array.isArray(clients) ? clients : [];
-    } catch (error) {
-      console.error('❌ Erro ao carregar clientes:', error);
-      return [];
     }
   }
 
@@ -273,7 +218,6 @@ export class StorageManager {
       version: VERSION.app,
       exportDate: dateTime.now(),
       markedCities: this.loadMarkedCities(),
-      clients: this.loadClients(),
       activities: this.loadActivities(),
       settings: this.loadSettings(),
       recentCities: this.loadRecentCities(),
@@ -328,38 +272,6 @@ export class StorageManager {
     return new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   }
 
-  /**
-   * Export clients as CSV
-   * @returns {Blob} CSV blob for download
-   */
-  exportClientsCSV() {
-    const clients = this.loadClients();
-    const rows = [];
-    
-    // Header
-    rows.push(['Nome', 'Empresa', 'Cidade', 'Email', 'Telefone']);
-    
-    // Data
-    clients.forEach(client => {
-      rows.push([
-        client.name || '',
-        client.company || '',
-        client.city || '',
-        client.email || '',
-        client.phone || ''
-      ]);
-    });
-    
-    const csv = rows.map(row => 
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
-    
-    this.saveLastExport();
-    this.eventBus.emit(EVENT_TYPES.DATA_EXPORTED, { format: 'csv-clients', rows: clients.length });
-    
-    return new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  }
-
   // ==================== IMPORT ====================
 
   /**
@@ -368,22 +280,16 @@ export class StorageManager {
    * @param {boolean} merge - Merge with existing data or replace
    * @returns {boolean} Success status
    */
-  importJSON(data, merge = false) {
+  importData(data, merge = false) {
     try {
       if (merge) {
         // Merge with existing data
         const existingCities = this.loadMarkedCities();
-        const existingClients = this.loadClients();
-        
         const mergedCities = { ...existingCities, ...(data.markedCities || {}) };
-        const mergedClients = [...existingClients, ...(data.clients || [])];
-        
         this.saveMarkedCities(mergedCities);
-        this.saveClients(mergedClients);
       } else {
         // Replace all data
         if (data.markedCities) this.saveMarkedCities(data.markedCities);
-        if (data.clients) this.saveClients(data.clients);
         if (data.settings) this.saveSettings(data.settings);
         if (data.recentCities) this.saveRecentCities(data.recentCities);
         if (data.layerSettings) this.saveLayerSettings(data.layerSettings);
@@ -419,7 +325,7 @@ export class StorageManager {
    * @returns {boolean} Success status
    */
   restoreBackup(backup) {
-    return this.importJSON(backup, false);
+    return this.importData(backup, false);
   }
 
   // ==================== CLEAR ====================
@@ -438,7 +344,7 @@ export class StorageManager {
 
   /**
    * Clear specific data type
-   * @param {string} type - Data type (cities, clients, activities, etc)
+   * @param {string} type - Data type (cities, activities, etc)
    */
   clearData(type) {
     const key = STORAGE_KEYS[type];
@@ -446,42 +352,6 @@ export class StorageManager {
       storage.remove(key);
       console.log(`💾 ${type} limpo`);
       this.eventBus.emit(EVENT_TYPES.DATA_CHANGED, { action: 'clear', type });
-    }
-  }
-
-  // ==================== UTILITIES ====================
-
-  /**
-   * Get storage usage info
-   * @returns {Object} Storage info
-   */
-  getStorageInfo() {
-    const info = {};
-    
-    Object.entries(STORAGE_KEYS).forEach(([name, key]) => {
-      const data = localStorage.getItem(key);
-      info[name] = {
-        exists: !!data,
-        size: data ? data.length : 0,
-        sizeKB: data ? (data.length / 1024).toFixed(2) : 0
-      };
-    });
-    
-    return info;
-  }
-
-  /**
-   * Check if storage is available
-   * @returns {boolean}
-   */
-  isStorageAvailable() {
-    try {
-      const test = '__storage_test__';
-      localStorage.setItem(test, test);
-      localStorage.removeItem(test);
-      return true;
-    } catch (e) {
-      return false;
     }
   }
 }
