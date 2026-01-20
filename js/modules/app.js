@@ -1,7 +1,7 @@
 /**
  * 🚀 GeoClient SP - Main Application
  * @module app
- * @version 4.1.0
+ * @version 4.1.1
  * @description Main application class orchestrating all modules
  */
 
@@ -24,6 +24,7 @@ export class GeoClientApp {
   constructor(options = {}) {
     this.options = options;
     this.eventBus = getEventBus();
+    this.debug = options.debug || false;
     
     // Initialize managers
     this.mapManager = new MapManager(options.mapElementId || 'map');
@@ -37,6 +38,7 @@ export class GeoClientApp {
     
     // State
     this.isInitialized = false;
+    this.syncInProgress = false;
     
     console.log(`🚀 GeoClient SP v${VERSION.app} - ES6 Modules initialized`);
   }
@@ -75,14 +77,14 @@ export class GeoClientApp {
       // 7. Initialize Reports Manager
       this.reportsManager = getReportsManager(this.mapManager, this.storageManager);
       
-      // 8. Setup city click handlers
+      // 8. Setup event listeners FIRST (before any data operations)
+      this.setupEventListeners();
+      
+      // 9. Setup city click handlers
       this.setupCityHandlers();
       
-      // 9. Restore saved data
+      // 10. Restore saved data
       this.restoreData();
-      
-      // 10. Setup event listeners
-      this.setupEventListeners();
       
       // 11. Render all UI components
       this.renderAllUI();
@@ -205,6 +207,8 @@ export class GeoClientApp {
    * Setup event listeners for cross-module communication
    */
   setupEventListeners() {
+    console.log('📡 Setting up event listeners...');
+    
     // City clicked
     this.eventBus.on(EVENT_TYPES.CITY_CLICKED, (data) => {
       this.handleCityClick(data);
@@ -212,12 +216,14 @@ export class GeoClientApp {
 
     // Data changed - auto-save and update all UI
     this.eventBus.on(EVENT_TYPES.DATA_CHANGED, () => {
+      if (this.debug) console.log('🔄 DATA_CHANGED event received');
       this.saveData();
       this.updateAllUI();
     });
 
     // City marked
     this.eventBus.on(EVENT_TYPES.CITY_MARKED, (data) => {
+      if (this.debug) console.log('🏛️ CITY_MARKED event received:', data);
       this.activityManager.log('city_marked', data);
       this.saveData();
       this.updateAllUI();
@@ -225,33 +231,63 @@ export class GeoClientApp {
 
     // Company added - CRITICAL: Sync MapManager
     this.eventBus.on(EVENT_TYPES.COMPANY_ADDED, (data) => {
-      console.log('✅ Company added event received:', data);
-      
-      // Update MapManager with fresh data from storage
-      const markedCities = this.storageManager.loadMarkedCities();
-      this.mapManager.setMarkedCities(markedCities);
-      
-      // Update specific city display
-      this.mapManager.updateCityStyle(data.city);
-      
+      console.log('✅ COMPANY_ADDED event received:', data);
+      this.syncMapWithStorage(data.city);
       this.activityManager.log('company_added', data);
       this.updateAllUI();
     });
 
     // Company removed - CRITICAL: Sync MapManager
     this.eventBus.on(EVENT_TYPES.COMPANY_REMOVED, (data) => {
-      console.log('✅ Company removed event received:', data);
-      
-      // Update MapManager with fresh data from storage
-      const markedCities = this.storageManager.loadMarkedCities();
-      this.mapManager.setMarkedCities(markedCities);
-      
-      // Update specific city display
-      this.mapManager.updateCityStyle(data.city);
-      
+      console.log('✅ COMPANY_REMOVED event received:', data);
+      this.syncMapWithStorage(data.city);
       this.activityManager.log('company_removed', data);
       this.updateAllUI();
     });
+    
+    console.log('✅ Event listeners configured');
+  }
+
+  /**
+   * Sync MapManager with Storage data (CRITICAL METHOD)
+   * @param {string} cityName - City to sync (optional, syncs all if not provided)
+   */
+  syncMapWithStorage(cityName = null) {
+    if (this.syncInProgress) {
+      console.warn('⚠️ Sync already in progress, skipping');
+      return;
+    }
+    
+    this.syncInProgress = true;
+    
+    try {
+      // Load fresh data from storage
+      const markedCities = this.storageManager.loadMarkedCities();
+      
+      if (this.debug) {
+        console.log('🔄 Syncing map with storage:', markedCities);
+      }
+      
+      // Update MapManager
+      this.mapManager.setMarkedCities(markedCities);
+      
+      // Update specific city or all cities
+      if (cityName) {
+        this.mapManager.updateCityStyle(cityName);
+        console.log(`🎨 City style updated: ${cityName}`);
+      } else {
+        // Update all cities
+        Object.keys(markedCities).forEach(city => {
+          this.mapManager.updateCityStyle(city);
+        });
+        console.log('🎨 All city styles updated');
+      }
+      
+    } catch (error) {
+      console.error('❌ Sync error:', error);
+    } finally {
+      this.syncInProgress = false;
+    }
   }
 
   /**
@@ -274,7 +310,9 @@ export class GeoClientApp {
    * @param {Object} data - Click event data
    */
   handleCityClick(data) {
-    console.log('🖱️ City clicked:', data.city);
+    if (this.debug) {
+      console.log('🖱️ City clicked:', data.city);
+    }
     // UIManager handles the actual popup display
   }
 
@@ -397,6 +435,22 @@ export class GeoClientApp {
       this.updateAllUI();
       toast.warning('Dados limpos!');
     }
+  }
+
+  /**
+   * Enable debug mode
+   */
+  enableDebug() {
+    this.debug = true;
+    console.log('🐞 Debug mode enabled');
+  }
+
+  /**
+   * Disable debug mode
+   */
+  disableDebug() {
+    this.debug = false;
+    console.log('✅ Debug mode disabled');
   }
 
   /**
