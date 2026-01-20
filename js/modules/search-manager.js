@@ -1,11 +1,12 @@
 /**
  * 🔍 GeoClient SP - Search Manager Module
  * @module search-manager
- * @version 1.0.0
+ * @version 1.0.1
  * @description Handles city search functionality with autocomplete
  */
 
 import { toast } from './toast.js';
+import { COMPANIES } from './config.js';
 
 let instance = null;
 
@@ -27,6 +28,16 @@ export class SearchManager {
     this.init();
     
     console.log('🔍 SearchManager initialized');
+  }
+  
+  /**
+   * Get company color from config
+   * @param {string} companyName
+   * @returns {string}
+   */
+  getCompanyColor(companyName) {
+    const company = Object.values(COMPANIES).find(c => c.name === companyName);
+    return company?.color || '#6b7280';
   }
   
   /**
@@ -175,7 +186,7 @@ export class SearchManager {
       const companies = cityData?.companies || [];
       
       const companiesBadges = companies.map(company => {
-        const color = this.mapManager.getCompanyColor(company);
+        const color = this.getCompanyColor(company);
         return `<span class="search-company-badge" style="background: ${color};">${company}</span>`;
       }).join('');
       
