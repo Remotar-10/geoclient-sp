@@ -54,6 +54,55 @@
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         #app-container { opacity: 0; transition: opacity 0.5s ease-in; }
         #app-container.loaded { opacity: 1; }
+        
+        /* Accordion styles */
+        .accordion-section {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .accordion-header:hover {
+            background: #f9fafb;
+        }
+        
+        .accordion-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .accordion-icon {
+            transition: transform 0.3s;
+            color: #9ca3af;
+        }
+        
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .accordion-content.active {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .tab-panel-wrapper {
+            padding: 16px;
+        }
     </style>
 </head>
 <body>
@@ -76,95 +125,107 @@
                 </button>
             </div>
 
-            <nav class="sidebar-nav">
-                <button class="nav-tab active" data-tab="map">
-                    <span class="tab-icon">🗺️</span>
-                    <span class="tab-text">Mapa</span>
-                </button>
-                <button class="nav-tab" data-tab="navigation">
-                    <span class="tab-icon">🧭</span>
-                    <span class="tab-text">Navegação</span>
-                </button>
-                <button class="nav-tab" data-tab="dashboard">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-text">Dashboard</span>
-                </button>
-                <button class="nav-tab" data-tab="companies">
-                    <span class="tab-icon">🏭</span>
-                    <span class="tab-text">Empresas</span>
-                </button>
-                <button class="nav-tab" data-tab="reports">
-                    <span class="tab-icon">📄</span>
-                    <span class="tab-text">Relatórios</span>
-                </button>
-            </nav>
-
             <div class="sidebar-content">
-                <!-- Map Tab -->
-                <div id="tab-map" class="tab-panel active">
-                    <div class="search-box">
-                        <input type="text" id="city-search" placeholder="Buscar cidade..." class="search-input">
+                <!-- 📊 Dashboard Section (Starts OPEN) -->
+                <div class="accordion-section">
+                    <div class="accordion-header active" data-section="dashboard">
+                        <span class="accordion-title">📊 Dashboard</span>
+                        <span class="accordion-icon">▼</span>
                     </div>
-                    <div class="filter-section">
-                        <h3>Filtros Rápidos</h3>
-                        <div id="quick-filters" class="quick-filters"></div>
-                    </div>
-                    <div class="cities-list">
-                        <h3>Cidades Marcadas</h3>
-                        <div id="marked-cities-list"></div>
+                    <div class="accordion-content active" id="content-dashboard">
+                        <div class="tab-panel-wrapper">
+                            <div id="dashboard-stats"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Navigation Tab -->
-                <div id="tab-navigation" class="tab-panel">
-                    <h2>🧭 Navegação</h2>
-                    
-                    <!-- Shortcuts -->
-                    <div class="nav-section">
-                        <h3>🎯 Atalhos Rápidos</h3>
-                        <button class="shortcut-btn" id="shortcut-reset">
-                            <span>🗺️</span> Resetar Mapa
-                        </button>
-                        <button class="shortcut-btn" id="shortcut-list">
-                            <span>📋</span> Copiar Lista
-                        </button>
+                <!-- 🗺️ Mapa Section (Starts CLOSED) -->
+                <div class="accordion-section">
+                    <div class="accordion-header" data-section="map">
+                        <span class="accordion-title">🗺️ Mapa</span>
+                        <span class="accordion-icon">▼</span>
                     </div>
-                    
-                    <!-- Recent Cities -->
-                    <div class="nav-section">
-                        <h3>🌟 Cidades Recentes <span id="recent-count" style="color: #6b7280;"></span></h3>
-                        <div id="recent-cities-list"></div>
-                    </div>
-                    
-                    <!-- Regions -->
-                    <div class="nav-section">
-                        <h3>🗺️ Regiões</h3>
-                        <div id="region-buttons"></div>
-                    </div>
-                    
-                    <!-- Layers -->
-                    <div class="nav-section">
-                        <h3>👁️ Camadas</h3>
-                        <div id="layer-toggles"></div>
+                    <div class="accordion-content" id="content-map">
+                        <div class="tab-panel-wrapper">
+                            <div class="search-box">
+                                <input type="text" id="city-search" placeholder="Buscar cidade..." class="search-input">
+                            </div>
+                            <div class="filter-section">
+                                <h3>Filtros Rápidos</h3>
+                                <div id="quick-filters" class="quick-filters"></div>
+                            </div>
+                            <div class="cities-list">
+                                <h3>Cidades Marcadas</h3>
+                                <div id="marked-cities-list"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Dashboard Tab -->
-                <div id="tab-dashboard" class="tab-panel">
-                    <h2>📊 Dashboard</h2>
-                    <div id="dashboard-stats"></div>
+                <!-- 🧭 Navegação Section (Starts CLOSED) -->
+                <div class="accordion-section">
+                    <div class="accordion-header" data-section="navigation">
+                        <span class="accordion-title">🧭 Navegação</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content" id="content-navigation">
+                        <div class="tab-panel-wrapper">
+                            <!-- Shortcuts -->
+                            <div class="nav-section">
+                                <h3>🎯 Atalhos Rápidos</h3>
+                                <button class="shortcut-btn" id="shortcut-reset">
+                                    <span>🗺️</span> Resetar Mapa
+                                </button>
+                                <button class="shortcut-btn" id="shortcut-list">
+                                    <span>📋</span> Copiar Lista
+                                </button>
+                            </div>
+                            
+                            <!-- Recent Cities -->
+                            <div class="nav-section">
+                                <h3>🌟 Cidades Recentes <span id="recent-count" style="color: #6b7280;"></span></h3>
+                                <div id="recent-cities-list"></div>
+                            </div>
+                            
+                            <!-- Regions -->
+                            <div class="nav-section">
+                                <h3>🗺️ Regiões</h3>
+                                <div id="region-buttons"></div>
+                            </div>
+                            
+                            <!-- Layers -->
+                            <div class="nav-section">
+                                <h3>👁️ Camadas</h3>
+                                <div id="layer-toggles"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Companies Tab -->
-                <div id="tab-companies" class="tab-panel">
-                    <h2>🏭 Empresas</h2>
-                    <div id="companies-list"></div>
+                <!-- 🏭 Empresas Section (Starts CLOSED) -->
+                <div class="accordion-section">
+                    <div class="accordion-header" data-section="companies">
+                        <span class="accordion-title">🏭 Empresas</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content" id="content-companies">
+                        <div class="tab-panel-wrapper">
+                            <div id="companies-list"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Reports Tab -->
-                <div id="tab-reports" class="tab-panel">
-                    <h2>📄 Relatórios</h2>
-                    <div id="reports-templates"></div>
+                <!-- 📄 Relatórios Section (Starts CLOSED) -->
+                <div class="accordion-section">
+                    <div class="accordion-header" data-section="reports">
+                        <span class="accordion-title">📄 Relatórios</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content" id="content-reports">
+                        <div class="tab-panel-wrapper">
+                            <div id="reports-templates"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -220,8 +281,38 @@
             }, 500);
 
             setupUIListeners(app);
+            setupAccordion();
             console.log('🎉 GeoClient SP pronto!', app);
         });
+
+        function setupAccordion() {
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const section = header.dataset.section;
+                    const content = document.getElementById(`content-${section}`);
+                    const isActive = header.classList.contains('active');
+                    
+                    // Toggle current section
+                    if (isActive) {
+                        header.classList.remove('active');
+                        content.classList.remove('active');
+                    } else {
+                        // Close all other sections
+                        accordionHeaders.forEach(h => {
+                            h.classList.remove('active');
+                            const c = document.getElementById(`content-${h.dataset.section}`);
+                            c.classList.remove('active');
+                        });
+                        
+                        // Open clicked section
+                        header.classList.add('active');
+                        content.classList.add('active');
+                    }
+                });
+            });
+        }
 
         function setupUIListeners(app) {
             // Sidebar toggle
@@ -231,20 +322,6 @@
                     document.getElementById('sidebar').classList.toggle('collapsed');
                 });
             }
-
-            // Tab navigation
-            const navTabs = document.querySelectorAll('.nav-tab');
-            navTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabId = tab.dataset.tab;
-                    navTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.querySelectorAll('.tab-panel').forEach(panel => {
-                        panel.classList.remove('active');
-                    });
-                    document.getElementById(`tab-${tabId}`).classList.add('active');
-                });
-            });
 
             // Reset view
             const resetBtn = document.getElementById('reset-view');
@@ -256,15 +333,6 @@
             const exportBtn = document.getElementById('export-data');
             if (exportBtn) {
                 exportBtn.addEventListener('click', () => app.exportJSON());
-            }
-
-            // City search
-            const searchInput = document.getElementById('city-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const results = app.searchCities(e.target.value);
-                    console.log('Resultados:', results);
-                });
             }
         }
     </script>
