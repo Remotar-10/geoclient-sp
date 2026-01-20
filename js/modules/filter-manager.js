@@ -1,328 +1,195 @@
 /**
  * 🔍 GeoClient SP - Filter Manager
  * @module filter-manager
- * @version 4.1.0
- * @description Advanced filtering system for cities and data
+ * @version 1.0.0
+ * @description Manages city and company filtering
  */
 
-import { getEventBus, EVENT_TYPES } from './events.js';
-import { getStorageManager } from './storage-manager.js';
-import { storage, text } from './utils.js';
 import { COMPANIES } from './config.js';
+import { getEventBus, EVENT_TYPES } from './events.js';
 
 /**
- * FilterManager class for advanced filtering
+ * FilterManager Class
  */
 export class FilterManager {
-  constructor() {
-    this.activeFilters = {};
-    this.filterPresets = {};
-    this.filterHistory = [];
+  constructor(mapManager) {
+    this.mapManager = mapManager;
     this.eventBus = getEventBus();
-    this.storageManager = getStorageManager();
+    this.activeFilters = {
+      companies: [],
+      hasCompanies: false,
+      noCompanies: false
+    };
     
-    // Load saved presets
-    this.loadPresets();
-    
+    this.initUI();
     console.log('🔍 FilterManager initialized');
   }
 
   /**
-   * Apply filter
-   * @param {string} type - Filter type
-   * @param {*} value - Filter value
+   * Initialize filter UI
    */
-  applyFilter(type, value) {
-    this.activeFilters[type] = value;
-    
-    this.filterHistory.push({
-      type,
-      value,
-      timestamp: new Date().toISOString()
+  initUI() {
+    const container = document.getElementById('quick-filters');
+    if (!container) return;
+
+    // Clear existing
+    container.innerHTML = '';
+
+    // Add company filters
+    const companiesDiv = document.createElement('div');
+    companiesDiv.className = 'filter-group';
+    companiesDiv.innerHTML = '<h4>Empresas</h4>';
+
+    Object.values(COMPANIES).forEach(company => {
+      const label = document.createElement('label');
+      label.className = 'filter-checkbox';
+      label.innerHTML = `
+        <input type="checkbox" value="${company.name}" data-filter-type="company">
+        <span class="filter-label" style="color: ${company.color}">
+          <span class="filter-dot" style="background: ${company.color}"></span>
+          ${company.displayName}
+        </span>
+      `;
+      companiesDiv.appendChild(label);
     });
 
-    this.eventBus.emit(EVENT_TYPES.FILTER_APPLIED, { type, value });
-    console.log(`🔍 Filter applied: ${type} = ${value}`);
+    container.appendChild(companiesDiv);
+
+    // Add status filters
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'filter-group';
+    statusDiv.innerHTML = `
+      <h4>Status</h4>
+      <label class="filter-checkbox">
+        <input type="checkbox" value="has-companies" data-filter-type="status">
+        <span class="filter-label">✅ Com empresas</span>
+      </label>
+      <label class="filter-checkbox">
+        <input type="checkbox" value="no-companies" data-filter-type="status">
+        <span class="filter-label">❌ Sem empresas</span>
+      </label>
+    `;
+
+    container.appendChild(statusDiv);
+
+    // Add clear button
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'btn btn-secondary btn-sm';
+    clearBtn.textContent = '🗑️ Limpar filtros';
+    clearBtn.style.marginTop = '10px';
+    clearBtn.onclick = () => this.clearFilters();
+    container.appendChild(clearBtn);
+
+    // Setup event listeners
+    this.setupFilterListeners();
   }
 
   /**
-   * Remove filter
-   * @param {string} type - Filter type
+   * Setup filter event listeners
    */
-  removeFilter(type) {
-    delete this.activeFilters[type];
-    this.eventBus.emit(EVENT_TYPES.FILTER_REMOVED, { type });
-    console.log(`🔍 Filter removed: ${type}`);
+  setupFilterListeners() {
+    const checkboxes = document.querySelectorAll('#quick-filters input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => this.applyFilters());
+    });
+  }
+
+  /**
+   * Apply active filters
+   */
+  applyFilters() {
+    const companyCheckboxes = document.querySelectorAll('#quick-filters input[data-filter-type="company"]:checked');
+    const statusCheckboxes = document.querySelectorAll('#quick-filters input[data-filter-type="status"]:checked');
+
+    // Update active filters
+    this.activeFilters.companies = Array.from(companyCheckboxes).map(cb => cb.value);
+    this.activeFilters.hasCompanies = Array.from(statusCheckboxes).some(cb => cb.value === 'has-companies');
+    this.activeFilters.noCompanies = Array.from(statusCheckboxes).some(cb => cb.value === 'no-companies');
+
+    // Apply to map
+    this.filterMap();
+
+    // Emit event
+    this.eventBus.emit(EVENT_TYPES.FILTER_APPLIED, this.activeFilters);
+  }
+
+  /**
+   * Filter map layers
+   */
+  filterMap() {
+    if (!this.mapManager.geoJsonLayer) return;
+
+    const markedCities = this.mapManager.getMarkedCities();
+
+    this.mapManager.geoJsonLayer.eachLayer((layer) => {
+      const cityName = layer.feature.properties.name;
+      const cityCompanies = markedCities[cityName] || [];
+      let show = true;
+
+      // Filter by company
+      if (this.activeFilters.companies.length > 0) {
+        const hasAnySelectedCompany = this.activeFilters.companies.some(comp => 
+          cityCompanies.includes(comp)
+        );
+        if (!hasAnySelectedCompany) {
+          show = false;
+        }
+      }
+
+      // Filter by status
+      if (this.activeFilters.hasCompanies && cityCompanies.length === 0) {
+        show = false;
+      }
+      if (this.activeFilters.noCompanies && cityCompanies.length > 0) {
+        show = false;
+      }
+
+      // Apply visibility
+      if (show) {
+        layer.setStyle({ opacity: 1, fillOpacity: 0.5 });
+      } else {
+        layer.setStyle({ opacity: 0.2, fillOpacity: 0.1 });
+      }
+    });
   }
 
   /**
    * Clear all filters
    */
-  clearAllFilters() {
-    this.activeFilters = {};
-    this.eventBus.emit(EVENT_TYPES.FILTERS_CLEARED);
-    console.log('🔍 All filters cleared');
+  clearFilters() {
+    // Uncheck all
+    const checkboxes = document.querySelectorAll('#quick-filters input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
+
+    // Reset active filters
+    this.activeFilters = {
+      companies: [],
+      hasCompanies: false,
+      noCompanies: false
+    };
+
+    // Reset map
+    this.filterMap();
+
+    this.eventBus.emit(EVENT_TYPES.FILTER_CLEARED);
   }
 
   /**
    * Get active filters
-   * @returns {Object} Active filters
+   * @returns {Object}
    */
   getActiveFilters() {
     return { ...this.activeFilters };
   }
-
-  /**
-   * Check if any filter is active
-   * @returns {boolean}
-   */
-  hasActiveFilters() {
-    return Object.keys(this.activeFilters).length > 0;
-  }
-
-  /**
-   * Filter cities by company
-   * @param {string} companyName - Company name
-   * @returns {Array} Filtered city names
-   */
-  filterByCompany(companyName) {
-    const markedCities = this.storageManager.loadMarkedCities();
-    
-    return Object.entries(markedCities)
-      .filter(([_, data]) => 
-        data.companies && data.companies.includes(companyName)
-      )
-      .map(([cityName]) => cityName);
-  }
-
-  /**
-   * Filter cities by search text
-   * @param {string} searchText - Search query
-   * @returns {Array} Filtered city names
-   */
-  filterBySearch(searchText) {
-    const markedCities = this.storageManager.loadMarkedCities();
-    const normalized = text.normalize(searchText);
-    
-    return Object.keys(markedCities).filter(cityName => 
-      text.normalize(cityName).includes(normalized)
-    );
-  }
-
-  /**
-   * Filter cities by multiple companies (OR logic)
-   * @param {Array} companies - Company names
-   * @returns {Array} Filtered city names
-   */
-  filterByMultipleCompanies(companies) {
-    const markedCities = this.storageManager.loadMarkedCities();
-    
-    return Object.entries(markedCities)
-      .filter(([_, data]) => 
-        data.companies && 
-        data.companies.some(company => companies.includes(company))
-      )
-      .map(([cityName]) => cityName);
-  }
-
-  /**
-   * Filter cities with multiple companies
-   * @returns {Array} Cities with 2+ companies
-   */
-  filterMultipleCompanyCities() {
-    const markedCities = this.storageManager.loadMarkedCities();
-    
-    return Object.entries(markedCities)
-      .filter(([_, data]) => 
-        data.companies && data.companies.length > 1
-      )
-      .map(([cityName]) => cityName);
-  }
-
-  /**
-   * Filter available cities (no companies assigned)
-   * @param {Array} allCities - All city names
-   * @returns {Array} Available cities
-   */
-  filterAvailableCities(allCities) {
-    const markedCities = this.storageManager.loadMarkedCities();
-    
-    return allCities.filter(cityName => 
-      !markedCities[cityName] || 
-      !markedCities[cityName].companies ||
-      markedCities[cityName].companies.length === 0
-    );
-  }
-
-  /**
-   * Apply complex filter
-   * @param {Object} filterConfig - Filter configuration
-   * @returns {Array} Filtered results
-   */
-  applyComplexFilter(filterConfig) {
-    let results = null;
-
-    // Company filter
-    if (filterConfig.company) {
-      results = this.filterByCompany(filterConfig.company);
-    }
-
-    // Multiple companies filter
-    if (filterConfig.companies) {
-      const companyResults = this.filterByMultipleCompanies(filterConfig.companies);
-      results = results ? 
-        results.filter(city => companyResults.includes(city)) : 
-        companyResults;
-    }
-
-    // Search text filter
-    if (filterConfig.search) {
-      const searchResults = this.filterBySearch(filterConfig.search);
-      results = results ? 
-        results.filter(city => searchResults.includes(city)) : 
-        searchResults;
-    }
-
-    // Multiple companies only
-    if (filterConfig.multipleCompaniesOnly) {
-      const multiResults = this.filterMultipleCompanyCities();
-      results = results ? 
-        results.filter(city => multiResults.includes(city)) : 
-        multiResults;
-    }
-
-    return results || [];
-  }
-
-  /**
-   * Save filter preset
-   * @param {string} name - Preset name
-   * @param {Object} filters - Filter configuration
-   */
-  savePreset(name, filters) {
-    this.filterPresets[name] = {
-      name,
-      filters,
-      createdAt: new Date().toISOString()
-    };
-
-    this.savePresets();
-    console.log(`🔍 Preset saved: ${name}`);
-  }
-
-  /**
-   * Load filter preset
-   * @param {string} name - Preset name
-   * @returns {Object|null} Preset filters
-   */
-  loadPreset(name) {
-    const preset = this.filterPresets[name];
-    
-    if (preset) {
-      this.activeFilters = { ...preset.filters };
-      this.eventBus.emit(EVENT_TYPES.FILTER_PRESET_LOADED, { name });
-      console.log(`🔍 Preset loaded: ${name}`);
-      return preset.filters;
-    }
-
-    return null;
-  }
-
-  /**
-   * Delete filter preset
-   * @param {string} name - Preset name
-   */
-  deletePreset(name) {
-    delete this.filterPresets[name];
-    this.savePresets();
-    console.log(`🔍 Preset deleted: ${name}`);
-  }
-
-  /**
-   * Get all presets
-   * @returns {Object} Presets object
-   */
-  getPresets() {
-    return { ...this.filterPresets };
-  }
-
-  /**
-   * Save presets to storage
-   */
-  savePresets() {
-    storage.set('filter-presets', this.filterPresets);
-  }
-
-  /**
-   * Load presets from storage
-   */
-  loadPresets() {
-    this.filterPresets = storage.get('filter-presets', {});
-  }
-
-  /**
-   * Get filter history
-   * @param {number} limit - Number of items
-   * @returns {Array} Filter history
-   */
-  getFilterHistory(limit = 10) {
-    return this.filterHistory.slice(-limit).reverse();
-  }
-
-  /**
-   * Clear filter history
-   */
-  clearHistory() {
-    this.filterHistory = [];
-    console.log('🔍 Filter history cleared');
-  }
-
-  /**
-   * Get quick filters
-   * @returns {Array} Quick filter configs
-   */
-  getQuickFilters() {
-    return [
-      {
-        id: 'all',
-        label: 'Todas',
-        icon: '🌎',
-        filter: {}
-      },
-      {
-        id: 'available',
-        label: 'Disponíveis',
-        icon: '✅',
-        filter: { available: true }
-      },
-      {
-        id: 'multiple',
-        label: 'Múltiplas Empresas',
-        icon: '🏢',
-        filter: { multipleCompaniesOnly: true }
-      },
-      ...Object.values(COMPANIES).map(company => ({
-        id: company.name.toLowerCase(),
-        label: company.name,
-        icon: '🏭',
-        color: company.color,
-        filter: { company: company.name }
-      }))
-    ];
-  }
 }
 
-// Export singleton instance
-let filterManagerInstance = null;
+let instance = null;
 
-export function getFilterManager() {
-  if (!filterManagerInstance) {
-    filterManagerInstance = new FilterManager();
+export function getFilterManager(mapManager) {
+  if (!instance && mapManager) {
+    instance = new FilterManager(mapManager);
   }
-  return filterManagerInstance;
+  return instance;
 }
 
-export default {
-  FilterManager,
-  getFilterManager
-};
+export default FilterManager;
