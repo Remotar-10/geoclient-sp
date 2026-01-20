@@ -325,6 +325,14 @@ export class MapManager {
   }
 
   /**
+   * Get all cities (alias for getAllCityNames for compatibility)
+   * @returns {Array} Array of city names
+   */
+  getAllCities() {
+    return this.getAllCityNames();
+  }
+
+  /**
    * Get marked cities
    * @returns {Object} Marked cities object
    */
