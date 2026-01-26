@@ -615,7 +615,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 20px 24px;
-            border-bottom: 1px solid #e5e7eb;
+            border-top: 1px solid #e5e7eb;
         }
         
         .modal-title {
@@ -1113,6 +1113,7 @@
 
     <script type="module" src="js/test-diagnostics.js"></script>
     <script type="module" src="js/bug-checker.js"></script>
+    <script type="module" src="js/test-sidebar-toggle.js"></script>
 
     <script type="module">
         import { initializeApp } from './js/main-es6.js';
@@ -1131,6 +1132,7 @@
                     console.log('%c🔧 COMANDOS DISPONÍVEIS:', 'color: #8b5cf6; font-size: 14px; font-weight: bold');
                     console.log('%c  • diagnose()   - Testes rápidos do sistema', 'color: #6b7280');
                     console.log('%c  • checkBugs()  - Verificação completa de bugs', 'color: #6b7280');
+                    console.log('%c  • testSidebar() - Testes de sidebar toggle', 'color: #6b7280');
                     console.log('%c  • help()       - Lista todos os comandos', 'color: #6b7280');
                 }, 1000);
             }, 500);
