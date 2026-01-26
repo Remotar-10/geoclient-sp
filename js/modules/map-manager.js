@@ -1,7 +1,7 @@
 /**
  * 🗺️ GeoClient SP - Map Manager
  * @module map-manager
- * @version 4.1.2
+ * @version 4.1.3
  * @description Leaflet map management and GeoJSON handling
  */
 
@@ -73,18 +73,19 @@ export class MapManager {
       console.log('✅ Leaflet container criado (this.map._container)');
     }
     
-    // ⭐ SOLUÇÃO 3: Timeout de 500ms para verificação extra (mais seguro que 100ms)
+    // ⭐ SOLUÇÃO 3: Timeout de 500ms para verificação extra
+    // IMPORTANTE: O #map SE TORNA .leaflet-container, não contém!
     setTimeout(() => {
-      const leafletContainer = container.querySelector('.leaflet-container');
-      if (!leafletContainer) {
+      // ✅ CORREÇÃO: Verificar se o próprio container tem a classe
+      if (container.classList.contains('leaflet-container')) {
+        console.log('✅ Leaflet container renderizado no DOM (.leaflet-container)');
+      } else {
         console.error('❌ ERRO: .leaflet-container não foi criado pelo Leaflet!');
         console.error('   Verifique se Leaflet.js foi carregado corretamente');
         console.error('   Container DOM:', container);
         console.error('   Map object:', this.map);
-      } else {
-        console.log('✅ Leaflet container renderizado no DOM (.leaflet-container)');
       }
-    }, 500); // Aumentado de 100ms para 500ms
+    }, 500);
     
     this.eventBus.emit(EVENT_TYPES.MAP_READY);
   }
