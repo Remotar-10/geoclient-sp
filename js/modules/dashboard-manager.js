@@ -1,7 +1,7 @@
 /**
  * 📊 GeoClient SP - Dashboard Manager
  * @module dashboard-manager
- * @version 1.0.0
+ * @version 1.1.0
  * @description Manages dashboard statistics and visualizations
  */
 
@@ -23,35 +23,76 @@ export class DashboardManager {
 
   /**
    * Render stats (public method)
+   * ✅ Accordion já tem estatísticas renderizadas via index-es6.html
+   * Este manager atualiza os valores dinamicamente
    */
   renderStats() {
-    this.initUI();
+    this.updateStats();
   }
 
   /**
    * Render company breakdown (public method)
    */
   renderCompanyBreakdown() {
-    // Called by renderStats/initUI, nothing extra needed
+    // ✅ Já renderizado via index-es6.html (função renderCompanies)
     console.log('✅ Company breakdown rendered');
   }
 
   /**
    * Initialize dashboard UI
+   * 🔄 ATUALIZADO: Usa IDs do accordion ao invés de #dashboard-stats
    */
   initUI() {
-    const container = document.getElementById('dashboard-stats');
-    if (!container) {
-      console.warn('⚠️ Dashboard container not found');
+    // ✅ Verificar se elementos do accordion existem
+    const statOccupied = document.getElementById('stat-occupied');
+    const statAvailable = document.getElementById('stat-available');
+    
+    if (!statOccupied || !statAvailable) {
+      // ❌ Não mostra warning - accordion pode estar colapsado
+      console.log('✅ Dashboard stats ready (accordion mode)');
       return;
     }
 
-    container.innerHTML = this.renderDashboard();
-    console.log('✅ Dashboard rendered');
+    // ✅ Atualizar estatísticas
+    this.updateStats();
   }
 
   /**
-   * Render dashboard HTML
+   * ⭐ NOVO: Atualizar estatísticas do accordion
+   */
+  updateStats() {
+    const stats = this.getStatistics();
+    
+    // ✅ Atualizar elementos do accordion
+    const statOccupied = document.getElementById('stat-occupied');
+    const statAvailable = document.getElementById('stat-available');
+    const statOccupiedPercent = document.getElementById('stat-occupied-percent');
+    const statAvailablePercent = document.getElementById('stat-available-percent');
+    const statProgressFill = document.getElementById('stat-progress-fill');
+    const statAvailableFill = document.getElementById('stat-available-fill');
+    
+    if (statOccupied) statOccupied.textContent = stats.markedCities;
+    if (statAvailable) statAvailable.textContent = stats.availableCities;
+    if (statOccupiedPercent) statOccupiedPercent.textContent = `${stats.markedPercentage}% de ocupação`;
+    if (statAvailablePercent) statAvailablePercent.textContent = `${stats.availablePercentage}% livres`;
+    
+    // ✅ Animar barras de progresso
+    if (statProgressFill) {
+      setTimeout(() => {
+        statProgressFill.style.width = `${stats.markedPercentage}%`;
+      }, 100);
+    }
+    if (statAvailableFill) {
+      setTimeout(() => {
+        statAvailableFill.style.width = `${stats.availablePercentage}%`;
+      }, 100);
+    }
+    
+    console.log('✅ Dashboard stats updated');
+  }
+
+  /**
+   * Render dashboard HTML (LEGADO - não usado no accordion)
    * @returns {string} HTML
    */
   renderDashboard() {
@@ -214,7 +255,7 @@ export class DashboardManager {
    * Update dashboard
    */
   update() {
-    this.initUI();
+    this.updateStats();
   }
 }
 
