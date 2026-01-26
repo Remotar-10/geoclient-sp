@@ -1,6 +1,6 @@
 /**
  * 🚀 GeoClient SP - Main ES6 Entry Point
- * @version 4.1.0
+ * @version 4.1.1
  * @description Master orchestrator for all ES6 modules
  */
 
@@ -23,6 +23,9 @@ import { DashboardManager, getDashboardManager } from './modules/dashboard-manag
 import { CompaniesManager, getCompaniesManager } from './modules/companies-manager.js';
 import { FilterManager, getFilterManager } from './modules/filter-manager.js';
 import { ReportsManager, getReportsManager } from './modules/reports-manager.js';
+import { UIManager, getUIManager } from './modules/ui-manager.js';
+import { NavigationManager, getNavigationManager } from './modules/navigation-manager.js';
+import { SearchManager, getSearchManager } from './modules/search-manager.js';
 
 // ==================== GLOBAL APP INSTANCE ====================
 
@@ -35,7 +38,7 @@ let appInstance = null;
  */
 export async function initializeApp(options = {}) {
   try {
-    console.log('%c🚀 GeoClient SP v4.1.0 - ES6 Modules', 'color: #3b82f6; font-size: 16px; font-weight: bold');
+    console.log('%c🚀 GeoClient SP v4.1.1 - ES6 Modules', 'color: #3b82f6; font-size: 16px; font-weight: bold');
     console.log('%cInitializing...', 'color: #6b7280');
 
     // Create app instance
@@ -106,7 +109,10 @@ export function getManagers() {
     dashboard: getDashboardManager(),
     companies: getCompaniesManager(),
     filter: getFilterManager(),
-    reports: getReportsManager()
+    reports: getReportsManager(),
+    ui: getUIManager(),
+    navigation: getNavigationManager(),
+    search: getSearchManager()
   };
 }
 
@@ -146,7 +152,10 @@ if (typeof window !== 'undefined') {
       DashboardManager,
       CompaniesManager,
       FilterManager,
-      ReportsManager
+      ReportsManager,
+      UIManager,
+      NavigationManager,
+      SearchManager
     },
 
     // Singletons
@@ -156,7 +165,10 @@ if (typeof window !== 'undefined') {
       getDashboardManager,
       getCompaniesManager,
       getFilterManager,
-      getReportsManager
+      getReportsManager,
+      getUIManager,
+      getNavigationManager,
+      getSearchManager
     },
 
     // Activity logging helpers
@@ -229,6 +241,9 @@ export default {
   CompaniesManager,
   FilterManager,
   ReportsManager,
+  UIManager,
+  NavigationManager,
+  SearchManager,
   
   // Singletons
   getStorageManager,
@@ -237,6 +252,9 @@ export default {
   getCompaniesManager,
   getFilterManager,
   getReportsManager,
+  getUIManager,
+  getNavigationManager,
+  getSearchManager,
   
   // Helpers
   activityLog
