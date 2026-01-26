@@ -72,13 +72,15 @@
         }
         
         .sidebar.collapsed {
-            width: 60px;
+            width: 0;
+            border-right: none;
         }
         
+        .sidebar.collapsed .sidebar-header,
         .sidebar.collapsed .sidebar-text,
         .sidebar.collapsed .search-box-top,
         .sidebar.collapsed .sidebar-content,
-        .sidebar.collapsed .sidebar-footer .version-info span:not(.version-badge) {
+        .sidebar.collapsed .sidebar-footer {
             display: none;
         }
         
@@ -144,7 +146,7 @@
             height: 100%;
         }
         
-        /* ✨ CORRIGIDO: Botões flutuantes com transição */
+        /* Botões flutuantes - MANTIDOS NO CANTO DIREITO */
         .map-controls {
             position: absolute;
             bottom: 20px;
@@ -152,21 +154,19 @@
             display: flex;
             gap: 10px;
             z-index: 1000;
-            transition: right 0.3s ease; /* ← ADICIONADO */
         }
         
-        /* ✨ NOVO: Ajustar botões quando sidebar fecha */
-        body.sidebar-collapsed .map-controls {
-            right: calc(50% - 100px);
-        }
-        
-        /* ✨ NOVO: Sidebar toggle button com transição */
+        /* Sidebar toggle button com transição */
         #sidebar-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
             transition: left 0.3s ease;
         }
         
         body.sidebar-collapsed #sidebar-toggle {
-            left: 80px !important; /* Quando sidebar fecha */
+            left: 20px; /* Fica no mesmo lugar quando sidebar fecha */
         }
         
         .map-control-btn {
@@ -615,7 +615,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 20px 24px;
-            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
         }
         
         .modal-title {
@@ -1086,7 +1086,7 @@
 
         <main id="main-content" class="main-content">
             <!-- ⭐ NOVO: Botão toggle sidebar -->
-            <button id="sidebar-toggle" class="map-control-btn" style="position: absolute; top: 20px; left: 20px; z-index: 1000;" title="Toggle Sidebar">
+            <button id="sidebar-toggle" class="map-control-btn" title="Toggle Sidebar">
                 <span>☰</span>
             </button>
             
