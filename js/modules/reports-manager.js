@@ -1,8 +1,8 @@
 /**
  * 📄 GeoClient SP - Reports Manager
  * @module reports-manager
- * @version 1.0.0
- * @description Manages report generation and exports
+ * @version 1.1.0
+ * @description Manages report generation and exports (API mode for accordion)
  */
 
 import { COMPANIES, STATS } from './config.js';
@@ -10,6 +10,7 @@ import { toast } from './toast.js';
 
 /**
  * ReportsManager Class
+ * 🔄 ATUALIZADO: Modo API - funções de exportação sem UI (accordion usa botões inline)
  */
 export class ReportsManager {
   constructor(mapManager, storageManager) {
@@ -21,28 +22,34 @@ export class ReportsManager {
 
   /**
    * Render reports (public method)
+   * ✅ Accordion usa botões inline - não precisa de #reports-templates
    */
   renderReports() {
-    this.initUI();
+    // ✅ API mode - sem warning
+    console.log('✅ Reports ready (API mode - accordion)');
   }
 
   /**
    * Initialize reports UI
+   * 🔄 ATUALIZADO: Não mostra warning se container não existe
    */
   initUI() {
     const container = document.getElementById('reports-templates');
+    
     if (!container) {
-      console.warn('⚠️ Reports container not found');
+      // ✅ Accordion mode - sem UI, apenas API
+      console.log('✅ Reports API ready (accordion mode)');
       return;
     }
 
+    // ✅ Se existir, renderizar UI legado
     container.innerHTML = this.renderReportsHTML();
     this.setupEventListeners();
-    console.log('✅ Reports rendered');
+    console.log('✅ Reports UI rendered (legacy mode)');
   }
 
   /**
-   * Render reports HTML
+   * Render reports HTML (LEGADO)
    * @returns {string} HTML
    */
   renderReportsHTML() {
@@ -116,7 +123,7 @@ export class ReportsManager {
   }
 
   /**
-   * Setup event listeners
+   * Setup event listeners (LEGADO)
    */
   setupEventListeners() {
     // Report buttons
@@ -167,7 +174,7 @@ export class ReportsManager {
   }
 
   /**
-   * Export cities as CSV
+   * Export cities as CSV (API pública)
    */
   exportCitiesCSV() {
     const markedCities = this.mapManager.getMarkedCities();
@@ -183,7 +190,7 @@ export class ReportsManager {
   }
 
   /**
-   * Export cities as JSON
+   * Export cities as JSON (API pública)
    */
   exportCitiesJSON() {
     const markedCities = this.mapManager.getMarkedCities();
@@ -202,7 +209,7 @@ export class ReportsManager {
   }
 
   /**
-   * Export companies grouped by company
+   * Export companies grouped by company (API pública)
    */
   exportCompaniesByCompany() {
     const markedCities = this.mapManager.getMarkedCities();
@@ -240,7 +247,7 @@ export class ReportsManager {
   }
 
   /**
-   * Export available cities
+   * Export available cities (API pública)
    */
   exportAvailableCities() {
     const markedCities = this.mapManager.getMarkedCities();
@@ -258,7 +265,7 @@ export class ReportsManager {
   }
 
   /**
-   * Export full backup
+   * Export full backup (API pública)
    */
   exportBackup() {
     const data = this.storageManager.exportAllData();
@@ -271,12 +278,12 @@ export class ReportsManager {
   }
 
   /**
-   * Import data from file
+   * Import data from file (API pública)
    */
   importData() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
+    input.accept = '.json,.csv';
     
     input.onchange = (e) => {
       const file = e.target.files[0];
