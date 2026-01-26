@@ -2,6 +2,10 @@
  * GeoClient SP - Sidebar Toggle Automated Tests
  * Testes automatizados para verificar funcionalidade do toggle da sidebar
  * e ajuste dos botões flutuantes
+ * 
+ * ATUALIZADO: Reflete novo comportamento
+ * - Sidebar colapsa para 0px (antes era 60px)
+ * - Botões flutuantes ficam fixos no canto direito
  */
 
 class SidebarToggleTests {
@@ -74,7 +78,7 @@ class SidebarToggleTests {
             this.testToggleCollapse,
             this.testToggleExpand,
             this.testMultipleToggles,
-            this.testButtonPositions,
+            this.testButtonPositionsStayFixed,
             this.testIconChange,
             this.testHiddenElements,
             this.testResponsiveValues
@@ -150,21 +154,20 @@ class SidebarToggleTests {
 
     /**
      * Teste 3: Verifica transições CSS
+     * ATUALIZADO: Botões não precisam mais de transição (ficam fixos)
      */
     async testCSSTransitions() {
         const sidebarTransition = this.getComputedValue(this.sidebar, 'transition');
-        const mapControlsTransition = this.getComputedValue(this.mapControls, 'transition');
         const toggleTransition = this.getComputedValue(this.toggleButton, 'transition');
         
         const hasTransitions = 
             sidebarTransition.includes('0.3s') &&
-            mapControlsTransition.includes('0.3s') &&
             toggleTransition.includes('0.3s');
         
         this.logResult(
             'Transições CSS configuradas',
             hasTransitions,
-            `Sidebar: ${sidebarTransition.includes('0.3s') ? '0.3s ✓' : '✗'}, Controls: ${mapControlsTransition.includes('0.3s') ? '0.3s ✓' : '✗'}, Toggle: ${toggleTransition.includes('0.3s') ? '0.3s ✓' : '✗'}`
+            `Sidebar: ${sidebarTransition.includes('0.3s') ? '0.3s ✓' : '✗'}, Toggle: ${toggleTransition.includes('0.3s') ? '0.3s ✓' : '✗'}`
         );
     }
 
@@ -242,34 +245,36 @@ class SidebarToggleTests {
     }
 
     /**
-     * Teste 7: Posições dos botões
+     * Teste 7: Botões ficam fixos
+     * ATUALIZADO: Agora valida que botões NÃO se movem
      */
-    async testButtonPositions() {
+    async testButtonPositionsStayFixed() {
         // Estado expandido
         if (this.sidebar.classList.contains('collapsed')) {
             this.toggleButton.click();
             await this.delay(400);
         }
         
-        const expandedRight = this.getComputedValue(this.mapControls, 'right');
-        const expandedToggleLeft = this.getComputedValue(this.toggleButton, 'left');
+        const expandedRight = this.parsePixels(this.getComputedValue(this.mapControls, 'right'));
+        const expandedToggleLeft = this.parsePixels(this.getComputedValue(this.toggleButton, 'left'));
         
         // Colapsar
         this.toggleButton.click();
         await this.delay(400);
         
-        const collapsedRight = this.getComputedValue(this.mapControls, 'right');
-        const collapsedToggleLeft = this.getComputedValue(this.toggleButton, 'left');
+        const collapsedRight = this.parsePixels(this.getComputedValue(this.mapControls, 'right'));
+        const collapsedToggleLeft = this.parsePixels(this.getComputedValue(this.toggleButton, 'left'));
         
-        const controlsMoved = this.parsePixels(collapsedRight) !== this.parsePixels(expandedRight);
-        const toggleMoved = this.parsePixels(collapsedToggleLeft) !== this.parsePixels(expandedToggleLeft);
+        // Botões devem PERMANECER NO MESMO LUGAR
+        const controlsStayFixed = collapsedRight === expandedRight;
+        const toggleStaysFixed = collapsedToggleLeft === expandedToggleLeft;
         
-        const passed = controlsMoved && toggleMoved;
+        const passed = controlsStayFixed && toggleStaysFixed;
         
         this.logResult(
-            'Botões ajustam posição',
+            'Botões ficam fixos (não se movem)',
             passed,
-            `Controls: ${expandedRight} → ${collapsedRight}, Toggle: ${expandedToggleLeft} → ${collapsedToggleLeft}`
+            `Controls: ${expandedRight}px = ${collapsedRight}px ${controlsStayFixed ? '✓' : '✗'}, Toggle: ${expandedToggleLeft}px = ${collapsedToggleLeft}px ${toggleStaysFixed ? '✓' : '✗'}`
         );
         
         // Restaurar estado expandido
@@ -322,23 +327,30 @@ class SidebarToggleTests {
             await this.delay(400);
         }
         
+        const sidebarHeader = this.sidebar.querySelector('.sidebar-header');
         const sidebarText = this.sidebar.querySelector('.sidebar-text');
         const searchBox = this.sidebar.querySelector('.search-box-top');
         const sidebarContent = this.sidebar.querySelector('.sidebar-content');
+        const sidebarFooter = this.sidebar.querySelector('.sidebar-footer');
         
+        // ATUALIZADO: Agora header e footer também devem estar escondidos
         const allHidden = 
+            this.getComputedValue(sidebarHeader, 'display') === 'none' &&
             this.getComputedValue(sidebarText, 'display') === 'none' &&
             this.getComputedValue(searchBox, 'display') === 'none' &&
-            this.getComputedValue(sidebarContent, 'display') === 'none';
+            this.getComputedValue(sidebarContent, 'display') === 'none' &&
+            this.getComputedValue(sidebarFooter, 'display') === 'none';
         
         // Expandir
         this.toggleButton.click();
         await this.delay(400);
         
         const allVisible = 
+            this.getComputedValue(sidebarHeader, 'display') !== 'none' &&
             this.getComputedValue(sidebarText, 'display') !== 'none' &&
             this.getComputedValue(searchBox, 'display') !== 'none' &&
-            this.getComputedValue(sidebarContent, 'display') !== 'none';
+            this.getComputedValue(sidebarContent, 'display') !== 'none' &&
+            this.getComputedValue(sidebarFooter, 'display') !== 'none';
         
         const passed = allHidden && allVisible;
         
@@ -351,6 +363,7 @@ class SidebarToggleTests {
 
     /**
      * Teste 10: Valores responsíveis
+     * ATUALIZADO: Sidebar colapsa para 0px (era 60px)
      */
     async testResponsiveValues() {
         // Colapsar
@@ -367,12 +380,13 @@ class SidebarToggleTests {
         
         const expandedWidth = this.parsePixels(this.getComputedValue(this.sidebar, 'width'));
         
-        const widthsCorrect = collapsedWidth === 60 && expandedWidth === 340;
+        // ATUALIZADO: Collapsed agora é 0px (antes era 60px)
+        const widthsCorrect = collapsedWidth === 0 && expandedWidth === 340;
         
         this.logResult(
             'Larguras responsíveis corretas',
             widthsCorrect,
-            `Collapsed: ${collapsedWidth}px (esperado: 60px), Expanded: ${expandedWidth}px (esperado: 340px)`
+            `Collapsed: ${collapsedWidth}px (esperado: 0px), Expanded: ${expandedWidth}px (esperado: 340px)`
         );
     }
 
