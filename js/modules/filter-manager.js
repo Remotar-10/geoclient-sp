@@ -1,8 +1,8 @@
 /**
  * 🔍 GeoClient SP - Filter Manager
  * @module filter-manager
- * @version 1.1.0
- * @description Manages city and company filtering
+ * @version 1.2.0
+ * @description Manages city and company filtering (API mode for accordion)
  */
 
 import { COMPANIES } from './config.js';
@@ -10,6 +10,7 @@ import { getEventBus, EVENT_TYPES } from './events.js';
 
 /**
  * FilterManager Class
+ * 🔄 ATUALIZADO: Modo API - funcionalidade sem UI (accordion não usa #quick-filters)
  */
 export class FilterManager {
   constructor(mapManager) {
@@ -26,29 +27,58 @@ export class FilterManager {
 
   /**
    * Render filters (public method)
-   * 🚧 NOTA: UI de filtros não está implementada na versão ES6/accordion
+   * ✅ Silenciosamente não renderizar UI (accordion não tem container #quick-filters)
    * Funcionalidade de filtragem via API ainda disponível
    */
   renderFilters() {
-    // ✅ Silenciosamente não renderizar UI (accordion não tem container #quick-filters)
-    // A funcionalidade de filtragem programatica ainda funciona via applyFilters()
-    console.log('✅ Filters ready (API mode - no UI)');
+    // ✅ API mode - sem warnings
+    console.log('✅ Filters ready (API mode - accordion)');
   }
 
   /**
    * Initialize filter UI
-   * 🚧 Desabilitado - accordion não usa esta UI
+   * 🔄 ATUALIZADO: Não mostra warning se container não existe
    */
   initUI() {
-    // ❌ Comentado - não há #quick-filters no accordion
-    // const container = document.getElementById('quick-filters');
-    // if (!container) {
-    //   console.warn('⚠️ Filter container not found');
-    //   return;
-    // }
+    // ✅ Verificar se #quick-filters existe (legado)
+    const container = document.getElementById('quick-filters');
     
-    // ✅ Funcionalidade mantida, mas UI não renderizada
-    console.log('✅ Filter API ready (UI disabled for accordion mode)');
+    if (!container) {
+      // ✅ Accordion mode - sem UI, apenas API
+      console.log('✅ Filter API ready (accordion mode)');
+      return;
+    }
+    
+    // ✅ Se existir, renderizar UI legado
+    this.renderLegacyUI(container);
+  }
+
+  /**
+   * ⭐ NOVO: Renderizar UI legado (se container existir)
+   */
+  renderLegacyUI(container) {
+    // HTML de filtros rápidos
+    container.innerHTML = `
+      <div class="quick-filters">
+        <label>
+          <input type="checkbox" data-filter-type="status" value="has-companies">
+          Cidades Ocupadas
+        </label>
+        <label>
+          <input type="checkbox" data-filter-type="status" value="no-companies">
+          Cidades Disponíveis
+        </label>
+        ${Object.entries(COMPANIES).map(([key, company]) => `
+          <label>
+            <input type="checkbox" data-filter-type="company" value="${key}">
+            ${company.displayName}
+          </label>
+        `).join('')}
+      </div>
+    `;
+    
+    this.setupFilterListeners();
+    console.log('✅ Filter UI rendered (legacy mode)');
   }
 
   /**
@@ -81,7 +111,7 @@ export class FilterManager {
   }
 
   /**
-   * Filter map layers programmatically
+   * ⭐ NOVO: Filter map layers programmatically (API pública)
    * @param {Object} filters - { companies: [], hasCompanies: bool, noCompanies: bool }
    */
   applyCustomFilters(filters) {
