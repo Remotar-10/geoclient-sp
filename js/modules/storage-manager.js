@@ -1,13 +1,18 @@
 /**
  * 💾 GeoClient SP - Storage Manager
  * @module storage-manager
- * @version 4.1.0
- * @description Centralized localStorage management with auto-save and validation
+ * @version 4.2.1
+ * @description Centralized localStorage management with auto-save, validation, and caching
  */
 
 import { storage, dateTime } from './utils.js';
 import { STORAGE_KEYS, VERSION } from './config.js';
 import { getEventBus, EVENT_TYPES } from './events.js';
+
+// ⭐ CACHE global para prevenir leituras redundantes
+let _cachedCities = null;
+let _cacheTimestamp = 0;
+const CACHE_DURATION = 500; // 500ms
 
 /**
  * StorageManager class for all data persistence
@@ -19,7 +24,7 @@ export class StorageManager {
     this.eventBus = getEventBus();
     this.pendingSave = null;
     
-    console.log('💾 StorageManager initialized');
+    console.log('💾 StorageManager initialized', options.debug ? 2 : '');
   }
 
   // ==================== MARKED CITIES ====================
@@ -40,6 +45,10 @@ export class StorageManager {
       const success = storage.set(STORAGE_KEYS.markedCities, data);
       
       if (success) {
+        // ⭐ Invalidate cache when saving
+        _cachedCities = null;
+        _cacheTimestamp = 0;
+        
         console.log(`💾 ${Object.keys(cities).length} cidades salvas`);
         this.eventBus.emit(EVENT_TYPES.DATA_SAVED, { type: 'cities', count: Object.keys(cities).length });
       }
@@ -52,20 +61,35 @@ export class StorageManager {
   }
 
   /**
-   * Load marked cities from localStorage
+   * Load marked cities from localStorage (with caching)
    * @returns {Object} Cities object or empty object
    */
   loadMarkedCities() {
     try {
+      const now = Date.now();
+      
+      // ⭐ CACHE HIT: Return cached data if fresh
+      if (_cachedCities && (now - _cacheTimestamp) < CACHE_DURATION) {
+        console.log(`🚀 ${Object.keys(_cachedCities).length} cidades (cache)`);
+        return _cachedCities;
+      }
+      
+      // CACHE MISS: Load from storage
       const data = storage.get(STORAGE_KEYS.markedCities);
       
       if (!data) {
         console.log('💾 Nenhuma cidade salva encontrada');
+        _cachedCities = {};
+        _cacheTimestamp = now;
         return {};
       }
 
       // Handle legacy format (no version/timestamp)
       const cities = data.cities || data;
+      
+      // ⭐ Update cache
+      _cachedCities = cities;
+      _cacheTimestamp = now;
       
       console.log(`💾 ${Object.keys(cities).length} cidades restauradas`);
       this.eventBus.emit(EVENT_TYPES.DATA_LOADED, { type: 'cities', count: Object.keys(cities).length });
@@ -75,6 +99,15 @@ export class StorageManager {
       console.error('❌ Erro ao carregar cidades:', error);
       return {};
     }
+  }
+  
+  /**
+   * Manually invalidate cache (useful for debugging)
+   */
+  invalidateCache() {
+    _cachedCities = null;
+    _cacheTimestamp = 0;
+    console.log('💾 Cache invalidated');
   }
 
   // ==================== ACTIVITIES ====================
@@ -338,6 +371,9 @@ export class StorageManager {
       storage.remove(key);
     });
     
+    // ⭐ Invalidate cache
+    this.invalidateCache();
+    
     console.log('💾 Todos os dados limpos');
     this.eventBus.emit(EVENT_TYPES.DATA_CHANGED, { action: 'clear' });
   }
@@ -350,6 +386,12 @@ export class StorageManager {
     const key = STORAGE_KEYS[type];
     if (key) {
       storage.remove(key);
+      
+      // ⭐ Invalidate cache if clearing cities
+      if (type === 'markedCities') {
+        this.invalidateCache();
+      }
+      
       console.log(`💾 ${type} limpo`);
       this.eventBus.emit(EVENT_TYPES.DATA_CHANGED, { action: 'clear', type });
     }
