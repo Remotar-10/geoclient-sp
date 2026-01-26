@@ -17,12 +17,13 @@
     <link rel="stylesheet" href="css/sidebar.css">
     
     <style>
-        /* 👉 FIX: Prevenir área preta quando sidebar colapsa */
+        /* 👉 FIX: Estrutura igual ao index.html (SEM APP-CONTAINER FLEX) */
         html, body {
-            background: #e0f2fe;
-            overflow: hidden;
+            margin: 0;
+            padding: 0;
             width: 100%;
             height: 100%;
+            overflow: hidden;
         }
         
         /* Loading Screen */
@@ -55,44 +56,25 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         
-        /* App Container Layout - CORRIGIDO */
-        #app-container {
-            opacity: 0;
-            transition: opacity 0.5s ease-in;
-            display: flex;
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-        #app-container.loaded { opacity: 1; }
-        
-        /* Sidebar Override */
+        /* ✅ Sidebar - POSITION ABSOLUTE (como index.html) */
         .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
             width: 340px;
             height: 100vh;
             background: white;
             border-right: 1px solid #e5e7eb;
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
             overflow: hidden;
-            transition: all 0.3s ease;
-            position: relative;
+            transition: transform 0.3s ease;
             z-index: 1001;
         }
         
+        /* Sidebar colapsada: esconde para a esquerda */
         .sidebar.collapsed {
-            width: 0;
-            border-right: none;
-        }
-        
-        .sidebar.collapsed .sidebar-header,
-        .sidebar.collapsed .sidebar-text,
-        .sidebar.collapsed .search-box-top,
-        .sidebar.collapsed .sidebar-content,
-        .sidebar.collapsed .sidebar-footer {
-            display: none;
+            transform: translateX(-100%);
         }
         
         .sidebar-header {
@@ -145,22 +127,20 @@
             text-transform: uppercase;
         }
         
-        /* Main Content - CORRIGIDO: expande para preencher espaço disponível */
-        .main-content {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
+        /* ✅ Main Container - SEM FLEX (como index.html) */
+        .main-container {
             width: 100%;
-            min-width: 0; /* Importante para flex corretamente */
+            height: 100vh;
+            position: relative;
         }
         
-        .map-container {
+        /* Mapa ocupa 100% do container */
+        #map {
             width: 100%;
             height: 100%;
-            position: relative;
         }
         
-        /* Botões flutuantes - MANTIDOS NO CANTO DIREITO */
+        /* Botões flutuantes */
         .map-controls {
             position: absolute;
             bottom: 20px;
@@ -170,17 +150,18 @@
             z-index: 1000;
         }
         
-        /* Sidebar toggle button com transição */
+        /* Sidebar toggle button */
         #sidebar-toggle {
-            position: absolute;
+            position: fixed;
             top: 20px;
             left: 20px;
             z-index: 1000;
             transition: left 0.3s ease;
         }
         
-        body.sidebar-collapsed #sidebar-toggle {
-            left: 20px; /* Fica no mesmo lugar quando sidebar fecha */
+        /* Quando sidebar está visível, botão move para direita */
+        body:not(.sidebar-collapsed) #sidebar-toggle {
+            left: 360px;
         }
         
         .map-control-btn {
@@ -214,7 +195,7 @@
             gap: 10px;
         }
         
-        /* Search Box at Top - UPDATED */
+        /* Search Box at Top */
         .search-box-top {
             padding: 16px;
             border-bottom: 1px solid #e5e7eb;
@@ -583,9 +564,7 @@
             background: #f9fafb;
         }
         
-        /* ========================================
-           MODAL STYLES
-        ======================================== */
+        /* MODAL STYLES */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -745,9 +724,7 @@
             background: #e5e7eb;
         }
         
-        /* ========================================
-           POPUP STYLES
-        ======================================== */
+        /* POPUP STYLES */
         .leaflet-popup-content-wrapper {
             border-radius: 12px;
             padding: 0;
@@ -849,274 +826,262 @@
         <div class="loading-spinner"></div>
     </div>
 
-    <div id="app-container">
-        <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <h1 class="sidebar-title">
-                    <span class="sidebar-icon">🗺️</span>
-                    <span class="sidebar-text">GeoClient SP</span>
-                </h1>
+    <!-- ✅ SIDEBAR (position: fixed, não dentro de flex container) -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">
+                <span class="sidebar-icon">🗺️</span>
+                <span class="sidebar-text">GeoClient SP</span>
+            </h1>
+        </div>
+        
+        <div class="search-box-top">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" 
+                       id="city-search" 
+                       class="search-input" 
+                       placeholder="Buscar cidade..." 
+                       autocomplete="off">
             </div>
-            
-            <!-- 👉 SEARCH BOX - ORDEM CORRETA ✅ -->
-            <div class="search-box-top">
-                <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" 
-                           id="city-search" 
-                           class="search-input" 
-                           placeholder="Buscar cidade..." 
-                           autocomplete="off">
+        </div>
+
+        <div class="sidebar-content">
+            <!-- SECTIONS IGUAIS AO ORIGINAL... -->
+            <div id="tab-dashboard" class="accordion-section">
+                <div class="accordion-header active" data-section="stats">
+                    <span class="accordion-title">📊 Estatísticas</span>
+                    <span class="accordion-icon">▼</span>
+                </div>
+                <div class="accordion-content active" id="content-stats">
+                    <div class="accordion-content-inner">
+                        <div class="stat-card primary">
+                            <div class="stat-card-title">Total de Municípios</div>
+                            <div class="stat-card-value">645</div>
+                            <div class="stat-card-label">Estado de São Paulo</div>
+                        </div>
+                        
+                        <div class="stat-card success">
+                            <div class="stat-card-title">Ocupadas</div>
+                            <div class="stat-card-value" id="stat-occupied">0</div>
+                            <div class="stat-card-label" id="stat-occupied-percent">0% de ocupação</div>
+                            <div class="stat-progress-bar">
+                                <div class="stat-progress-fill" id="stat-progress-fill"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card warning">
+                            <div class="stat-card-title">Disponíveis</div>
+                            <div class="stat-card-value" id="stat-available">645</div>
+                            <div class="stat-card-label" id="stat-available-percent">100% livres</div>
+                            <div class="stat-progress-bar">
+                                <div class="stat-progress-fill" id="stat-available-fill" style="background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="marked-cities-list" class="cities-list" style="margin-top: 16px;"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="sidebar-content">
-                <!-- 📊 ESTATÍSTICAS (Starts OPEN) -->
-                <div id="tab-dashboard" class="accordion-section">
-                    <div class="accordion-header active" data-section="stats">
-                        <span class="accordion-title">📊 Estatísticas</span>
-                        <span class="accordion-icon">▼</span>
+            <div id="tab-companies" class="accordion-section">
+                <div class="accordion-header" data-section="companies">
+                    <span class="accordion-title">🏭 Empresas</span>
+                    <span class="accordion-icon">▼</span>
+                </div>
+                <div class="accordion-content" id="content-companies">
+                    <div class="accordion-content-inner" id="companies-list">
+                        <div class="empty-state">🏭 Nenhuma empresa cadastrada</div>
                     </div>
-                    <div class="accordion-content active" id="content-stats">
-                        <div class="accordion-content-inner">
-                            <div class="stat-card primary">
-                                <div class="stat-card-title">Total de Municípios</div>
-                                <div class="stat-card-value">645</div>
-                                <div class="stat-card-label">Estado de São Paulo</div>
+                </div>
+            </div>
+
+            <div class="accordion-section">
+                <div class="accordion-header" data-section="actions">
+                    <span class="accordion-title">⚙️ Ações</span>
+                    <span class="accordion-icon">▼</span>
+                </div>
+                <div class="accordion-content" id="content-actions">
+                    <div class="accordion-content-inner">
+                        <button class="action-btn primary" id="action-reset-view">
+                            <span>🎯</span>
+                            <span>Resetar Visualização</span>
+                        </button>
+                        <button class="action-btn primary" id="action-copy-list">
+                            <span>📋</span>
+                            <span>Copiar Lista de Cidades</span>
+                        </button>
+                        <button class="action-btn success" id="action-export-csv">
+                            <span>📊</span>
+                            <span>Exportar CSV</span>
+                        </button>
+                        <button class="action-btn success" id="action-export-json">
+                            <span>💾</span>
+                            <span>Exportar JSON</span>
+                        </button>
+                        <button class="action-btn primary" id="action-import">
+                            <span>📁</span>
+                            <span>Importar Dados</span>
+                        </button>
+                        <button class="action-btn danger" id="action-clear">
+                            <span>🗑️</span>
+                            <span>Limpar Todos os Dados</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-navigation" class="accordion-section">
+                <div class="accordion-header" data-section="navigation">
+                    <span class="accordion-title">🧭 Navegação</span>
+                    <span class="accordion-icon">▼</span>
+                </div>
+                <div class="accordion-content" id="content-navigation">
+                    <div class="accordion-content-inner">
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span>⏱️</span>
+                                <span>Recentes</span>
                             </div>
-                            
-                            <div class="stat-card success">
-                                <div class="stat-card-title">Ocupadas</div>
-                                <div class="stat-card-value" id="stat-occupied">0</div>
-                                <div class="stat-card-label" id="stat-occupied-percent">0% de ocupação</div>
-                                <div class="stat-progress-bar">
-                                    <div class="stat-progress-fill" id="stat-progress-fill"></div>
+                            <div id="recent-cities-list"></div>
+                        </div>
+                        
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span>🗺️</span>
+                                <span>Regiões</span>
+                            </div>
+                            <div id="region-buttons">
+                                <button class="region-btn" data-region="metropolitana">
+                                    <div class="region-label">
+                                        <span>📍</span>
+                                        <span>Região Metropolitana</span>
+                                    </div>
+                                    <span class="region-count">89</span>
+                                </button>
+                                <button class="region-btn" data-region="litoral">
+                                    <div class="region-label">
+                                        <span>🏖️</span>
+                                        <span>Litoral</span>
+                                    </div>
+                                    <span class="region-count">39</span>
+                                </button>
+                                <button class="region-btn" data-region="interior">
+                                    <div class="region-label">
+                                        <span>🌳</span>
+                                        <span>Interior</span>
+                                    </div>
+                                    <span class="region-count">487</span>
+                                </button>
+                                <button class="region-btn" data-region="vale">
+                                    <div class="region-label">
+                                        <span>🏔️</span>
+                                        <span>Vale do Paraíba</span>
+                                    </div>
+                                    <span class="region-count">39</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span>👁️</span>
+                                <span>Camadas do Mapa</span>
+                            </div>
+                            <div id="layer-toggles">
+                                <div class="layer-toggle active" data-layer="occupied">
+                                    <div class="layer-checkbox">
+                                        <span class="layer-checkmark">✓</span>
+                                    </div>
+                                    <span class="layer-label">Cidades Ocupadas</span>
+                                </div>
+                                <div class="layer-toggle active" data-layer="available">
+                                    <div class="layer-checkbox">
+                                        <span class="layer-checkmark">✓</span>
+                                    </div>
+                                    <span class="layer-label">Cidades Disponíveis</span>
+                                </div>
+                                <div class="layer-toggle active" data-layer="badges">
+                                    <div class="layer-checkbox">
+                                        <span class="layer-checkmark">✓</span>
+                                    </div>
+                                    <span class="layer-label">Badges Contador</span>
                                 </div>
                             </div>
-                            
-                            <div class="stat-card warning">
-                                <div class="stat-card-title">Disponíveis</div>
-                                <div class="stat-card-value" id="stat-available">645</div>
-                                <div class="stat-card-label" id="stat-available-percent">100% livres</div>
-                                <div class="stat-progress-bar">
-                                    <div class="stat-progress-fill" id="stat-available-fill" style="background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
-                                </div>
+                        </div>
+                        
+                        <div class="nav-card">
+                            <div class="nav-card-header">
+                                <span>⚡</span>
+                                <span>Atalhos</span>
                             </div>
-                            
-                            <!-- ⭐ NOVO: Lista de cidades marcadas -->
-                            <div id="marked-cities-list" class="cities-list" style="margin-top: 16px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 🏭 EMPRESAS -->
-                <div id="tab-companies" class="accordion-section">
-                    <div class="accordion-header" data-section="companies">
-                        <span class="accordion-title">🏭 Empresas</span>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content" id="content-companies">
-                        <div class="accordion-content-inner" id="companies-list">
-                            <div class="empty-state">🏭 Nenhuma empresa cadastrada</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ⚙️ AÇÕES -->
-                <div class="accordion-section">
-                    <div class="accordion-header" data-section="actions">
-                        <span class="accordion-title">⚙️ Ações</span>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content" id="content-actions">
-                        <div class="accordion-content-inner">
-                            <button class="action-btn primary" id="action-reset-view">
+                            <button id="shortcut-reset" class="shortcut-btn">
                                 <span>🎯</span>
                                 <span>Resetar Visualização</span>
                             </button>
-                            <button class="action-btn primary" id="action-copy-list" data-shortcut="copy">
+                            <button id="shortcut-list" class="shortcut-btn">
                                 <span>📋</span>
-                                <span>Copiar Lista de Cidades</span>
-                            </button>
-                            <button class="action-btn success" id="action-export-csv">
-                                <span>📊</span>
-                                <span>Exportar CSV</span>
-                            </button>
-                            <button class="action-btn success" id="action-export-json">
-                                <span>💾</span>
-                                <span>Exportar JSON</span>
-                            </button>
-                            <button class="action-btn primary" id="action-import">
-                                <span>📁</span>
-                                <span>Importar Dados</span>
-                            </button>
-                            <button class="action-btn danger" id="action-clear">
-                                <span>🗑️</span>
-                                <span>Limpar Todos os Dados</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 🧭 NAVEGAÇÃO -->
-                <div id="tab-navigation" class="accordion-section">
-                    <div class="accordion-header" data-section="navigation">
-                        <span class="accordion-title">🧭 Navegação</span>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content" id="content-navigation">
-                        <div class="accordion-content-inner">
-                            <!-- ⭐ NOVO: Cidades recentes -->
-                            <div class="nav-card">
-                                <div class="nav-card-header">
-                                    <span>⏱️</span>
-                                    <span>Recentes</span>
-                                </div>
-                                <div id="recent-cities-list"></div>
-                            </div>
-                            
-                            <!-- Regiões -->
-                            <div class="nav-card">
-                                <div class="nav-card-header">
-                                    <span>🗺️</span>
-                                    <span>Regiões</span>
-                                </div>
-                                <div id="region-buttons">
-                                    <button class="region-btn" data-region="metropolitana">
-                                        <div class="region-label">
-                                            <span>📍</span>
-                                            <span>Região Metropolitana</span>
-                                        </div>
-                                        <span class="region-count">89</span>
-                                    </button>
-                                    <button class="region-btn" data-region="litoral">
-                                        <div class="region-label">
-                                            <span>🏖️</span>
-                                            <span>Litoral</span>
-                                        </div>
-                                        <span class="region-count">39</span>
-                                    </button>
-                                    <button class="region-btn" data-region="interior">
-                                        <div class="region-label">
-                                            <span>🌳</span>
-                                            <span>Interior</span>
-                                        </div>
-                                        <span class="region-count">487</span>
-                                    </button>
-                                    <button class="region-btn" data-region="vale">
-                                        <div class="region-label">
-                                            <span>🏔️</span>
-                                            <span>Vale do Paraíba</span>
-                                        </div>
-                                        <span class="region-count">39</span>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Camadas -->
-                            <div class="nav-card">
-                                <div class="nav-card-header">
-                                    <span>👁️</span>
-                                    <span>Camadas do Mapa</span>
-                                </div>
-                                <div id="layer-toggles">
-                                    <div class="layer-toggle active" data-layer="occupied">
-                                        <div class="layer-checkbox">
-                                            <span class="layer-checkmark">✓</span>
-                                        </div>
-                                        <span class="layer-label">Cidades Ocupadas</span>
-                                    </div>
-                                    <div class="layer-toggle active" data-layer="available">
-                                        <div class="layer-checkbox">
-                                            <span class="layer-checkmark">✓</span>
-                                        </div>
-                                        <span class="layer-label">Cidades Disponíveis</span>
-                                    </div>
-                                    <div class="layer-toggle active" data-layer="badges">
-                                        <div class="layer-checkbox">
-                                            <span class="layer-checkmark">✓</span>
-                                        </div>
-                                        <span class="layer-label">Badges Contador</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- ⭐ NOVO: Atalhos -->
-                            <div class="nav-card">
-                                <div class="nav-card-header">
-                                    <span>⚡</span>
-                                    <span>Atalhos</span>
-                                </div>
-                                <button id="shortcut-reset" class="shortcut-btn" data-shortcut="reset">
-                                    <span>🎯</span>
-                                    <span>Resetar Visualização</span>
-                                </button>
-                                <button id="shortcut-list" class="shortcut-btn" data-shortcut="copy">
-                                    <span>📋</span>
-                                    <span>Copiar Lista</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 💾 DADOS -->
-                <div id="tab-reports" class="accordion-section">
-                    <div class="accordion-header" data-section="data">
-                        <span class="accordion-title">💾 Dados</span>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content" id="content-data">
-                        <div class="accordion-content-inner">
-                            <button class="data-btn" id="btn-import">
-                                <span class="data-btn-icon">📁</span>
-                                <span class="data-btn-label">Importar CSV/JSON</span>
-                            </button>
-                            <button class="data-btn" id="btn-export-csv">
-                                <span class="data-btn-icon">📊</span>
-                                <span class="data-btn-label">Exportar CSV</span>
-                                <span class="data-btn-count" id="export-count">0</span>
-                            </button>
-                            <button class="data-btn" id="btn-export-json">
-                                <span class="data-btn-icon">💾</span>
-                                <span class="data-btn-label">Exportar JSON</span>
-                            </button>
-                            <button class="data-btn" id="btn-clear" style="border-color: #ef4444; color: #ef4444;">
-                                <span class="data-btn-icon">🗑️</span>
-                                <span class="data-btn-label">Limpar Dados</span>
+                                <span>Copiar Lista</span>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="sidebar-footer">
-                <div class="version-info">
-                    <span id="app-version">v4.2.0</span>
-                    <span class="version-badge">ES6</span>
+            <div id="tab-reports" class="accordion-section">
+                <div class="accordion-header" data-section="data">
+                    <span class="accordion-title">💾 Dados</span>
+                    <span class="accordion-icon">▼</span>
+                </div>
+                <div class="accordion-content" id="content-data">
+                    <div class="accordion-content-inner">
+                        <button class="data-btn" id="btn-import">
+                            <span class="data-btn-icon">📁</span>
+                            <span class="data-btn-label">Importar CSV/JSON</span>
+                        </button>
+                        <button class="data-btn" id="btn-export-csv">
+                            <span class="data-btn-icon">📊</span>
+                            <span class="data-btn-label">Exportar CSV</span>
+                            <span class="data-btn-count" id="export-count">0</span>
+                        </button>
+                        <button class="data-btn" id="btn-export-json">
+                            <span class="data-btn-icon">💾</span>
+                            <span class="data-btn-label">Exportar JSON</span>
+                        </button>
+                        <button class="data-btn" id="btn-clear" style="border-color: #ef4444; color: #ef4444;">
+                            <span class="data-btn-icon">🗑️</span>
+                            <span class="data-btn-label">Limpar Dados</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </aside>
+        </div>
 
-        <main id="main-content" class="main-content">
-            <!-- ⭐ NOVO: Botão toggle sidebar -->
-            <button id="sidebar-toggle" class="map-control-btn" title="Toggle Sidebar">
-                <span>☰</span>
+        <div class="sidebar-footer">
+            <div class="version-info">
+                <span id="app-version">v4.2.0</span>
+                <span class="version-badge">ES6</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ✅ Botão Toggle -->
+    <button id="sidebar-toggle" class="map-control-btn" title="Toggle Sidebar">
+        <span>☰</span>
+    </button>
+
+    <!-- ✅ MAIN CONTAINER (sem flex, igual index.html) -->
+    <div class="main-container">
+        <div id="map"></div>
+        
+        <div class="map-controls">
+            <button id="reset-view" class="map-control-btn" title="Resetar visualização">
+                <span>🎯</span>
             </button>
-            
-            <div id="tab-map" class="map-container">
-                <div id="map" style="width: 100%; height: 100%;"></div>
-            </div>
-            
-            <div class="map-controls">
-                <button id="reset-view" class="map-control-btn" title="Resetar visualização">
-                    <span>🎯</span>
-                </button>
-                <button id="export-data" class="map-control-btn" title="Exportar dados">
-                    <span>💾</span>
-                </button>
-            </div>
-        </main>
+            <button id="export-data" class="map-control-btn" title="Exportar dados">
+                <span>💾</span>
+            </button>
+        </div>
     </div>
 
     <div id="toast-container" class="toast-container"></div>
@@ -1132,12 +1097,9 @@
             const app = event.detail.app;
             
             const loadingScreen = document.getElementById('loading-screen');
-            const appContainer = document.getElementById('app-container');
             
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
-                appContainer.classList.add('loaded');
-                
                 console.log('🎉 GeoClient SP v4.2.0 carregado com sucesso!');
             }, 500);
 
@@ -1189,27 +1151,22 @@
         }
 
         function setupUIListeners(app) {
-            // ✅ Sidebar Toggle CORRIGIDO
             const sidebarToggle = document.getElementById('sidebar-toggle');
             const sidebar = document.getElementById('sidebar');
             
             if (sidebarToggle && sidebar) {
                 sidebarToggle.addEventListener('click', () => {
-                    // Toggle classe no sidebar E no body
                     sidebar.classList.toggle('collapsed');
                     document.body.classList.toggle('sidebar-collapsed');
                     
-                    // Atualizar ícone
                     const icon = sidebarToggle.querySelector('span');
                     icon.textContent = sidebar.classList.contains('collapsed') ? '☰' : '✕';
                 });
             }
             
-            // Map Controls
             document.getElementById('reset-view')?.addEventListener('click', () => app.resetMapView());
             document.getElementById('export-data')?.addEventListener('click', () => app.exportJSON());
             
-            // Actions Section
             document.getElementById('action-reset-view')?.addEventListener('click', () => app.resetMapView());
             document.getElementById('action-copy-list')?.addEventListener('click', () => app.copyCitiesList?.());
             document.getElementById('action-export-csv')?.addEventListener('click', () => app.exportCitiesCSV());
@@ -1221,11 +1178,9 @@
                 }
             });
             
-            // Shortcuts
             document.getElementById('shortcut-reset')?.addEventListener('click', () => app.resetMapView());
             document.getElementById('shortcut-list')?.addEventListener('click', () => app.copyCitiesList?.());
             
-            // Data Section (Legacy)
             document.getElementById('btn-import')?.addEventListener('click', () => app.importData());
             document.getElementById('btn-export-csv')?.addEventListener('click', () => app.exportCitiesCSV());
             document.getElementById('btn-export-json')?.addEventListener('click', () => app.exportJSON());
@@ -1235,7 +1190,6 @@
                 }
             });
             
-            // Layer Toggles
             document.querySelectorAll('.layer-toggle').forEach(toggle => {
                 toggle.addEventListener('click', () => {
                     toggle.classList.toggle('active');
