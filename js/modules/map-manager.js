@@ -1,7 +1,7 @@
 /**
  * 🗺️ GeoClient SP - Map Manager
  * @module map-manager
- * @version 4.1.0
+ * @version 4.1.1
  * @description Leaflet map management and GeoJSON handling
  */
 
@@ -33,6 +33,13 @@ export class MapManager {
       return;
     }
 
+    // ✅ Verificar se container existe
+    const container = document.getElementById(this.elementId);
+    if (!container) {
+      console.error(`❌ Container #${this.elementId} não encontrado!`);
+      return;
+    }
+
     // Create map
     this.map = L.map(this.elementId, {
       center: MAP_CONFIG.center,
@@ -55,6 +62,18 @@ export class MapManager {
     }).addTo(this.map);
 
     console.log('🗺️ Map initialized');
+    
+    // ⭐ VERIFICAR SE LEAFLET RENDERIZOU (importante para bug-checker)
+    setTimeout(() => {
+      const leafletContainer = container.querySelector('.leaflet-container');
+      if (!leafletContainer) {
+        console.error('❌ ERRO: .leaflet-container não foi criado pelo Leaflet!');
+        console.error('   Verifique se Leaflet.js foi carregado corretamente');
+      } else {
+        console.log('✅ Leaflet container renderizado');
+      }
+    }, 100);
+    
     this.eventBus.emit(EVENT_TYPES.MAP_READY);
   }
 
