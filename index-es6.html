@@ -17,6 +17,14 @@
     <link rel="stylesheet" href="css/sidebar.css">
     
     <style>
+        /* 👉 FIX: Prevenir área preta quando sidebar colapsa */
+        html, body {
+            background: #e0f2fe;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        
         /* Loading Screen */
         #loading-screen {
             position: fixed;
@@ -47,7 +55,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         
-        /* App Container Layout */
+        /* App Container Layout - CORRIGIDO */
         #app-container {
             opacity: 0;
             transition: opacity 0.5s ease-in;
@@ -55,6 +63,7 @@
             width: 100%;
             height: 100vh;
             overflow: hidden;
+            position: relative;
         }
         #app-container.loaded { opacity: 1; }
         
@@ -69,6 +78,8 @@
             flex-shrink: 0;
             overflow: hidden;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 1001;
         }
         
         .sidebar.collapsed {
@@ -134,16 +145,19 @@
             text-transform: uppercase;
         }
         
-        /* Main Content */
+        /* Main Content - CORRIGIDO: expande para preencher espaço disponível */
         .main-content {
             flex: 1;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            min-width: 0; /* Importante para flex corretamente */
         }
         
         .map-container {
             width: 100%;
             height: 100%;
+            position: relative;
         }
         
         /* Botões flutuantes - MANTIDOS NO CANTO DIREITO */
