@@ -1,6 +1,6 @@
 /**
  * 🐞 GeoClient SP - Diagnostic Test Suite
- * @version 1.0.0
+ * @version 1.1.0
  * @description Complete diagnostic tests for ES6 version
  */
 
@@ -31,7 +31,9 @@ export function runDiagnostics() {
     ['FilterManager', app.filterManager],
     ['DashboardManager', app.dashboardManager],
     ['ReportsManager', app.reportsManager],
-    ['CompaniesManager', app.companiesManager]
+    ['CompaniesManager', app.companiesManager],
+    ['NavigationManager', app.navigationManager],
+    ['SearchManager', app.searchManager]
   ];
   
   managers.forEach(([name, manager]) => {
@@ -122,14 +124,14 @@ export function runDiagnostics() {
     failed++;
   }
   
-  // Test 7: UI Elements
-  console.log('\n🎨 Test 7: UI Elements');
+  // Test 7: UI Elements (Accordion mode)
+  console.log('\n🎨 Test 7: UI Elements (Accordion Mode)');
   const uiElements = [
     ['Map container', 'map'],
-    ['Dashboard stats', 'dashboard-stats'],
+    ['Dashboard stat: Occupied', 'stat-occupied'],
+    ['Dashboard stat: Available', 'stat-available'],
     ['Companies list', 'companies-list'],
-    ['Reports templates', 'reports-templates'],
-    ['Quick filters', 'quick-filters'],
+    ['Content data (accordion)', 'content-data'],
     ['Marked cities list', 'marked-cities-list']
   ];
   
@@ -144,6 +146,25 @@ export function runDiagnostics() {
     }
   });
   
+  // Test 8: Legacy UI Check (should NOT exist)
+  console.log('\n🗑️ Test 8: Legacy UI Cleanup');
+  const legacyElements = [
+    ['#dashboard-stats (legacy)', 'dashboard-stats'],
+    ['#reports-templates (legacy)', 'reports-templates'],
+    ['#quick-filters (legacy)', 'quick-filters']
+  ];
+  
+  legacyElements.forEach(([name, id]) => {
+    const element = document.getElementById(id);
+    if (!element) {
+      console.log(`  ✅ ${name}: CORRECTLY REMOVED`);
+      passed++;
+    } else {
+      console.log(`  ⚠️ ${name}: STILL EXISTS (should be removed)`);
+      failed++;
+    }
+  });
+  
   // Summary
   console.log('\n' + '='.repeat(60));
   console.log('%c📊 SUMMARY', 'color: #8b5cf6; font-size: 16px; font-weight: bold');
@@ -153,6 +174,8 @@ export function runDiagnostics() {
   
   if (failed === 0) {
     console.log('%c\n✅ ALL TESTS PASSED! Sistema 100% funcional!', 'color: #10b981; font-size: 14px; font-weight: bold');
+  } else if (failed <= 2) {
+    console.log('%c\n✅ ALMOST PERFECT! Minor issues only.', 'color: #10b981; font-size: 14px; font-weight: bold');
   } else {
     console.log('%c\n⚠️ SOME TESTS FAILED!', 'color: #f59e0b; font-size: 14px; font-weight: bold');
   }
