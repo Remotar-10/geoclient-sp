@@ -1,7 +1,7 @@
 /**
  * 🗺️ GeoClient SP - Map Manager
  * @module map-manager
- * @version 4.1.3
+ * @version 4.2.0
  * @description Leaflet map management and GeoJSON handling
  */
 
@@ -40,14 +40,14 @@ export class MapManager {
       return;
     }
 
-    // Create map
+    // Create map WITHOUT zoom control (usar apenas botões customizados)
     this.map = L.map(this.elementId, {
       center: MAP_CONFIG.center,
       zoom: MAP_CONFIG.zoom,
       minZoom: MAP_CONFIG.minZoom,
       maxZoom: MAP_CONFIG.maxZoom,
       maxBounds: MAP_CONFIG.maxBounds,
-      zoomControl: false
+      zoomControl: false  // 🚫 Desabilitar botões +/- padrão do Leaflet
     });
 
     // Add tile layer
@@ -56,12 +56,10 @@ export class MapManager {
       maxZoom: 19
     }).addTo(this.map);
 
-    // Add zoom control to bottom right
-    L.control.zoom({
-      position: 'bottomright'
-    }).addTo(this.map);
+    // 🚫 REMOVIDO: L.control.zoom() - usar apenas botões customizados (reset/save)
+    // Os botões de reset (🎯) e salvar (💾) são gerenciados pelo UIManager
 
-    console.log('🗺️ Map initialized');
+    console.log('🗺️ Map initialized (sem controles de zoom padrão)');
     
     // ⭐ SOLUÇÃO 1: Ouvir evento 'load' do Leaflet (método mais confiável)
     this.map.whenReady(() => {
