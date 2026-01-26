@@ -38,7 +38,7 @@ export class GeoClientApp {
     this.reportsManager = null;
     this.companiesManager = null;
     this.navigationManager = null;
-    this.searchManager = null; // ⭐ NEW
+    this.searchManager = null;
     
     // State
     this.isInitialized = false;
@@ -58,7 +58,7 @@ export class GeoClientApp {
     }
 
     try {
-      console.log('⏳ Initializing GeoClient SP...');
+      console.log('⌛ Initializing GeoClient SP...');
       
       // 1. Initialize map
       this.mapManager.initMap();
@@ -84,7 +84,7 @@ export class GeoClientApp {
       // 8. Initialize Navigation Manager
       this.navigationManager = getNavigationManager(this.mapManager, this.storageManager);
       
-      // 9. ⭐ Initialize Search Manager (NEW)
+      // 9. Initialize Search Manager
       this.searchManager = getSearchManager(this.mapManager, this.storageManager);
       
       // 10. Setup event listeners FIRST
@@ -160,7 +160,6 @@ export class GeoClientApp {
       console.log('✅ Cities list updated');
     }
     
-    // ⭐ Search is auto-initialized
     console.log('✅ Search initialized');
   }
 
@@ -224,10 +223,19 @@ export class GeoClientApp {
 
   /**
    * Setup event listeners
+   * ⚠️ IMPORTANTE: Remove listeners anteriores para evitar duplicação
    */
   setupEventListeners() {
     console.log('📡 Setting up event listeners...');
     
+    // ⭐ REMOVER LISTENERS ANTERIORES PARA EVITAR DUPLICAÇÃO
+    this.eventBus.removeAllListeners(EVENT_TYPES.CITY_CLICKED);
+    this.eventBus.removeAllListeners(EVENT_TYPES.DATA_CHANGED);
+    this.eventBus.removeAllListeners(EVENT_TYPES.CITY_MARKED);
+    this.eventBus.removeAllListeners(EVENT_TYPES.COMPANY_ADDED);
+    this.eventBus.removeAllListeners(EVENT_TYPES.COMPANY_REMOVED);
+    
+    // Agora adicionar novos listeners
     this.eventBus.on(EVENT_TYPES.CITY_CLICKED, (data) => {
       this.handleCityClick(data);
     });
