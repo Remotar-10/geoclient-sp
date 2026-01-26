@@ -68,6 +68,18 @@
             flex-direction: column;
             flex-shrink: 0;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .sidebar.collapsed .sidebar-text,
+        .sidebar.collapsed .search-box-top,
+        .sidebar.collapsed .sidebar-content,
+        .sidebar.collapsed .sidebar-footer .version-info span:not(.version-badge) {
+            display: none;
         }
         
         .sidebar-header {
@@ -132,6 +144,7 @@
             height: 100%;
         }
         
+        /* ✨ CORRIGIDO: Botões flutuantes com transição */
         .map-controls {
             position: absolute;
             bottom: 20px;
@@ -139,6 +152,21 @@
             display: flex;
             gap: 10px;
             z-index: 1000;
+            transition: right 0.3s ease; /* ← ADICIONADO */
+        }
+        
+        /* ✨ NOVO: Ajustar botões quando sidebar fecha */
+        body.sidebar-collapsed .map-controls {
+            right: calc(50% - 100px);
+        }
+        
+        /* ✨ NOVO: Sidebar toggle button com transição */
+        #sidebar-toggle {
+            transition: left 0.3s ease;
+        }
+        
+        body.sidebar-collapsed #sidebar-toggle {
+            left: 80px !important; /* Quando sidebar fecha */
         }
         
         .map-control-btn {
@@ -1155,12 +1183,19 @@
         }
 
         function setupUIListeners(app) {
-            // Sidebar Toggle
+            // ✅ Sidebar Toggle CORRIGIDO
             const sidebarToggle = document.getElementById('sidebar-toggle');
             const sidebar = document.getElementById('sidebar');
+            
             if (sidebarToggle && sidebar) {
                 sidebarToggle.addEventListener('click', () => {
-                    sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+                    // Toggle classe no sidebar E no body
+                    sidebar.classList.toggle('collapsed');
+                    document.body.classList.toggle('sidebar-collapsed');
+                    
+                    // Atualizar ícone
+                    const icon = sidebarToggle.querySelector('span');
+                    icon.textContent = sidebar.classList.contains('collapsed') ? '☰' : '✕';
                 });
             }
             
