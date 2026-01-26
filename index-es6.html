@@ -1111,10 +1111,6 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
             crossorigin=""></script>
 
-    <script type="module" src="js/test-diagnostics.js"></script>
-    <script type="module" src="js/bug-checker.js"></script>
-    <script type="module" src="js/test-sidebar-toggle.js"></script>
-
     <script type="module">
         import { initializeApp } from './js/main-es6.js';
 
@@ -1128,13 +1124,7 @@
                 loadingScreen.classList.add('hidden');
                 appContainer.classList.add('loaded');
                 
-                setTimeout(() => {
-                    console.log('%c🔧 COMANDOS DISPONÍVEIS:', 'color: #8b5cf6; font-size: 14px; font-weight: bold');
-                    console.log('%c  • diagnose()   - Testes rápidos do sistema', 'color: #6b7280');
-                    console.log('%c  • checkBugs()  - Verificação completa de bugs', 'color: #6b7280');
-                    console.log('%c  • testSidebar() - Testes de sidebar toggle', 'color: #6b7280');
-                    console.log('%c  • help()       - Lista todos os comandos', 'color: #6b7280');
-                }, 1000);
+                console.log('🎉 GeoClient SP v4.2.0 carregado com sucesso!');
             }, 500);
 
             setupAccordion();
