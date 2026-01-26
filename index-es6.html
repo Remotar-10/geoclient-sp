@@ -554,6 +554,23 @@
             border-color: #5568d3;
         }
         
+        /* Cities List Styles */
+        .cities-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .city-item {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .city-item:hover {
+            background: #f9fafb;
+        }
+        
         /* ========================================
            MODAL STYLES
         ======================================== */
@@ -843,7 +860,7 @@
 
             <div class="sidebar-content">
                 <!-- 📊 ESTATÍSTICAS (Starts OPEN) -->
-                <div class="accordion-section">
+                <div id="tab-dashboard" class="accordion-section">
                     <div class="accordion-header active" data-section="stats">
                         <span class="accordion-title">📊 Estatísticas</span>
                         <span class="accordion-icon">▼</span>
@@ -873,12 +890,15 @@
                                     <div class="stat-progress-fill" id="stat-available-fill" style="background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
                                 </div>
                             </div>
+                            
+                            <!-- ⭐ NOVO: Lista de cidades marcadas -->
+                            <div id="marked-cities-list" class="cities-list" style="margin-top: 16px;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 🏭 EMPRESAS -->
-                <div class="accordion-section">
+                <div id="tab-companies" class="accordion-section">
                     <div class="accordion-header" data-section="companies">
                         <span class="accordion-title">🏭 Empresas</span>
                         <span class="accordion-icon">▼</span>
@@ -902,7 +922,7 @@
                                 <span>🎯</span>
                                 <span>Resetar Visualização</span>
                             </button>
-                            <button class="action-btn primary" id="action-copy-list">
+                            <button class="action-btn primary" id="action-copy-list" data-shortcut="copy">
                                 <span>📋</span>
                                 <span>Copiar Lista de Cidades</span>
                             </button>
@@ -927,47 +947,58 @@
                 </div>
 
                 <!-- 🧭 NAVEGAÇÃO -->
-                <div class="accordion-section">
+                <div id="tab-navigation" class="accordion-section">
                     <div class="accordion-header" data-section="navigation">
                         <span class="accordion-title">🧭 Navegação</span>
                         <span class="accordion-icon">▼</span>
                     </div>
                     <div class="accordion-content" id="content-navigation">
                         <div class="accordion-content-inner">
+                            <!-- ⭐ NOVO: Cidades recentes -->
+                            <div class="nav-card">
+                                <div class="nav-card-header">
+                                    <span>⏱️</span>
+                                    <span>Recentes</span>
+                                </div>
+                                <div id="recent-cities-list"></div>
+                            </div>
+                            
                             <!-- Regiões -->
                             <div class="nav-card">
                                 <div class="nav-card-header">
                                     <span>🗺️</span>
                                     <span>Regiões</span>
                                 </div>
-                                <button class="region-btn" data-region="metropolitana">
-                                    <div class="region-label">
-                                        <span>📍</span>
-                                        <span>Região Metropolitana</span>
-                                    </div>
-                                    <span class="region-count">89</span>
-                                </button>
-                                <button class="region-btn" data-region="litoral">
-                                    <div class="region-label">
-                                        <span>🏖️</span>
-                                        <span>Litoral</span>
-                                    </div>
-                                    <span class="region-count">39</span>
-                                </button>
-                                <button class="region-btn" data-region="interior">
-                                    <div class="region-label">
-                                        <span>🌳</span>
-                                        <span>Interior</span>
-                                    </div>
-                                    <span class="region-count">487</span>
-                                </button>
-                                <button class="region-btn" data-region="vale">
-                                    <div class="region-label">
-                                        <span>🏔️</span>
-                                        <span>Vale do Paraíba</span>
-                                    </div>
-                                    <span class="region-count">39</span>
-                                </button>
+                                <div id="region-buttons">
+                                    <button class="region-btn" data-region="metropolitana">
+                                        <div class="region-label">
+                                            <span>📍</span>
+                                            <span>Região Metropolitana</span>
+                                        </div>
+                                        <span class="region-count">89</span>
+                                    </button>
+                                    <button class="region-btn" data-region="litoral">
+                                        <div class="region-label">
+                                            <span>🏖️</span>
+                                            <span>Litoral</span>
+                                        </div>
+                                        <span class="region-count">39</span>
+                                    </button>
+                                    <button class="region-btn" data-region="interior">
+                                        <div class="region-label">
+                                            <span>🌳</span>
+                                            <span>Interior</span>
+                                        </div>
+                                        <span class="region-count">487</span>
+                                    </button>
+                                    <button class="region-btn" data-region="vale">
+                                        <div class="region-label">
+                                            <span>🏔️</span>
+                                            <span>Vale do Paraíba</span>
+                                        </div>
+                                        <span class="region-count">39</span>
+                                    </button>
+                                </div>
                             </div>
                             
                             <!-- Camadas -->
@@ -976,31 +1007,49 @@
                                     <span>👁️</span>
                                     <span>Camadas do Mapa</span>
                                 </div>
-                                <div class="layer-toggle active" data-layer="occupied">
-                                    <div class="layer-checkbox">
-                                        <span class="layer-checkmark">✓</span>
+                                <div id="layer-toggles">
+                                    <div class="layer-toggle active" data-layer="occupied">
+                                        <div class="layer-checkbox">
+                                            <span class="layer-checkmark">✓</span>
+                                        </div>
+                                        <span class="layer-label">Cidades Ocupadas</span>
                                     </div>
-                                    <span class="layer-label">Cidades Ocupadas</span>
-                                </div>
-                                <div class="layer-toggle active" data-layer="available">
-                                    <div class="layer-checkbox">
-                                        <span class="layer-checkmark">✓</span>
+                                    <div class="layer-toggle active" data-layer="available">
+                                        <div class="layer-checkbox">
+                                            <span class="layer-checkmark">✓</span>
+                                        </div>
+                                        <span class="layer-label">Cidades Disponíveis</span>
                                     </div>
-                                    <span class="layer-label">Cidades Disponíveis</span>
-                                </div>
-                                <div class="layer-toggle active" data-layer="badges">
-                                    <div class="layer-checkbox">
-                                        <span class="layer-checkmark">✓</span>
+                                    <div class="layer-toggle active" data-layer="badges">
+                                        <div class="layer-checkbox">
+                                            <span class="layer-checkmark">✓</span>
+                                        </div>
+                                        <span class="layer-label">Badges Contador</span>
                                     </div>
-                                    <span class="layer-label">Badges Contador</span>
                                 </div>
+                            </div>
+                            
+                            <!-- ⭐ NOVO: Atalhos -->
+                            <div class="nav-card">
+                                <div class="nav-card-header">
+                                    <span>⚡</span>
+                                    <span>Atalhos</span>
+                                </div>
+                                <button id="shortcut-reset" class="shortcut-btn" data-shortcut="reset">
+                                    <span>🎯</span>
+                                    <span>Resetar Visualização</span>
+                                </button>
+                                <button id="shortcut-list" class="shortcut-btn" data-shortcut="copy">
+                                    <span>📋</span>
+                                    <span>Copiar Lista</span>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 💾 DADOS -->
-                <div class="accordion-section">
+                <div id="tab-reports" class="accordion-section">
                     <div class="accordion-header" data-section="data">
                         <span class="accordion-title">💾 Dados</span>
                         <span class="accordion-icon">▼</span>
@@ -1038,7 +1087,15 @@
         </aside>
 
         <main id="main-content" class="main-content">
-            <div id="map" class="map-container"></div>
+            <!-- ⭐ NOVO: Botão toggle sidebar -->
+            <button id="sidebar-toggle" class="map-control-btn" style="position: absolute; top: 20px; left: 20px; z-index: 1000;" title="Toggle Sidebar">
+                <span>☰</span>
+            </button>
+            
+            <div id="tab-map" class="map-container">
+                <div id="map" style="width: 100%; height: 100%;"></div>
+            </div>
+            
             <div class="map-controls">
                 <button id="reset-view" class="map-control-btn" title="Resetar visualização">
                     <span>🎯</span>
@@ -1128,25 +1185,38 @@
         }
 
         function setupUIListeners(app) {
+            // Sidebar Toggle
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', () => {
+                    sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+                });
+            }
+            
             // Map Controls
             document.getElementById('reset-view')?.addEventListener('click', () => app.resetMapView());
             document.getElementById('export-data')?.addEventListener('click', () => app.exportJSON());
             
             // Actions Section
             document.getElementById('action-reset-view')?.addEventListener('click', () => app.resetMapView());
-            document.getElementById('action-copy-list')?.addEventListener('click', () => app.copyCitiesList());
-            document.getElementById('action-export-csv')?.addEventListener('click', () => app.exportCSV());
+            document.getElementById('action-copy-list')?.addEventListener('click', () => app.copyCitiesList?.());
+            document.getElementById('action-export-csv')?.addEventListener('click', () => app.exportCitiesCSV());
             document.getElementById('action-export-json')?.addEventListener('click', () => app.exportJSON());
-            document.getElementById('action-import')?.addEventListener('click', () => app.showImportModal());
+            document.getElementById('action-import')?.addEventListener('click', () => app.importData());
             document.getElementById('action-clear')?.addEventListener('click', () => {
                 if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nEsta ação não pode ser desfeita!')) {
                     app.clearAllData();
                 }
             });
             
+            // Shortcuts
+            document.getElementById('shortcut-reset')?.addEventListener('click', () => app.resetMapView());
+            document.getElementById('shortcut-list')?.addEventListener('click', () => app.copyCitiesList?.());
+            
             // Data Section (Legacy)
-            document.getElementById('btn-import')?.addEventListener('click', () => app.showImportModal());
-            document.getElementById('btn-export-csv')?.addEventListener('click', () => app.exportCSV());
+            document.getElementById('btn-import')?.addEventListener('click', () => app.importData());
+            document.getElementById('btn-export-csv')?.addEventListener('click', () => app.exportCitiesCSV());
             document.getElementById('btn-export-json')?.addEventListener('click', () => app.exportJSON());
             document.getElementById('btn-clear')?.addEventListener('click', () => {
                 if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?')) {
@@ -1163,9 +1233,10 @@
         }
         
         function updateStats(app) {
-            if (!app || !app.markedCities) return;
+            if (!app || !app.mapManager) return;
             
-            const markedCount = Object.keys(app.markedCities).length;
+            const markedCities = app.mapManager.getMarkedCities();
+            const markedCount = Object.keys(markedCities).length;
             const availableCount = 645 - markedCount;
             const occupationPercent = Math.round((markedCount / 645) * 100);
             const availablePercent = 100 - occupationPercent;
@@ -1183,8 +1254,9 @@
         }
         
         function renderCompanies(app) {
-            if (!app || !app.markedCities) return;
+            if (!app || !app.mapManager) return;
             
+            const markedCities = app.mapManager.getMarkedCities();
             const companies = {
                 'CDO': { color: '#ef4444', count: 0 },
                 'SUPORTE': { color: '#3b82f6', count: 0 },
@@ -1193,7 +1265,7 @@
                 'HIRATA': { color: '#8b5cf6', count: 0 }
             };
             
-            Object.values(app.markedCities).forEach(cityData => {
+            Object.values(markedCities).forEach(cityData => {
                 if (cityData.companies && cityData.companies.length > 0) {
                     cityData.companies.forEach(company => {
                         if (companies[company]) {
@@ -1203,7 +1275,7 @@
                 }
             });
             
-            const totalMarked = Object.keys(app.markedCities).length;
+            const totalMarked = Object.keys(markedCities).length;
             const container = document.getElementById('companies-list');
             
             if (totalMarked === 0) {
