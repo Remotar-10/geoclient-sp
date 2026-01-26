@@ -1,7 +1,7 @@
 /**
  * 🐞 GeoClient SP - Bug Checker
  * @module bug-checker
- * @version 1.0.0
+ * @version 1.1.0
  * @description Comprehensive system bug detection and reporting
  */
 
@@ -112,17 +112,19 @@ class BugChecker {
   // ========================================
 
   checkModules() {
-    const requiredModules = [
-      'MapManager',
-      'StorageManager',
-      'UIManager',
-      'CompaniesManager',
-      'FilterManager',
-      'DashboardManager',
-      'ReportsManager',
-      'NavigationManager',
-      'SearchManager'
-    ];
+    // ⭐ CORRIGIDO: Mapeamento correto de nomes de managers
+    const managerMappings = {
+      'MapManager': 'mapManager',
+      'StorageManager': 'storageManager',
+      'UIManager': 'uiManager',  // ✅ Corrigido de uIManager para uiManager
+      'CompaniesManager': 'companiesManager',
+      'FilterManager': 'filterManager',
+      'DashboardManager': 'dashboardManager',
+      'ReportsManager': 'reportsManager',
+      'NavigationManager': 'navigationManager',
+      'SearchManager': 'searchManager',
+      'ActivityManager': 'activityManager'
+    };
 
     const app = window.GeoClientES6?.getApp();
     if (!app) {
@@ -130,8 +132,7 @@ class BugChecker {
       return;
     }
 
-    requiredModules.forEach(moduleName => {
-      const managerKey = moduleName.charAt(0).toLowerCase() + moduleName.slice(1);
+    Object.entries(managerMappings).forEach(([moduleName, managerKey]) => {
       if (app[managerKey]) {
         this.pass(`${moduleName} carregado`);
       } else {
@@ -314,7 +315,7 @@ class BugChecker {
     if (mapContainer && mapContainer.querySelector('.leaflet-container')) {
       this.pass('Mapa renderizado no DOM');
     } else {
-      this.bug('Mapa não renderizado');
+      this.bug('Mapa não renderizado', 'Container #map não contém .leaflet-container');
     }
 
     // Check map methods
