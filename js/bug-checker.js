@@ -1,7 +1,7 @@
 /**
  * 🐞 GeoClient SP - Bug Checker
  * @module bug-checker
- * @version 1.1.0
+ * @version 1.1.1
  * @description Comprehensive system bug detection and reporting
  */
 
@@ -310,12 +310,12 @@ class BugChecker {
       return;
     }
 
-    // Check map is rendered
+    // ✅ CORREÇÃO: Verificar se o próprio #map TEM a classe .leaflet-container
     const mapContainer = document.getElementById('map');
-    if (mapContainer && mapContainer.querySelector('.leaflet-container')) {
+    if (mapContainer && mapContainer.classList.contains('leaflet-container')) {
       this.pass('Mapa renderizado no DOM');
     } else {
-      this.bug('Mapa não renderizado', 'Container #map não contém .leaflet-container');
+      this.bug('Mapa não renderizado', 'Container #map não tem classe .leaflet-container');
     }
 
     // Check map methods
