@@ -1,8 +1,8 @@
 /**
  * 📊 GeoClient SP - Dashboard Manager
  * @module dashboard-manager
- * @version 1.1.0
- * @description Manages dashboard statistics and visualizations
+ * @version 1.2.0
+ * @description Manages dashboard statistics (accordion mode)
  */
 
 import { COMPANIES, STATS } from './config.js';
@@ -10,6 +10,7 @@ import { getEventBus, EVENT_TYPES } from './events.js';
 
 /**
  * DashboardManager Class
+ * 🔄 ATUALIZADO: Trabalha com IDs do accordion (stat-occupied, stat-available, etc)
  */
 export class DashboardManager {
   constructor(mapManager, storageManager) {
@@ -47,8 +48,8 @@ export class DashboardManager {
     const statOccupied = document.getElementById('stat-occupied');
     const statAvailable = document.getElementById('stat-available');
     
-    if (!statOccupied || !statAvailable) {
-      // ❌ Não mostra warning - accordion pode estar colapsado
+    if (!statOccupied && !statAvailable) {
+      // ✅ Accordion pode estar colapsado - sem warning
       console.log('✅ Dashboard stats ready (accordion mode)');
       return;
     }
@@ -63,20 +64,23 @@ export class DashboardManager {
   updateStats() {
     const stats = this.getStatistics();
     
-    // ✅ Atualizar elementos do accordion
+    // ✅ Atualizar elementos do accordion (IDs novos)
     const statOccupied = document.getElementById('stat-occupied');
     const statAvailable = document.getElementById('stat-available');
     const statOccupiedPercent = document.getElementById('stat-occupied-percent');
     const statAvailablePercent = document.getElementById('stat-available-percent');
     const statProgressFill = document.getElementById('stat-progress-fill');
     const statAvailableFill = document.getElementById('stat-available-fill');
+    const exportCount = document.getElementById('export-count');
     
+    // ✅ Atualizar valores (apenas se elementos existirem)
     if (statOccupied) statOccupied.textContent = stats.markedCities;
     if (statAvailable) statAvailable.textContent = stats.availableCities;
     if (statOccupiedPercent) statOccupiedPercent.textContent = `${stats.markedPercentage}% de ocupação`;
     if (statAvailablePercent) statAvailablePercent.textContent = `${stats.availablePercentage}% livres`;
+    if (exportCount) exportCount.textContent = stats.markedCities;
     
-    // ✅ Animar barras de progresso
+    // ✅ Animar barras de progresso (com delay para animação suave)
     if (statProgressFill) {
       setTimeout(() => {
         statProgressFill.style.width = `${stats.markedPercentage}%`;
@@ -88,7 +92,7 @@ export class DashboardManager {
       }, 100);
     }
     
-    console.log('✅ Dashboard stats updated');
+    console.log('✅ Dashboard stats updated:', stats);
   }
 
   /**
@@ -227,8 +231,8 @@ export class DashboardManager {
       totalCities: STATS.totalCities,
       markedCities: markedCount,
       availableCities: availableCount,
-      markedPercentage: ((markedCount / STATS.totalCities) * 100).toFixed(1),
-      availablePercentage: ((availableCount / STATS.totalCities) * 100).toFixed(1),
+      markedPercentage: Math.round((markedCount / STATS.totalCities) * 100),
+      availablePercentage: Math.round((availableCount / STATS.totalCities) * 100),
       companyCounts
     };
   }
