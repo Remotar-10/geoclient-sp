@@ -1235,12 +1235,10 @@
     <div class="main-container">
         <div id="map"></div>
         
+        <!-- ❗ BOTÃO SALVAR REMOVIDO - Apenas Reset -->
         <div class="map-controls">
             <button id="reset-view" class="map-control-btn" title="Resetar visualização">
                 <span>🎯</span>
-            </button>
-            <button id="export-data" class="map-control-btn" title="Exportar dados">
-                <span>💾</span>
             </button>
         </div>
     </div>
@@ -1424,7 +1422,7 @@
             }
             
             document.getElementById('reset-view')?.addEventListener('click', () => app.resetMapView());
-            document.getElementById('export-data')?.addEventListener('click', () => app.exportJSON());
+            // ❗ BOTÃO EXPORT REMOVIDO
             
             document.getElementById('action-reset-view')?.addEventListener('click', () => app.resetMapView());
             document.getElementById('action-copy-list')?.addEventListener('click', () => app.copyCitiesList?.());
