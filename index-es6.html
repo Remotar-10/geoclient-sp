@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="css/sidebar.css">
     
     <style>
-        /* 👉 FIX: Estrutura igual ao index.html (SEM APP-CONTAINER FLEX) */
         html, body {
             margin: 0;
             padding: 0;
@@ -56,7 +55,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         
-        /* ✅ Sidebar - POSITION ABSOLUTE (como index.html) */
+        /* Sidebar */
         .sidebar {
             position: fixed;
             left: 0;
@@ -72,7 +71,6 @@
             z-index: 1001;
         }
         
-        /* Sidebar colapsada: esconde para a esquerda */
         .sidebar.collapsed {
             transform: translateX(-100%);
         }
@@ -127,17 +125,174 @@
             text-transform: uppercase;
         }
         
-        /* ✅ Main Container - SEM FLEX (como index.html) */
+        /* Main Container */
         .main-container {
             width: 100%;
             height: 100vh;
             position: relative;
         }
         
-        /* Mapa ocupa 100% do container */
         #map {
             width: 100%;
             height: 100%;
+        }
+        
+        /* 🆕 CAMPO DE BUSCA FLUTUANTE */
+        .floating-search {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            width: 90%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-container {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .search-input-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            gap: 12px;
+        }
+        
+        .search-icon {
+            font-size: 20px;
+            color: #9ca3af;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #1f2937;
+            background: transparent;
+        }
+        
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .search-shortcut {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        .search-clear {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 50%;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .search-clear:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .search-input:not(:placeholder-shown) ~ .search-shortcut {
+            display: none;
+        }
+        
+        .search-input:not(:placeholder-shown) ~ .search-clear {
+            display: flex;
+        }
+        
+        /* Dropdown de Resultados */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            margin-top: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-item:hover {
+            background: #f9fafb;
+        }
+        
+        .search-result-icon {
+            font-size: 18px;
+        }
+        
+        .search-result-info {
+            flex: 1;
+        }
+        
+        .search-result-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+        
+        .search-result-region {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .search-result-badge {
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        
+        .search-empty {
+            padding: 20px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
         }
         
         /* Botões flutuantes */
@@ -159,7 +314,6 @@
             transition: left 0.3s ease;
         }
         
-        /* Quando sidebar está visível, botão move para direita */
         body:not(.sidebar-collapsed) #sidebar-toggle {
             left: 360px;
         }
@@ -187,19 +341,12 @@
         /* Toast Container */
         .toast-container {
             position: fixed;
-            top: 20px;
+            top: 90px;
             right: 20px;
             z-index: 9999;
             display: flex;
             flex-direction: column;
             gap: 10px;
-        }
-        
-        /* Search Box at Top */
-        .search-box-top {
-            padding: 16px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f9fafb;
         }
         
         /* Accordion styles */
@@ -816,6 +963,18 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
         }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .floating-search {
+                top: 10px;
+                width: calc(100% - 20px);
+            }
+            
+            #sidebar-toggle {
+                top: 80px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -826,16 +985,9 @@
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- ✅ SIDEBAR (position: fixed, não dentro de flex container) -->
-    <aside id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <h1 class="sidebar-title">
-                <span class="sidebar-icon">🗺️</span>
-                <span class="sidebar-text">GeoClient SP</span>
-            </h1>
-        </div>
-        
-        <div class="search-box-top">
+    <!-- 🆕 CAMPO DE BUSCA FLUTUANTE -->
+    <div class="floating-search">
+        <div class="search-container">
             <div class="search-input-wrapper">
                 <span class="search-icon">🔍</span>
                 <input type="text" 
@@ -843,11 +995,23 @@
                        class="search-input" 
                        placeholder="Buscar cidade..." 
                        autocomplete="off">
+                <span class="search-shortcut">Ctrl+K</span>
+                <button class="search-clear" id="search-clear">×</button>
             </div>
+            <div class="search-results" id="search-results"></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">
+                <span class="sidebar-icon">🗺️</span>
+                <span class="sidebar-text">GeoClient SP</span>
+            </h1>
         </div>
 
         <div class="sidebar-content">
-            <!-- 👉 ESTATÍSTICAS - AGORA FECHA POR PADRÃO -->
             <div id="tab-dashboard" class="accordion-section">
                 <div class="accordion-header" data-section="stats">
                     <span class="accordion-title">📊 Estatísticas</span>
@@ -1065,12 +1229,12 @@
         </div>
     </aside>
 
-    <!-- ✅ Botão Toggle -->
+    <!-- Botão Toggle -->
     <button id="sidebar-toggle" class="map-control-btn" title="Toggle Sidebar">
         <span>☰</span>
     </button>
 
-    <!-- ✅ MAIN CONTAINER (sem flex, igual index.html) -->
+    <!-- MAIN CONTAINER -->
     <div class="main-container">
         <div id="map"></div>
         
@@ -1105,7 +1269,7 @@
 
             setupAccordion();
             setupUIListeners(app);
-            setupSearch(app);
+            setupFloatingSearch(app);
             updateStats(app);
             renderCompanies(app);
             
@@ -1137,16 +1301,98 @@
             });
         }
         
-        function setupSearch(app) {
+        function setupFloatingSearch(app) {
             const searchInput = document.getElementById('city-search');
-            if (!searchInput) return;
+            const searchResults = document.getElementById('search-results');
+            const searchClear = document.getElementById('search-clear');
             
+            if (!searchInput || !app.searchManager) return;
+            
+            // Atalho Ctrl+K
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+                
+                // ESC para fechar resultados
+                if (e.key === 'Escape') {
+                    searchResults.classList.remove('active');
+                    searchInput.blur();
+                }
+            });
+            
+            // Botão limpar
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                searchResults.classList.remove('active');
+                searchInput.focus();
+            });
+            
+            // Busca em tempo real
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
-                if (query.length >= 2 && app.searchManager) {
-                    const results = app.searchManager.search(query);
-                    console.log(`🔍 Busca: "${query}" - ${results.length} resultados`);
+                
+                if (query.length < 2) {
+                    searchResults.classList.remove('active');
+                    return;
                 }
+                
+                const results = app.searchManager.search(query);
+                console.log(`🔍 Busca: "${query}" - ${results.length} resultados`);
+                
+                displaySearchResults(results, app);
+            });
+            
+            // Fechar ao clicar fora
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.classList.remove('active');
+                }
+            });
+        }
+        
+        function displaySearchResults(results, app) {
+            const searchResults = document.getElementById('search-results');
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="search-empty">🔍 Nenhuma cidade encontrada</div>';
+                searchResults.classList.add('active');
+                return;
+            }
+            
+            const markedCities = app.mapManager.getMarkedCities();
+            
+            searchResults.innerHTML = results.slice(0, 8).map(city => {
+                const isMarked = markedCities[city.properties.name];
+                const badge = isMarked ? '<span class="search-result-badge">Ocupada</span>' : '';
+                
+                return `
+                    <div class="search-result-item" data-city="${city.properties.name}">
+                        <span class="search-result-icon">🏛️</span>
+                        <div class="search-result-info">
+                            <div class="search-result-name">${city.properties.name}</div>
+                            <div class="search-result-region">População: ${city.properties.population?.toLocaleString('pt-BR') || 'N/D'}</div>
+                        </div>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+            
+            searchResults.classList.add('active');
+            
+            // Clique no resultado
+            searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const cityName = item.dataset.city;
+                    const city = results.find(c => c.properties.name === cityName);
+                    
+                    if (city && app.mapManager) {
+                        const coords = city.geometry.coordinates[0][0];
+                        app.mapManager.map.flyTo([coords[1], coords[0]], 11, { duration: 1 });
+                        searchResults.classList.remove('active');
+                    }
+                });
             });
         }
 
