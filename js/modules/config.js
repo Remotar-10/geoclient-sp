@@ -1,17 +1,17 @@
 /**
  * 🎯 GeoClient SP - Centralized Configuration
  * @module config
- * @version 4.1.0
+ * @version 4.2.0
  * @description Central configuration file for ES6 modules migration
  */
 
 // 📌 VERSION CONTROL
 export const VERSION = {
-  app: '4.1.0',
+  app: '4.2.0',
   css: '4.0.0',
-  modules: '1.0.0',
+  modules: '1.1.0',
   core: '3.4.0',
-  buildDate: '2026-01-20'
+  buildDate: '2026-01-27'
 };
 
 // 🏢 COMPANIES CONFIGURATION
