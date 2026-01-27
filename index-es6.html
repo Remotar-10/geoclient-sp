@@ -1300,7 +1300,12 @@
             const searchResults = document.getElementById('search-results');
             const searchClear = document.getElementById('search-clear');
             
-            if (!searchInput || !app.searchManager) return;
+            if (!searchInput || !app.searchManager) {
+                console.warn('⚠️ Busca: elementos ou searchManager não encontrado');
+                return;
+            }
+            
+            console.log('✅ Busca flutuante configurada');
             
             // Atalho Ctrl+K
             document.addEventListener('keydown', (e) => {
@@ -1332,7 +1337,8 @@
                     return;
                 }
                 
-                const results = app.searchManager.search(query);
+                // Usa searchCities ao invés de search
+                const results = app.searchManager.searchCities(query);
                 console.log(`🔍 Busca: "${query}" - ${results.length} resultados`);
                 
                 displaySearchResults(results, app);
@@ -1346,10 +1352,10 @@
             });
         }
         
-        function displaySearchResults(results, app) {
+        function displaySearchResults(cityNames, app) {
             const searchResults = document.getElementById('search-results');
             
-            if (results.length === 0) {
+            if (cityNames.length === 0) {
                 searchResults.innerHTML = '<div class="search-empty">🔍 Nenhuma cidade encontrada</div>';
                 searchResults.classList.add('active');
                 return;
@@ -1357,16 +1363,15 @@
             
             const markedCities = app.mapManager.getMarkedCities();
             
-            searchResults.innerHTML = results.slice(0, 8).map(city => {
-                const isMarked = markedCities[city.properties.name];
+            searchResults.innerHTML = cityNames.map(cityName => {
+                const isMarked = markedCities[cityName];
                 const badge = isMarked ? '<span class="search-result-badge">Ocupada</span>' : '';
                 
                 return `
-                    <div class="search-result-item" data-city="${city.properties.name}">
+                    <div class="search-result-item" data-city="${cityName}">
                         <span class="search-result-icon">🏛️</span>
                         <div class="search-result-info">
-                            <div class="search-result-name">${city.properties.name}</div>
-                            <div class="search-result-region">População: ${city.properties.population?.toLocaleString('pt-BR') || 'N/D'}</div>
+                            <div class="search-result-name">${cityName}</div>
                         </div>
                         ${badge}
                     </div>
@@ -1379,12 +1384,23 @@
             searchResults.querySelectorAll('.search-result-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const cityName = item.dataset.city;
-                    const city = results.find(c => c.properties.name === cityName);
+                    const layer = app.mapManager.cityLayers[cityName];
                     
-                    if (city && app.mapManager) {
-                        const coords = city.geometry.coordinates[0][0];
-                        app.mapManager.map.flyTo([coords[1], coords[0]], 11, { duration: 1 });
+                    if (layer && app.mapManager) {
+                        // Zoom para a cidade
+                        const bounds = layer.getBounds();
+                        app.mapManager.map.flyToBounds(bounds, {
+                            padding: [50, 50],
+                            duration: 1
+                        });
+                        
+                        // Abre popup
+                        setTimeout(() => {
+                            layer.fire('click');
+                        }, 500);
+                        
                         searchResults.classList.remove('active');
+                        console.log(`🗺️ Navegado para: ${cityName}`);
                     }
                 });
             });
