@@ -137,13 +137,13 @@
             height: 100%;
         }
         
-        /* 🆕 CAMPO DE BUSCA FLUTUANTE */
+        /* 🆕 CAMPO DE BUSCA FLUTUANTE - Z-INDEX AUMENTADO! */
         .floating-search {
-            position: fixed;
+            position: fixed !important;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1002;
+            z-index: 10002 !important;
             width: 90%;
             max-width: 500px;
             transition: all 0.3s ease;
@@ -154,7 +154,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            overflow: hidden;
+            overflow: visible !important;
         }
         
         .search-input-wrapper {
@@ -217,7 +217,7 @@
             display: flex;
         }
         
-        /* Dropdown de Resultados */
+        /* Dropdown de Resultados - GARANTIR VISIBILIDADE! */
         .search-results {
             position: absolute;
             top: 100%;
@@ -225,15 +225,16 @@
             right: 0;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
             margin-top: 8px;
             max-height: 400px;
             overflow-y: auto;
             display: none;
+            z-index: 10003 !important;
         }
         
         .search-results.active {
-            display: block;
+            display: block !important;
         }
         
         .search-result-item {
@@ -244,6 +245,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            background: white;
         }
         
         .search-result-item:last-child {
@@ -288,6 +290,7 @@
             text-align: center;
             color: #9ca3af;
             font-size: 14px;
+            background: white;
         }
         
         /* Botões flutuantes */
