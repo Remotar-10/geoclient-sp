@@ -1,6 +1,6 @@
 /**
  * 🚀 GeoClient SP - Main ES6 Entry Point
- * @version 4.1.1
+ * @version 4.2.0
  * @description Master orchestrator for all ES6 modules
  */
 
@@ -38,7 +38,7 @@ let appInstance = null;
  */
 export async function initializeApp(options = {}) {
   try {
-    console.log('%c🚀 GeoClient SP v4.1.1 - ES6 Modules', 'color: #3b82f6; font-size: 16px; font-weight: bold');
+    console.log('%c🚀 GeoClient SP v4.2.0 - ES6 Modules', 'color: #3b82f6; font-size: 16px; font-weight: bold');
     console.log('%cInitializing...', 'color: #6b7280');
 
     // Create app instance
