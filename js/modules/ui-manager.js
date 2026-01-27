@@ -1,7 +1,7 @@
 /**
  * 🎨 GeoClient SP - UI Manager
  * @module ui-manager
- * @version 4.1.0
+ * @version 4.2.0
  * @description User interface interactions and city popups
  */
 
@@ -210,11 +210,17 @@ export class UIManager {
       } else {
         // Add company
         this.companiesManager.assignToCity(cityName, companyName);
-        toast.success(`${companyName} adicionada em ${cityName}!`);
+        toast.success(`✅ ${companyName} adicionada em ${cityName}!`);
       }
+
+      // ⭐ SOLÇÃO: Fechar popup IMEDIATAMENTE
+      this.mapManager.map.closePopup();
 
       // Update map
       this.mapManager.updateCityDisplay(cityName);
+      
+      // ✨ DESTAQUE VISUAL: Piscar cidade no mapa
+      this.highlightCityOnMap(cityName);
 
       // Close modal
       const modal = document.getElementById('company-selector-modal');
@@ -222,13 +228,55 @@ export class UIManager {
         modal.remove();
       }
 
-      // Reopen popup with updated data
-      this.mapManager.openCityPopup(cityName);
+      // 🚫 NÃO REABRIR POPUP - deixar mapa limpo!
+      // this.mapManager.openCityPopup(cityName); // REMOVIDO
 
     } catch (error) {
       toast.error('Erro ao atualizar empresa');
       console.error('Error toggling company:', error);
     }
+  }
+
+  /**
+   * Highlight city on map with animation
+   * @param {string} cityName - City name
+   */
+  highlightCityOnMap(cityName) {
+    const layer = this.mapManager.cityLayers[cityName];
+    if (!layer) return;
+
+    // 🌟 Animação de destaque (piscar 2x)
+    const originalStyle = {
+      weight: 1,
+      opacity: 0.6,
+      fillOpacity: 0.7
+    };
+
+    const highlightStyle = {
+      weight: 4,
+      opacity: 1,
+      color: '#22c55e', // Verde sucesso
+      fillOpacity: 0.9
+    };
+
+    // Piscar 1
+    layer.setStyle(highlightStyle);
+    
+    setTimeout(() => {
+      layer.setStyle(originalStyle);
+      
+      // Piscar 2
+      setTimeout(() => {
+        layer.setStyle(highlightStyle);
+        
+        // Voltar ao normal
+        setTimeout(() => {
+          this.mapManager.updateCityStyle(cityName);
+        }, 300);
+      }, 300);
+    }, 300);
+
+    console.log(`✨ Cidade ${cityName} destacada no mapa`);
   }
 
   /**
